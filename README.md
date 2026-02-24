@@ -11,7 +11,7 @@
   <img src="https://img.shields.io/badge/status-MVP%20v1-blue" />
   <img src="https://img.shields.io/badge/backend-Django%204.2-darkgreen" />
   <img src="https://img.shields.io/badge/frontend-React%2018%20%2B%20TypeScript-61dafb" />
-  <img src="https://img.shields.io/badge/domain-yrif.or.tz-teal" />
+  <img src="https://img.shields.io/badge/domain-yriftz.org-teal" />
 </p>
 
 ---

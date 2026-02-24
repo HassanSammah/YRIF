@@ -2,7 +2,7 @@ from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .models import ContactInquiry, FAQ, Notification
+from .models import FAQ, Notification
 from .serializers import ContactInquirySerializer, FAQSerializer, NotificationSerializer
 from .chatbot import send_chatbot_message
 

@@ -1,6 +1,6 @@
 from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from apps.core.permissions import IsAdmin, IsContentManager
+from apps.core.permissions import IsContentManager
 from .models import Resource, Webinar
 from .serializers import ResourceSerializer, WebinarSerializer
 

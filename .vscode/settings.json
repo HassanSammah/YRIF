@@ -1,11 +1,16 @@
 {
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/bin/python",
   "cSpell.words": [
     "BRIQ",
     "Joleen",
     "mentee",
+    "pytest",
     "Samma",
     "Sarufi",
     "Supabase",
     "YRIF"
-  ]
+  ],
+  "python.testing.unittestArgs": ["-v", "-s", "./backend", "-p", "*test.py"],
+  "python.testing.pytestEnabled": false,
+  "python.testing.unittestEnabled": true
 }

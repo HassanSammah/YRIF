@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend:
+    name: Backend – lint & test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: yrif_test
+          POSTGRES_USER: yrif_user
+          POSTGRES_PASSWORD: yrif_password
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements/development.txt
+
+      - name: Run linter
+        run: |
+          pip install ruff
+          ruff check backend/
+
+      - name: Run tests
+        env:
+          SECRET_KEY: ci-secret-key
+          DB_NAME: yrif_test
+          DB_USER: yrif_user
+          DB_PASSWORD: yrif_password
+          DB_HOST: localhost
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          cd backend
+          pytest --cov=apps --cov-report=xml -q
+
+  frontend:
+    name: Frontend – lint & build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Lint
+        run: npm run lint
+        working-directory: frontend
+
+      - name: Build
+        run: npm run build
+        working-directory: frontend

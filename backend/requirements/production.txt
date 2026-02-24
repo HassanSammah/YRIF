@@ -1,0 +1,3 @@
+-r base.txt
+sentry-sdk>=1.40
+django-storages>=1.14

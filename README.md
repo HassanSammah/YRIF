@@ -1,18 +1,13 @@
-<p align="center">
-  <img src="frontend/src/assets/logos/logo-dark-full-horizontal.svg" alt="YRIF Logo" width="360" />
-</p>
+# Youth Research & Innovation Foundation
 
-<h1 align="center">Youth Research & Innovation Foundation</h1>
-<p align="center">
-  A national digital platform empowering Tanzanian youth to participate in research, innovation, and knowledge generation aligned with national development priorities.
-</p>
+![YRIF Logo](frontend/src/assets/logos/logo-dark-full-horizontal.svg)
 
-<p align="center">
-  <img src="https://img.shields.io/badge/status-MVP%20v1-blue" />
-  <img src="https://img.shields.io/badge/backend-Django%204.2-darkgreen" />
-  <img src="https://img.shields.io/badge/frontend-React%2018%20%2B%20TypeScript-61dafb" />
-  <img src="https://img.shields.io/badge/domain-yriftz.org-teal" />
-</p>
+A national digital platform empowering Tanzanian youth to participate in research, innovation, and knowledge generation aligned with national development priorities.
+
+![Status](https://img.shields.io/badge/status-MVP%20v1-blue)
+![Backend](https://img.shields.io/badge/backend-Django%204.2-darkgreen)
+![Frontend](https://img.shields.io/badge/frontend-React%2018%20%2B%20TypeScript-61dafb)
+![Domain](https://img.shields.io/badge/domain-yriftz.org-teal)
 
 ---
 
@@ -25,7 +20,7 @@ YRIF is a full-stack web platform that connects Tanzanian youth researchers, men
 ## Features
 
 | Module | Description |
-|--------|-------------|
+| ------ | ----------- |
 | **Research Portal** | Submit, review, and publish research papers with a peer-review workflow |
 | **Events & Competitions** | Create events, register participants, score entries, and issue certificates |
 | **Mentorship Network** | Browse mentors, request matches, track relationships and feedback |
@@ -40,6 +35,7 @@ YRIF is a full-stack web platform that connects Tanzanian youth researchers, men
 ## Tech Stack
 
 ### Backend
+
 - **Framework:** Django 4.2 + Django REST Framework
 - **Database:** PostgreSQL 16
 - **Cache / Queue:** Redis 7 + Celery
@@ -49,6 +45,7 @@ YRIF is a full-stack web platform that connects Tanzanian youth researchers, men
 - **Integrations:** Supabase, Briq.tz (SMS), Sarufi AI
 
 ### Frontend
+
 - **Framework:** React 18 + TypeScript (Vite)
 - **Styling:** Tailwind CSS 3 — fonts: **Outfit** (headings) + **Inter** (body)
 - **Icons:** Lucide React
@@ -58,6 +55,7 @@ YRIF is a full-stack web platform that connects Tanzanian youth researchers, men
 - **Real-time:** Supabase JS Client
 
 ### Infrastructure
+
 - Docker Compose (5 services: PostgreSQL, Redis, Django, React, media volume)
 - Nginx (frontend production)
 - Gunicorn + WhiteNoise (backend production)
@@ -66,7 +64,7 @@ YRIF is a full-stack web platform that connects Tanzanian youth researchers, men
 
 ## Project Structure
 
-```
+```text
 YRIF/
 ├── docker-compose.yml
 ├── backend/
@@ -104,7 +102,7 @@ YRIF/
 ## API Routes
 
 | Prefix | Description |
-|--------|-------------|
+| ------ | ----------- |
 | `/api/v1/auth/` | Registration, login, JWT refresh |
 | `/api/v1/research/` | Research submissions & peer review |
 | `/api/v1/events/` | Events, competitions, registrations |
@@ -128,6 +126,7 @@ New accounts go through an **admin approval workflow** before gaining full acces
 ## Getting Started
 
 ### Prerequisites
+
 - Docker & Docker Compose
 - Create `/backend/.env` and `/frontend/.env` from their respective `.env.example` files
 
@@ -138,10 +137,10 @@ docker-compose up
 ```
 
 | Service | URL |
-|---------|-----|
-| Frontend | http://localhost:3000 |
-| Backend API | http://localhost:8000 |
-| API Docs | http://localhost:8000/api/docs/ |
+| ------- | --- |
+| Frontend | <http://localhost:3000> |
+| Backend API | <http://localhost:8000> |
+| API Docs | <http://localhost:8000/api/docs/> |
 
 ---
 
@@ -150,7 +149,7 @@ docker-compose up
 Logo variants are in `frontend/src/assets/logos/`:
 
 | File | Use case |
-|------|----------|
+| ---- | -------- |
 | `logo-dark.svg` | Icon only — light backgrounds |
 | `logo-dark-full-horizontal.svg` | Full name, horizontal — light backgrounds |
 | `logo-dark-full-vertical.svg` | Full name, vertical — light backgrounds |
@@ -163,7 +162,7 @@ Logo variants are in `frontend/src/assets/logos/`:
 ## Team
 
 | Role | Person |
-|------|--------|
+| ---- | ------ |
 | Full-stack Development | Hassan A. Samma |
 | Public Website / UI | Edson |
 | QA & Analysis | Joleen |

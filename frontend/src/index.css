@@ -1,3 +1,10 @@
+/* Google Fonts — Inter (body) + Outfit (display/headings) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -5,16 +12,83 @@
 }
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
   color-scheme: light dark;
 }
 
 body {
   min-height: 100vh;
-  background-color: #f8fafc;
+  background-color: #FDFBF7;
+  color: #093344;
 }
 
 #root {
   min-height: 100vh;
+}
+
+/* ─── Utilities ─────────────────────────────────────────────────────────── */
+
+@layer utilities {
+  /* Glassmorphism */
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.8);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: box-shadow 0.2s ease;
+  }
+
+  .glass-card:hover {
+    box-shadow: 0 20px 40px rgba(9, 51, 68, 0.12);
+  }
+
+  /* Typography */
+  .text-balance {
+    overflow-wrap: break-word;
+  }
+
+  /* Backgrounds */
+  .bg-cream-gradient {
+    background: linear-gradient(135deg, #FDFBF7 0%, #F5F1E8 100%);
+  }
+}
+
+/* ─── Animations ─────────────────────────────────────────────────────────── */
+
+@layer utilities {
+  .fade-in-up {
+    animation: fadeInUp 0.8s ease forwards;
+  }
+
+  .animate-scroll {
+    animation: scroll 40s linear infinite;
+  }
+
+  .animate-scroll:hover {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }

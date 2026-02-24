@@ -1,7 +1,10 @@
 {
   "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/bin/python",
+  "css.lint.unknownAtRules": "ignore",
   "cSpell.words": [
+    "Avenir",
     "BRIQ",
+    "glassmorphism",
     "Joleen",
     "mentee",
     "pytest",

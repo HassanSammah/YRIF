@@ -29,9 +29,9 @@ const ContentManagement = lazy(() => import('@/pages/admin/ContentManagement'))
 const Reports = lazy(() => import('@/pages/admin/Reports'))
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isApproved, user } = useAuth()
+  const { isAuthenticated, isApproved, isAdmin } = useAuth()
   if (!isAuthenticated) return <Navigate to="/login" replace />
-  if (!isApproved && user?.role !== 'admin') return <Navigate to="/pending-approval" replace />
+  if (!isApproved && !isAdmin) return <Navigate to="/pending-approval" replace />
   return <>{children}</>
 }
 

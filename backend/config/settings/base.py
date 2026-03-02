@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import timedelta
 from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -14,6 +15,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Third-party
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     "corsheaders",
     "django_filters",
@@ -123,9 +125,22 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Briq Auth / SMS
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+# Briq Auth / SMS / OTP
 BRIQ_API_KEY = config("BRIQ_API_KEY", default="")
+BRIQ_APP_KEY = config("BRIQ_APP_KEY", default="briq_mkb71g9z39n4frg0")
 BRIQ_SMS_SENDER = config("BRIQ_SMS_SENDER", default="YRIF")
+BRIQ_BASE_URL = "https://karibu.briq.tz"
+
+# Google OAuth
+GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default="350998195827-59nlf2oraqutqvags0f5qah6k6ggprg7.apps.googleusercontent.com")
 
 # Supabase Realtime
 SUPABASE_URL = config("SUPABASE_URL", default="")

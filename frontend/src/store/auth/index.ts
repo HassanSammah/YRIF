@@ -9,7 +9,8 @@ interface AuthState {
   refreshToken: string | null
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
-  logout: () => void
+  googleLogin: (credential: string) => Promise<{ is_new: boolean }>
+  logout: () => Promise<void>
   fetchMe: () => Promise<void>
 }
 
@@ -25,11 +26,26 @@ export const useAuthStore = create<AuthState>()(
         const { data } = await authApi.login(email, password)
         localStorage.setItem('access_token', data.access)
         localStorage.setItem('refresh_token', data.refresh)
-        set({ accessToken: data.access, refreshToken: data.refresh, isAuthenticated: true })
-        await get().fetchMe()
+        set({ accessToken: data.access, refreshToken: data.refresh, isAuthenticated: true, user: data.user })
       },
 
-      logout: () => {
+      googleLogin: async (credential) => {
+        const { data } = await authApi.googleAuth(credential)
+        localStorage.setItem('access_token', data.access)
+        localStorage.setItem('refresh_token', data.refresh)
+        set({ accessToken: data.access, refreshToken: data.refresh, isAuthenticated: true, user: data.user })
+        return { is_new: data.is_new }
+      },
+
+      logout: async () => {
+        const refresh = get().refreshToken
+        if (refresh) {
+          try {
+            await authApi.logout(refresh)
+          } catch {
+            // proceed with local logout even if server-side blacklist fails
+          }
+        }
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
         set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false })

@@ -1,0 +1,79 @@
+name: CD – Production
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false   # never cancel an in-flight production deploy
+
+jobs:
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment: production    # requires manual approval gate in GitHub settings
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Backend ──────────────────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements/*.txt
+
+      - name: Install backend dependencies
+        run: pip install -r backend/requirements/production.txt
+
+      # ── Frontend ─────────────────────────────────────────────────
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Build frontend
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
+          VITE_API_BASE_URL: ${{ secrets.PROD_API_BASE_URL }}
+        run: npm run build
+        working-directory: frontend
+
+      # ── Database migrations ───────────────────────────────────────
+      - name: Run Django migrations
+        env:
+          SECRET_KEY: ${{ secrets.PROD_SECRET_KEY }}
+          DB_NAME: ${{ secrets.PROD_DB_NAME }}
+          DB_USER: ${{ secrets.PROD_DB_USER }}
+          DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          DB_HOST: ${{ secrets.PROD_DB_HOST }}
+        run: |
+          cd backend
+          python manage.py migrate --no-input
+
+      # ── Deploy ───────────────────────────────────────────────────
+      # Replace this step with your actual deployment command.
+      - name: Deploy to production server
+        env:
+          PROD_DEPLOY_HOOK: ${{ secrets.PROD_DEPLOY_HOOK }}
+        run: |
+          echo "Deploying commit ${{ github.sha }} to production..."
+          # TODO: add your deploy command here, e.g.:
+          # curl -X POST "$PROD_DEPLOY_HOOK"
+          echo "Deploy step placeholder – configure PROD_DEPLOY_HOOK secret."
+
+      # ── Notify ───────────────────────────────────────────────────
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "Production deploy FAILED for ${{ github.sha }}."
+          # TODO: add Slack/email/Sentry alert here

@@ -29,9 +29,15 @@ const ContentManagement = lazy(() => import('@/pages/admin/ContentManagement'))
 const Reports = lazy(() => import('@/pages/admin/Reports'))
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isApproved, isAdmin } = useAuth()
+  const { isAuthenticated, user, isAdmin } = useAuth()
   if (!isAuthenticated) return <Navigate to="/login" replace />
-  if (!isApproved && !isAdmin) return <Navigate to="/pending-approval" replace />
+  // Suspended/rejected users cannot proceed
+  if (user?.status === 'suspended' || user?.status === 'rejected') {
+    return <Navigate to="/login" replace />
+  }
+  if (user?.status === 'pending_approval' && !isAdmin) {
+    return <Navigate to="/pending-approval" replace />
+  }
   return <>{children}</>
 }
 

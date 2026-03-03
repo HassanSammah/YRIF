@@ -7,9 +7,13 @@ class IsAdmin(BasePermission):
 
 
 class IsApproved(BasePermission):
-    """Blocks users whose accounts have not yet been approved by admin."""
+    """Allows only users whose account status is ACTIVE."""
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.is_approved
+        from apps.accounts.models import UserStatus
+        return (
+            request.user.is_authenticated
+            and request.user.status == UserStatus.ACTIVE
+        )
 
 
 class IsMentor(BasePermission):

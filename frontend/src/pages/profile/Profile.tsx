@@ -1,1 +1,381 @@
-export default function Profile() { return <div>Profile</div> }
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useQuery, useMutation, useQueryClient } from 'react-query'
+import {
+  User as UserIcon, Phone, Building, Award,
+  Shield, CheckCircle, AlertCircle, Loader2, Save,
+} from 'lucide-react'
+import { authApi } from '@/api/accounts'
+import { useAuth } from '@/hooks/useAuth'
+import type { Profile, MentorProfile, PartnerProfile, ResearchAssistantProfile } from '@/types/user'
+import { USER_STATUS_LABELS, USER_ROLE_LABELS } from '@/types/user'
+
+// ── Phone Verification ────────────────────────────────────────────────────────
+
+function PhoneVerificationSection({ phone, verified, onVerified }: {
+  phone: string
+  verified: boolean
+  onVerified: () => void
+}) {
+  const [step, setStep] = useState<'idle' | 'sent'>('idle')
+  const [phoneInput, setPhoneInput] = useState(phone)
+  const [otp, setOtp] = useState('')
+  const [error, setError] = useState('')
+  const [sending, setSending] = useState(false)
+
+  const sendOTP = async () => {
+    setError('')
+    setSending(true)
+    try {
+      await authApi.requestPhoneOTP(phoneInput)
+      setStep('sent')
+    } catch {
+      setError('Failed to send OTP. Check your phone number.')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const verifyOTP = async () => {
+    setError('')
+    setSending(true)
+    try {
+      await authApi.verifyPhoneOTP(phoneInput, otp)
+      onVerified()
+      setStep('idle')
+    } catch {
+      setError('Invalid OTP. Please try again.')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  if (verified) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-green-700">
+        <CheckCircle className="w-4 h-4" /> Phone verified
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-3 space-y-2">
+      {step === 'idle' ? (
+        <div className="flex gap-2">
+          <input
+            value={phoneInput}
+            onChange={(e) => setPhoneInput(e.target.value)}
+            placeholder="+255 7XX XXX XXX"
+            className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            onClick={sendOTP}
+            disabled={sending || !phoneInput}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          >
+            {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send OTP'}
+          </button>
+        </div>
+      ) : (
+        <div className="flex gap-2 flex-wrap">
+          <input
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            placeholder="Enter OTP code"
+            maxLength={8}
+            className="w-36 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            onClick={verifyOTP}
+            disabled={sending || !otp}
+            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+          >
+            {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify'}
+          </button>
+          <button onClick={() => setStep('idle')} className="text-sm text-gray-500 hover:underline">
+            Change number
+          </button>
+        </div>
+      )}
+      {error && <p className="text-xs text-red-600">{error}</p>}
+    </div>
+  )
+}
+
+// ── Layout helpers ────────────────────────────────────────────────────────────
+
+function Section({ icon: Icon, title, children }: {
+  icon: React.ElementType; title: string; children: React.ReactNode
+}) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+      <div className="flex items-center gap-2 px-6 py-4 border-b border-gray-100">
+        <Icon className="w-5 h-5 text-blue-600" />
+        <h2 className="text-sm font-semibold text-gray-900">{title}</h2>
+      </div>
+      <div className="px-6 py-5">{children}</div>
+    </div>
+  )
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">{label}</label>
+      {children}
+    </div>
+  )
+}
+
+const inputCls = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+
+// ── Base profile form ─────────────────────────────────────────────────────────
+
+function BaseProfileSection() {
+  const qc = useQueryClient()
+  const { data: profile, isLoading } = useQuery(
+    'profile',
+    () => authApi.getProfile().then((r) => r.data),
+    { staleTime: 30_000 },
+  )
+  const mutation = useMutation(
+    (data: Partial<Profile>) => authApi.updateProfile(data).then((r) => r.data),
+    { onSuccess: () => qc.invalidateQueries('profile') },
+  )
+  const { register, handleSubmit, formState: { isDirty } } = useForm<Profile>({ values: profile })
+
+  if (isLoading) return <p className="text-sm text-gray-400">Loading…</p>
+
+  return (
+    <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Field label="Institution">
+          <input {...register('institution')} placeholder="University or organisation" className={inputCls} />
+        </Field>
+        <Field label="Education Level">
+          <input {...register('education_level')} placeholder="e.g. Bachelor's, Master's" className={inputCls} />
+        </Field>
+        <Field label="Region">
+          <input {...register('region')} placeholder="e.g. Dar es Salaam" className={inputCls} />
+        </Field>
+      </div>
+      <Field label="Bio">
+        <textarea {...register('bio')} rows={3} placeholder="A short bio…" className={inputCls} />
+      </Field>
+      <Field label="Skills">
+        <input {...register('skills')} placeholder="e.g. Python, Writing, Data Analysis (comma-separated)" className={inputCls} />
+      </Field>
+      <Field label="Research Interests">
+        <textarea {...register('research_interests')} rows={2} placeholder="Topics you are passionate about…" className={inputCls} />
+      </Field>
+      <Field label="Achievements">
+        <textarea {...register('achievements')} rows={2} placeholder="Awards, publications, recognition…" className={inputCls} />
+      </Field>
+
+      {mutation.isSuccess && (
+        <p className="text-sm text-green-600 flex items-center gap-1"><CheckCircle className="w-4 h-4" /> Saved.</p>
+      )}
+      {mutation.isError && (
+        <p className="text-sm text-red-600 flex items-center gap-1"><AlertCircle className="w-4 h-4" /> Save failed.</p>
+      )}
+
+      <button
+        type="submit"
+        disabled={!isDirty || mutation.isLoading}
+        className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+      >
+        {mutation.isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+        Save changes
+      </button>
+    </form>
+  )
+}
+
+// ── Mentor profile form ───────────────────────────────────────────────────────
+
+function MentorProfileSection() {
+  const qc = useQueryClient()
+  const { data, isLoading } = useQuery('mentor-profile', () => authApi.getMentorProfile().then((r) => r.data))
+  const mutation = useMutation(
+    (d: Partial<MentorProfile>) => authApi.updateMentorProfile(d).then((r) => r.data),
+    { onSuccess: () => qc.invalidateQueries('mentor-profile') },
+  )
+  const { register, handleSubmit, formState: { isDirty } } = useForm<MentorProfile>({ values: data })
+
+  if (isLoading) return <p className="text-sm text-gray-400">Loading…</p>
+
+  return (
+    <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-4">
+      {data?.is_verified && (
+        <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-2 rounded-lg">
+          <CheckCircle className="w-4 h-4" /> Verified mentor
+        </div>
+      )}
+      <Field label="Expertise Areas">
+        <input {...register('expertise_areas')} placeholder="e.g. Climate Science, Machine Learning (comma-separated)" className={inputCls} />
+      </Field>
+      <Field label="Availability">
+        <input {...register('availability')} placeholder="e.g. Weekends, 2 hours/week" className={inputCls} />
+      </Field>
+      <button type="submit" disabled={!isDirty || mutation.isLoading}
+        className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
+        {mutation.isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
+      </button>
+    </form>
+  )
+}
+
+// ── Partner profile form ──────────────────────────────────────────────────────
+
+function PartnerProfileSection() {
+  const qc = useQueryClient()
+  const { data, isLoading } = useQuery('partner-profile', () => authApi.getPartnerProfile().then((r) => r.data))
+  const mutation = useMutation(
+    (d: Partial<PartnerProfile>) => authApi.updatePartnerProfile(d).then((r) => r.data),
+    { onSuccess: () => qc.invalidateQueries('partner-profile') },
+  )
+  const { register, handleSubmit, formState: { isDirty } } = useForm<PartnerProfile>({ values: data })
+
+  if (isLoading) return <p className="text-sm text-gray-400">Loading…</p>
+
+  return (
+    <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-4">
+      {data?.is_verified && (
+        <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-2 rounded-lg">
+          <CheckCircle className="w-4 h-4" /> Verified partner
+        </div>
+      )}
+      <div className="grid sm:grid-cols-2 gap-4">
+        <Field label="Organisation Name">
+          <input {...register('org_name')} placeholder="Company or organisation" className={inputCls} />
+        </Field>
+        <Field label="Partner Type">
+          <select {...register('partner_type')} className={inputCls + ' bg-white'}>
+            <option value="industry">Industry</option>
+            <option value="community">Community</option>
+          </select>
+        </Field>
+        <Field label="Sector">
+          <input {...register('sector')} placeholder="e.g. Agriculture, Health" className={inputCls} />
+        </Field>
+        <Field label="Contact Person">
+          <input {...register('contact_person')} placeholder="Primary contact name" className={inputCls} />
+        </Field>
+      </div>
+      <button type="submit" disabled={!isDirty || mutation.isLoading}
+        className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
+        {mutation.isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
+      </button>
+    </form>
+  )
+}
+
+// ── Research Assistant profile form ───────────────────────────────────────────
+
+function RAProfileSection() {
+  const qc = useQueryClient()
+  const { data, isLoading } = useQuery('ra-profile', () => authApi.getAssistantProfile().then((r) => r.data))
+  const mutation = useMutation(
+    (d: Partial<ResearchAssistantProfile>) => authApi.updateAssistantProfile(d).then((r) => r.data),
+    { onSuccess: () => qc.invalidateQueries('ra-profile') },
+  )
+  const { register, handleSubmit, formState: { isDirty } } = useForm<ResearchAssistantProfile>({ values: data })
+
+  if (isLoading) return <p className="text-sm text-gray-400">Loading…</p>
+
+  return (
+    <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-4">
+      <Field label="Skills">
+        <input {...register('skills')} placeholder="e.g. Lab work, Statistics, Python" className={inputCls} />
+      </Field>
+      <Field label="Availability">
+        <input {...register('availability')} placeholder="e.g. Part-time, flexible hours" className={inputCls} />
+      </Field>
+      <Field label="Portfolio">
+        <textarea {...register('portfolio')} rows={3} placeholder="Links to work, GitHub, publications…" className={inputCls} />
+      </Field>
+      <button type="submit" disabled={!isDirty || mutation.isLoading}
+        className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
+        {mutation.isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
+      </button>
+    </form>
+  )
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
+export default function Profile() {
+  const { user, fetchMe } = useAuth()
+  const qc = useQueryClient()
+
+  if (!user) return null
+
+  const statusColors: Record<string, string> = {
+    active: 'bg-green-100 text-green-800',
+    pending_approval: 'bg-amber-100 text-amber-800',
+    suspended: 'bg-red-100 text-red-800',
+    rejected: 'bg-gray-100 text-gray-600',
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      {/* Header card */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-5">
+        <div className="flex items-start gap-4">
+          <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+            {user.profile?.avatar ? (
+              <img src={user.profile.avatar} className="w-14 h-14 rounded-full object-cover" alt="Avatar" />
+            ) : (
+              <UserIcon className="w-7 h-7 text-blue-600" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg font-bold text-gray-900">{user.first_name} {user.last_name}</h1>
+            <p className="text-sm text-gray-500 truncate">{user.email}</p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                {USER_ROLE_LABELS[user.role]}
+              </span>
+              <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[user.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                {USER_STATUS_LABELS[user.status]}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+            <Phone className="w-4 h-4" /> Phone verification
+          </div>
+          <PhoneVerificationSection
+            phone={user.profile?.phone ?? ''}
+            verified={user.profile?.phone_verified ?? false}
+            onVerified={() => { qc.invalidateQueries('profile'); fetchMe() }}
+          />
+        </div>
+      </div>
+
+      {/* Base profile */}
+      <Section icon={UserIcon} title="Profile Information">
+        <BaseProfileSection />
+      </Section>
+
+      {/* Role-specific extended profiles */}
+      {user.role === 'mentor' && (
+        <Section icon={Award} title="Mentor Profile">
+          <MentorProfileSection />
+        </Section>
+      )}
+      {user.role === 'industry_partner' && (
+        <Section icon={Building} title="Partner Profile">
+          <PartnerProfileSection />
+        </Section>
+      )}
+      {user.role === 'research_assistant' && (
+        <Section icon={Shield} title="Research Assistant Profile">
+          <RAProfileSection />
+        </Section>
+      )}
+    </div>
+  )
+}

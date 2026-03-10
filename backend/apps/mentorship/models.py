@@ -7,7 +7,7 @@ class MentorProfile(BaseModel):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="mentor_profile",
+        related_name="mentorship_mentor_profile",
     )
     expertise_areas = models.TextField(help_text="Comma-separated expertise areas")
     max_mentees = models.PositiveIntegerField(default=3)

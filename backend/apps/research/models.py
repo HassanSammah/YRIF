@@ -16,6 +16,7 @@ class ResearchStatus(models.TextChoices):
     UNDER_REVIEW = "under_review", "Under Review"
     APPROVED = "approved", "Approved"
     REJECTED = "rejected", "Rejected"
+    PUBLISHED = "published", "Published"
 
 
 class Research(BaseModel):
@@ -33,6 +34,7 @@ class Research(BaseModel):
     keywords = models.CharField(max_length=500, blank=True)
     views_count = models.PositiveIntegerField(default=0)
     downloads_count = models.PositiveIntegerField(default=0)
+    rejection_reason = models.TextField(blank=True)
     published_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -59,3 +61,20 @@ class ResearchReview(BaseModel):
 
     def __str__(self):
         return f"Review of '{self.research}' by {self.reviewer}"
+
+
+class ReviewAssignment(BaseModel):
+    class State(models.TextChoices):
+        ASSIGNED = "assigned", "Assigned"
+        COMPLETED = "completed", "Completed"
+
+    research = models.ForeignKey(Research, on_delete=models.CASCADE, related_name="assignments")
+    reviewer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="review_assignments")
+    assigned_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="assignments_made")
+    state = models.CharField(max_length=20, choices=State.choices, default=State.ASSIGNED)
+
+    class Meta:
+        unique_together = [["research", "reviewer"]]
+
+    def __str__(self):
+        return f"Assignment: {self.reviewer} → {self.research}"

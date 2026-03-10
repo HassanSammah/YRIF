@@ -1,25 +1,48 @@
 import apiClient from './client'
-import type { Research, ResearchReview } from '@/types/research'
+import type { Research, ResearchReview, ReviewAssignment } from '@/types/research'
 import type { PaginatedResponse } from '@/types/api'
 
 export const researchApi = {
+  // ── Public ─────────────────────────────────────────────────────────────────
   list: (params?: { category?: string; search?: string; page?: number }) =>
     apiClient.get<PaginatedResponse<Research>>('/research/', { params }),
-
-  myResearch: () =>
-    apiClient.get<PaginatedResponse<Research>>('/research/my/'),
 
   get: (id: string) =>
     apiClient.get<Research>(`/research/${id}/`),
 
-  submit: (formData: FormData) =>
-    apiClient.post<Research>('/research/submit/', formData, {
+  getDownloadUrl: (id: string) =>
+    apiClient.get<{ document_url: string }>(`/research/${id}/download/`),
+
+  // ── Author ─────────────────────────────────────────────────────────────────
+  myResearch: () =>
+    apiClient.get<PaginatedResponse<Research>>('/research/my/'),
+
+  createDraft: (formData: FormData) =>
+    apiClient.post<Research>('/research/create/', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
 
-  review: (id: string, data: Pick<ResearchReview, 'comments' | 'decision'>) =>
-    apiClient.post<ResearchReview>(`/research/${id}/review/`, data),
+  updateDraft: (id: string, formData: FormData) =>
+    apiClient.patch<Research>(`/research/${id}/update/`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
 
-  getDownloadUrl: (id: string) =>
-    apiClient.get<{ document_url: string }>(`/research/${id}/download/`),
+  submitDraft: (id: string) =>
+    apiClient.post<Research>(`/research/${id}/submit/`, {}),
+
+  // ── Admin ──────────────────────────────────────────────────────────────────
+  adminList: (params?: { category?: string; status?: string; search?: string; page?: number }) =>
+    apiClient.get<PaginatedResponse<Research>>('/research/admin/', { params }),
+
+  assignReviewer: (id: string, reviewerId: string) =>
+    apiClient.post<ReviewAssignment>(`/research/${id}/assign-reviewer/`, { reviewer_id: reviewerId }),
+
+  addComment: (id: string, data: { comments: string; decision: string }) =>
+    apiClient.post<ResearchReview>(`/research/${id}/comment/`, data),
+
+  decide: (id: string, data: { decision: 'approve' | 'reject'; reason?: string }) =>
+    apiClient.post<Research>(`/research/${id}/decide/`, data),
+
+  publish: (id: string) =>
+    apiClient.post<Research>(`/research/${id}/publish/`, {}),
 }

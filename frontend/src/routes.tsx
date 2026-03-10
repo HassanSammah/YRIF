@@ -27,6 +27,7 @@ const ResearchManagement = lazy(() => import('@/pages/admin/ResearchManagement')
 const EventManagement = lazy(() => import('@/pages/admin/EventManagement'))
 const ContentManagement = lazy(() => import('@/pages/admin/ContentManagement'))
 const Reports = lazy(() => import('@/pages/admin/Reports'))
+const MentorshipManagement = lazy(() => import('@/pages/admin/MentorshipManagement'))
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user, isAdmin } = useAuth()
@@ -120,5 +121,9 @@ export const router = createBrowserRouter([
   {
     path: '/admin/reports',
     element: <RequireAdmin>{wrap(Reports)}</RequireAdmin>,
+  },
+  {
+    path: '/admin/mentorship',
+    element: <RequireAdmin>{wrap(MentorshipManagement)}</RequireAdmin>,
   },
 ])

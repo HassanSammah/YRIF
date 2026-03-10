@@ -4,6 +4,7 @@ from apps.core.models import BaseModel
 
 
 class MentorProfile(BaseModel):
+    """Mentorship capacity data for mentors (legacy - kept for DB compat)."""
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -21,36 +22,93 @@ class MentorProfile(BaseModel):
 class MentorshipRequest(BaseModel):
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"
+        APPROVED = "approved", "Approved"
         MATCHED = "matched", "Matched"
-        ACTIVE = "active", "Active"
-        COMPLETED = "completed", "Completed"
         DECLINED = "declined", "Declined"
+        CLOSED = "closed", "Closed"
 
     mentee = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="mentorship_requests",
+        related_name="mentorship_requests_as_mentee",
     )
-    mentor = models.ForeignKey(
+    preferred_mentor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="mentorship_assignments",
+        related_name="mentorship_requests_as_preferred",
     )
-    research_area = models.CharField(max_length=255)
+    topic = models.CharField(max_length=255)
     message = models.TextField(blank=True)
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+        db_index=True,
+    )
 
     def __str__(self):
-        return f"{self.mentee} → {self.mentor or 'Unmatched'}"
+        return f"{self.mentee} → {self.preferred_mentor or 'Any Mentor'} ({self.topic})"
+
+
+class MentorshipMatch(BaseModel):
+    class Status(models.TextChoices):
+        ACTIVE = "active", "Active"
+        COMPLETED = "completed", "Completed"
+        CANCELLED = "cancelled", "Cancelled"
+
+    request = models.OneToOneField(
+        MentorshipRequest,
+        on_delete=models.SET_NULL,
+        related_name="match",
+        null=True,
+        blank=True,
+    )
+    mentor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="mentorship_matches_as_mentor",
+    )
+    mentee = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="mentorship_matches_as_mentee",
+    )
+    matched_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="mentorship_matches_created",
+    )
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.ACTIVE,
+        db_index=True,
+    )
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.mentor} ↔ {self.mentee}"
 
 
 class MentorFeedback(BaseModel):
-    mentorship = models.ForeignKey(MentorshipRequest, on_delete=models.CASCADE, related_name="feedback")
-    given_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    rating = models.PositiveSmallIntegerField()
-    comments = models.TextField(blank=True)
+    match = models.ForeignKey(
+        MentorshipMatch,
+        on_delete=models.CASCADE,
+        related_name="feedback",
+        null=True,
+        blank=True,
+    )
+    given_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    rating = models.PositiveSmallIntegerField(null=True, blank=True)
+    feedback_text = models.TextField()
 
     def __str__(self):
-        return f"Feedback on {self.mentorship}"
+        return f"Feedback by {self.given_by} on {self.match}"

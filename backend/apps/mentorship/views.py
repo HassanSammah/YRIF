@@ -1,54 +1,247 @@
-from rest_framework import generics
+from django.db import models as django_models
+from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
+from rest_framework import generics, filters, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from apps.core.permissions import IsAdmin, IsApproved
-from .models import MentorProfile, MentorshipRequest
-from .serializers import MentorProfileSerializer, MentorshipRequestSerializer, MentorFeedbackSerializer
+from django_filters.rest_framework import DjangoFilterBackend
 
+from apps.core.permissions import IsAdmin, IsApproved
+from apps.accounts.models import UserRole, UserStatus
+from .models import MentorshipRequest, MentorshipMatch, MentorFeedback
+from .serializers import (
+    MentorDirectorySerializer,
+    PartnerDirectorySerializer,
+    MentorshipRequestSerializer,
+    MentorshipMatchSerializer,
+    MentorFeedbackSerializer,
+)
+from .emails import (
+    notify_mentorship_matched,
+    notify_mentorship_request_declined,
+    notify_match_completed,
+)
+
+User = get_user_model()
+
+
+# ── Mentor & Partner Directory ────────────────────────────────────────────────
 
 class MentorListView(generics.ListAPIView):
-    serializer_class = MentorProfileSerializer
+    """Public mentor directory – all active, approved mentors."""
+    serializer_class = MentorDirectorySerializer
     permission_classes = [AllowAny]
-    queryset = MentorProfile.objects.filter(is_available=True).select_related("user")
-    search_fields = ["expertise_areas", "user__first_name", "user__last_name"]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["first_name", "last_name", "mentor_profile__expertise_areas"]
+
+    def get_queryset(self):
+        return (
+            User.objects
+            .filter(role=UserRole.MENTOR, status=UserStatus.ACTIVE)
+            .select_related("mentor_profile", "profile")
+            .order_by("first_name")
+        )
 
 
 class MentorDetailView(generics.RetrieveAPIView):
-    serializer_class = MentorProfileSerializer
+    """Public single mentor profile."""
+    serializer_class = MentorDirectorySerializer
     permission_classes = [AllowAny]
-    queryset = MentorProfile.objects.all()
+
+    def get_queryset(self):
+        return (
+            User.objects
+            .filter(role=UserRole.MENTOR, status=UserStatus.ACTIVE)
+            .select_related("mentor_profile", "profile")
+        )
 
 
-class MentorshipRequestView(generics.ListCreateAPIView):
+class PartnerNetworkView(generics.ListAPIView):
+    """Public partner network directory – verified industry/community partners."""
+    serializer_class = PartnerDirectorySerializer
+    permission_classes = [AllowAny]
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    search_fields = ["first_name", "last_name", "partner_profile__org_name", "partner_profile__sector"]
+    filterset_fields = ["partner_profile__partner_type"]
+
+    def get_queryset(self):
+        return (
+            User.objects
+            .filter(role=UserRole.INDUSTRY_PARTNER, status=UserStatus.ACTIVE)
+            .select_related("partner_profile", "profile")
+            .order_by("partner_profile__org_name")
+        )
+
+
+# ── Mentorship Requests ───────────────────────────────────────────────────────
+
+class MentorshipRequestListCreateView(generics.ListCreateAPIView):
+    """
+    GET: List own requests.
+      - Mentees see their submitted requests.
+      - Mentors see requests that preferred them.
+      - Admins see all.
+    POST: Create a new mentorship request (any approved user except mentors/admins).
+    """
     serializer_class = MentorshipRequestSerializer
     permission_classes = [IsAuthenticated, IsApproved]
 
     def get_queryset(self):
-        return MentorshipRequest.objects.filter(mentee=self.request.user)
+        user = self.request.user
+        qs = MentorshipRequest.objects.select_related("mentee", "preferred_mentor")
+        if user.role in (UserRole.ADMIN, UserRole.STAFF, UserRole.PROGRAM_MANAGER):
+            return qs.order_by("-created_at")
+        if user.role == UserRole.MENTOR:
+            return qs.filter(preferred_mentor=user).order_by("-created_at")
+        return qs.filter(mentee=user).order_by("-created_at")
 
     def perform_create(self, serializer):
         serializer.save(mentee=self.request.user)
 
 
-class MatchMentorView(APIView):
-    """Admin manually assigns a mentor to a pending request."""
+class MentorshipRequestDetailView(generics.RetrieveUpdateAPIView):
+    """Admin: view & update a request status (approve / decline)."""
+    serializer_class = MentorshipRequestSerializer
+    permission_classes = [IsAdmin]
+    queryset = MentorshipRequest.objects.select_related("mentee", "preferred_mentor")
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        new_status = request.data.get("status")
+        allowed = {MentorshipRequest.Status.APPROVED, MentorshipRequest.Status.DECLINED}
+        if new_status not in allowed:
+            return Response(
+                {"detail": f"Use one of: {', '.join(allowed)}."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if instance.status in (MentorshipRequest.Status.MATCHED, MentorshipRequest.Status.CLOSED):
+            return Response(
+                {"detail": "Cannot update a matched or closed request."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        instance.status = new_status
+        instance.save(update_fields=["status", "updated_at"])
+        if new_status == MentorshipRequest.Status.DECLINED:
+            notify_mentorship_request_declined(instance.mentee, instance.topic)
+        return Response(MentorshipRequestSerializer(instance).data)
+
+
+# ── Mentorship Matches ────────────────────────────────────────────────────────
+
+class MatchCreateView(APIView):
+    """Admin: create a match for an approved (or pending) request."""
     permission_classes = [IsAdmin]
 
-    def patch(self, request, pk):
-        mentorship = generics.get_object_or_404(MentorshipRequest, pk=pk)
+    def post(self, request, pk):
+        mentorship_request = get_object_or_404(MentorshipRequest, pk=pk)
+
+        if mentorship_request.status in (
+            MentorshipRequest.Status.MATCHED,
+            MentorshipRequest.Status.CLOSED,
+            MentorshipRequest.Status.DECLINED,
+        ):
+            return Response(
+                {"detail": "Request is not in a matchable state."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         mentor_id = request.data.get("mentor_id")
-        mentorship.mentor_id = mentor_id
-        mentorship.status = MentorshipRequest.Status.MATCHED
-        mentorship.save(update_fields=["mentor", "status"])
-        # TODO: Notify mentee and mentor
-        return Response(MentorshipRequestSerializer(mentorship).data)
+        if not mentor_id:
+            return Response({"detail": "mentor_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        mentor = get_object_or_404(
+            User, pk=mentor_id, role=UserRole.MENTOR, status=UserStatus.ACTIVE
+        )
+
+        match = MentorshipMatch.objects.create(
+            request=mentorship_request,
+            mentor=mentor,
+            mentee=mentorship_request.mentee,
+            matched_by=request.user,
+        )
+        mentorship_request.status = MentorshipRequest.Status.MATCHED
+        mentorship_request.save(update_fields=["status", "updated_at"])
+        notify_mentorship_matched(mentor, mentorship_request.mentee, mentorship_request.topic)
+        return Response(MentorshipMatchSerializer(match).data, status=status.HTTP_201_CREATED)
 
 
-class FeedbackView(generics.CreateAPIView):
+class MentorshipMatchListView(generics.ListAPIView):
+    """List matches for the current user (mentor/mentee) or all for admin."""
+    serializer_class = MentorshipMatchSerializer
+    permission_classes = [IsAuthenticated, IsApproved]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["status"]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = MentorshipMatch.objects.select_related(
+            "mentor", "mentee", "matched_by", "request"
+        ).order_by("-created_at")
+        if user.role in (UserRole.ADMIN, UserRole.STAFF, UserRole.PROGRAM_MANAGER):
+            return qs
+        if user.role == UserRole.MENTOR:
+            return qs.filter(mentor=user)
+        return qs.filter(mentee=user)
+
+
+class MentorshipMatchDetailView(generics.RetrieveUpdateAPIView):
+    """Retrieve or update a match (participants or admin)."""
+    serializer_class = MentorshipMatchSerializer
+    permission_classes = [IsAuthenticated, IsApproved]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = MentorshipMatch.objects.select_related("mentor", "mentee", "matched_by", "request")
+        if user.role in (UserRole.ADMIN, UserRole.STAFF, UserRole.PROGRAM_MANAGER):
+            return qs
+        return qs.filter(
+            django_models.Q(mentor=user) | django_models.Q(mentee=user)
+        )
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        new_status = request.data.get("status")
+        notes = request.data.get("notes", instance.notes)
+
+        if new_status and new_status not in MentorshipMatch.Status.values:
+            return Response({"detail": "Invalid status."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if new_status:
+            instance.status = new_status
+        instance.notes = notes
+        instance.save(update_fields=["status", "notes", "updated_at"])
+
+        if new_status == MentorshipMatch.Status.COMPLETED:
+            # Close the originating request
+            if instance.request:
+                instance.request.status = MentorshipRequest.Status.CLOSED
+                instance.request.save(update_fields=["status", "updated_at"])
+            notify_match_completed(instance.mentor, instance.mentee, self._get_topic(instance))
+
+        return Response(MentorshipMatchSerializer(instance).data)
+
+    def _get_topic(self, match):
+        return match.request.topic if match.request else "N/A"
+
+
+# ── Feedback ──────────────────────────────────────────────────────────────────
+
+class MatchFeedbackCreateView(generics.CreateAPIView):
+    """Submit feedback for a mentorship match."""
     serializer_class = MentorFeedbackSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsApproved]
 
     def perform_create(self, serializer):
-        mentorship = generics.get_object_or_404(MentorshipRequest, pk=self.kwargs["pk"])
-        serializer.save(given_by=self.request.user, mentorship=mentorship)
+        match = get_object_or_404(MentorshipMatch, pk=self.kwargs["pk"])
+        serializer.save(given_by=self.request.user, match=match)
+
+
+class MatchFeedbackListView(generics.ListAPIView):
+    """List feedback for a specific match."""
+    serializer_class = MentorFeedbackSerializer
+    permission_classes = [IsAuthenticated, IsApproved]
+
+    def get_queryset(self):
+        match = get_object_or_404(MentorshipMatch, pk=self.kwargs["pk"])
+        return MentorFeedback.objects.filter(match=match).select_related("given_by")

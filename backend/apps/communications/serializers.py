@@ -5,8 +5,8 @@ from .models import ContactInquiry, FAQ, Notification
 class ContactInquirySerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactInquiry
-        fields = ["id", "name", "email", "subject", "message", "created_at"]
-        read_only_fields = ["id", "created_at"]
+        fields = ["id", "name", "email", "subject", "message", "is_resolved", "created_at"]
+        read_only_fields = ["id", "is_resolved", "created_at"]
 
 
 class FAQSerializer(serializers.ModelSerializer):

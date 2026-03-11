@@ -4,10 +4,13 @@ import { useForm, Controller } from 'react-hook-form'
 import {
   Plus, Pencil, Trash2, Search, Loader2, X,
   BookOpen, FileText, Database, Video, Play, Eye, Download,
+  Bell, Newspaper,
 } from 'lucide-react'
 import { resourcesApi } from '@/api/resources'
 import type { Resource, Webinar, ResourceType, ResourceWriteData, WebinarWriteData } from '@/types/resources'
 import { RESOURCE_TYPE_LABELS } from '@/types/resources'
+import { adminApi } from '@/api/admin'
+import type { Announcement, NewsPost } from '@/types/admin'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -784,36 +787,542 @@ function WebinarsTab() {
   )
 }
 
+// ── Announcement Form Modal ───────────────────────────────────────────────────
+
+interface AnnouncementFormProps {
+  item?: Announcement
+  onClose: () => void
+}
+
+function AnnouncementFormModal({ item, onClose }: AnnouncementFormProps) {
+  const qc = useQueryClient()
+  const isEdit = !!item
+
+  const { register, handleSubmit, formState: { errors } } = useForm<{
+    title: string
+    content: string
+    is_published: boolean
+  }>({
+    defaultValues: {
+      title: item?.title ?? '',
+      content: item?.content ?? '',
+      is_published: item?.is_published ?? false,
+    },
+  })
+
+  const mutation = useMutation(
+    (data: { title: string; content: string; is_published: boolean }) =>
+      isEdit
+        ? adminApi.updateAnnouncement(item!.id, data)
+        : adminApi.createAnnouncement(data),
+    {
+      onSuccess: () => {
+        qc.invalidateQueries('admin-announcements')
+        onClose()
+      },
+    },
+  )
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6 overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg my-auto">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h2 className="text-base font-bold text-gray-900">
+            {isEdit ? 'Edit Announcement' : 'New Announcement'}
+          </h2>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100">
+            <X className="w-4 h-4 text-gray-500" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="p-6 space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Title <span className="text-red-500">*</span>
+            </label>
+            <input
+              {...register('title', { required: 'Title is required' })}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title.message}</p>}
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Content <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              {...register('content', { required: 'Content is required' })}
+              rows={6}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            />
+            {errors.content && <p className="mt-1 text-xs text-red-600">{errors.content.message}</p>}
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              {...register('is_published')}
+              type="checkbox"
+              id="ann-published"
+              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <label htmlFor="ann-published" className="text-sm text-gray-700">Publish immediately</label>
+          </div>
+          {mutation.isError && (
+            <p className="text-xs text-red-600">Something went wrong. Please try again.</p>
+          )}
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={onClose}
+              className="rounded-xl border border-gray-200 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+              Cancel
+            </button>
+            <button type="submit" disabled={mutation.isLoading}
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+              {mutation.isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isEdit ? 'Save Changes' : 'Create'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+// ── Announcements Tab ─────────────────────────────────────────────────────────
+
+function AnnouncementsTab() {
+  const qc = useQueryClient()
+  const [search, setSearch] = useState('')
+  const [pubFilter, setPubFilter] = useState('')
+  const [page, setPage] = useState(1)
+  const [editTarget, setEditTarget] = useState<Announcement | undefined>()
+  const [showCreate, setShowCreate] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<Announcement | undefined>()
+
+  const { data, isLoading, isFetching } = useQuery(
+    ['admin-announcements', search, pubFilter, page],
+    () =>
+      adminApi
+        .listAnnouncements({
+          search: search || undefined,
+          is_published: pubFilter === '' ? undefined : pubFilter === 'true',
+          page,
+        })
+        .then((r) => r.data),
+    { keepPreviousData: true },
+  )
+
+  const deleteMutation = useMutation(
+    (id: string) => adminApi.deleteAnnouncement(id),
+    { onSuccess: () => { qc.invalidateQueries('admin-announcements'); setDeleteTarget(undefined) } },
+  )
+
+  const totalPages = Math.ceil((data?.count ?? 0) / 20)
+
+  return (
+    <>
+      <div className="flex flex-wrap gap-3 items-center mb-4">
+        <div className="relative flex-1 min-w-48">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+            placeholder="Search announcements…"
+            className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <select
+          value={pubFilter}
+          onChange={(e) => { setPubFilter(e.target.value); setPage(1) }}
+          className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">All</option>
+          <option value="true">Published</option>
+          <option value="false">Draft</option>
+        </select>
+        {isFetching && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
+        <button
+          onClick={() => setShowCreate(true)}
+          className="ml-auto inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+        >
+          <Plus className="w-4 h-4" /> New Announcement
+        </button>
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        {isLoading ? (
+          <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-gray-300" /></div>
+        ) : !data?.results.length ? (
+          <div className="py-16 text-center text-sm text-gray-400">No announcements found.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 font-medium">Title</th>
+                  <th className="text-left px-4 py-3 font-medium">Author</th>
+                  <th className="text-left px-4 py-3 font-medium">Status</th>
+                  <th className="text-left px-4 py-3 font-medium">Published</th>
+                  <th className="text-left px-4 py-3 font-medium">Created</th>
+                  <th className="text-right px-4 py-3 font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {data.results.map((ann) => (
+                  <tr key={ann.id} className="hover:bg-gray-50/50">
+                    <td className="px-4 py-3 max-w-xs">
+                      <div className="flex items-start gap-2">
+                        <Bell className="w-4 h-4 text-pink-400 mt-0.5 flex-shrink-0" />
+                        <p className="font-medium text-gray-900 line-clamp-1">{ann.title}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-500">{ann.author_name ?? '—'}</td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ann.is_published ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                        {ann.is_published ? 'Published' : 'Draft'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-400">
+                      {ann.published_at ? new Date(ann.published_at).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-400">
+                      {new Date(ann.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end gap-1.5">
+                        <button onClick={() => setEditTarget(ann)}
+                          className="rounded-md bg-gray-100 p-1.5 text-gray-500 hover:bg-gray-200">
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={() => setDeleteTarget(ann)}
+                          className="rounded-md bg-red-50 p-1.5 text-red-500 hover:bg-red-100">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {data && data.count > 20 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 text-sm text-gray-500">
+            <span>Page {page} of {totalPages}</span>
+            <div className="flex gap-1">
+              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
+                className="rounded-lg p-1.5 hover:bg-gray-100 disabled:opacity-40">‹</button>
+              <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                className="rounded-lg p-1.5 hover:bg-gray-100 disabled:opacity-40">›</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {showCreate && <AnnouncementFormModal onClose={() => setShowCreate(false)} />}
+      {editTarget && <AnnouncementFormModal item={editTarget} onClose={() => setEditTarget(undefined)} />}
+      {deleteTarget && (
+        <DeleteConfirm
+          title={deleteTarget.title}
+          loading={deleteMutation.isLoading}
+          onConfirm={() => deleteMutation.mutate(deleteTarget.id)}
+          onCancel={() => setDeleteTarget(undefined)}
+        />
+      )}
+    </>
+  )
+}
+
+// ── News Form Modal ───────────────────────────────────────────────────────────
+
+interface NewsFormProps {
+  item?: NewsPost
+  onClose: () => void
+}
+
+function NewsFormModal({ item, onClose }: NewsFormProps) {
+  const qc = useQueryClient()
+  const isEdit = !!item
+
+  const { register, handleSubmit, formState: { errors } } = useForm<{
+    title: string
+    slug: string
+    body: string
+    is_published: boolean
+  }>({
+    defaultValues: {
+      title: item?.title ?? '',
+      slug: item?.slug ?? '',
+      body: item?.body ?? '',
+      is_published: item?.is_published ?? false,
+    },
+  })
+
+  const mutation = useMutation(
+    (data: { title: string; slug: string; body: string; is_published: boolean }) =>
+      isEdit
+        ? adminApi.updateNews(item!.slug, data)
+        : adminApi.createNews(data),
+    {
+      onSuccess: () => {
+        qc.invalidateQueries('admin-news')
+        onClose()
+      },
+    },
+  )
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6 overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg my-auto">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h2 className="text-base font-bold text-gray-900">
+            {isEdit ? 'Edit News Post' : 'New News Post'}
+          </h2>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100">
+            <X className="w-4 h-4 text-gray-500" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="p-6 space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Title <span className="text-red-500">*</span>
+            </label>
+            <input
+              {...register('title', { required: 'Title is required' })}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title.message}</p>}
+          </div>
+          {!isEdit && (
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Slug <span className="text-red-500">*</span>
+                <span className="ml-1 font-normal text-gray-400">(URL-friendly, e.g. my-news-post)</span>
+              </label>
+              <input
+                {...register('slug', { required: 'Slug is required', pattern: { value: /^[a-z0-9-]+$/, message: 'Lowercase letters, numbers and hyphens only' } })}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {errors.slug && <p className="mt-1 text-xs text-red-600">{errors.slug.message}</p>}
+            </div>
+          )}
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Body <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              {...register('body', { required: 'Body is required' })}
+              rows={8}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            />
+            {errors.body && <p className="mt-1 text-xs text-red-600">{errors.body.message}</p>}
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              {...register('is_published')}
+              type="checkbox"
+              id="news-published"
+              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <label htmlFor="news-published" className="text-sm text-gray-700">Publish immediately</label>
+          </div>
+          {mutation.isError && (
+            <p className="text-xs text-red-600">Something went wrong. Please try again.</p>
+          )}
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={onClose}
+              className="rounded-xl border border-gray-200 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+              Cancel
+            </button>
+            <button type="submit" disabled={mutation.isLoading}
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+              {mutation.isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isEdit ? 'Save Changes' : 'Publish'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+// ── News Tab ──────────────────────────────────────────────────────────────────
+
+function NewsTab() {
+  const qc = useQueryClient()
+  const [search, setSearch] = useState('')
+  const [pubFilter, setPubFilter] = useState('')
+  const [page, setPage] = useState(1)
+  const [editTarget, setEditTarget] = useState<NewsPost | undefined>()
+  const [showCreate, setShowCreate] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<NewsPost | undefined>()
+
+  const { data, isLoading, isFetching } = useQuery(
+    ['admin-news', search, pubFilter, page],
+    () =>
+      adminApi
+        .listNews({
+          search: search || undefined,
+          is_published: pubFilter === '' ? undefined : pubFilter === 'true',
+          page,
+        })
+        .then((r) => r.data),
+    { keepPreviousData: true },
+  )
+
+  const deleteMutation = useMutation(
+    (slug: string) => adminApi.deleteNews(slug),
+    { onSuccess: () => { qc.invalidateQueries('admin-news'); setDeleteTarget(undefined) } },
+  )
+
+  const totalPages = Math.ceil((data?.count ?? 0) / 20)
+
+  return (
+    <>
+      <div className="flex flex-wrap gap-3 items-center mb-4">
+        <div className="relative flex-1 min-w-48">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+            placeholder="Search news posts…"
+            className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <select
+          value={pubFilter}
+          onChange={(e) => { setPubFilter(e.target.value); setPage(1) }}
+          className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">All</option>
+          <option value="true">Published</option>
+          <option value="false">Draft</option>
+        </select>
+        {isFetching && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
+        <button
+          onClick={() => setShowCreate(true)}
+          className="ml-auto inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+        >
+          <Plus className="w-4 h-4" /> New Post
+        </button>
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        {isLoading ? (
+          <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-gray-300" /></div>
+        ) : !data?.results.length ? (
+          <div className="py-16 text-center text-sm text-gray-400">No news posts found.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 font-medium">Title</th>
+                  <th className="text-left px-4 py-3 font-medium">Slug</th>
+                  <th className="text-left px-4 py-3 font-medium">Author</th>
+                  <th className="text-left px-4 py-3 font-medium">Status</th>
+                  <th className="text-left px-4 py-3 font-medium">Published</th>
+                  <th className="text-right px-4 py-3 font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {data.results.map((post) => (
+                  <tr key={post.id} className="hover:bg-gray-50/50">
+                    <td className="px-4 py-3 max-w-xs">
+                      <div className="flex items-start gap-2">
+                        <Newspaper className="w-4 h-4 text-indigo-400 mt-0.5 flex-shrink-0" />
+                        <p className="font-medium text-gray-900 line-clamp-1">{post.title}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-400 font-mono">{post.slug}</td>
+                    <td className="px-4 py-3 text-xs text-gray-500">{post.author_name ?? '—'}</td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${post.is_published ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                        {post.is_published ? 'Published' : 'Draft'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-400">
+                      {post.published_at ? new Date(post.published_at).toLocaleDateString() : '—'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end gap-1.5">
+                        <button onClick={() => setEditTarget(post)}
+                          className="rounded-md bg-gray-100 p-1.5 text-gray-500 hover:bg-gray-200">
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={() => setDeleteTarget(post)}
+                          className="rounded-md bg-red-50 p-1.5 text-red-500 hover:bg-red-100">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {data && data.count > 20 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 text-sm text-gray-500">
+            <span>Page {page} of {totalPages}</span>
+            <div className="flex gap-1">
+              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
+                className="rounded-lg p-1.5 hover:bg-gray-100 disabled:opacity-40">‹</button>
+              <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                className="rounded-lg p-1.5 hover:bg-gray-100 disabled:opacity-40">›</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {showCreate && <NewsFormModal onClose={() => setShowCreate(false)} />}
+      {editTarget && <NewsFormModal item={editTarget} onClose={() => setEditTarget(undefined)} />}
+      {deleteTarget && (
+        <DeleteConfirm
+          title={deleteTarget.title}
+          loading={deleteMutation.isLoading}
+          onConfirm={() => deleteMutation.mutate(deleteTarget.slug)}
+          onCancel={() => setDeleteTarget(undefined)}
+        />
+      )}
+    </>
+  )
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function ContentManagement() {
-  const [tab, setTab] = useState<'resources' | 'webinars'>('resources')
+  const [tab, setTab] = useState<'resources' | 'webinars' | 'announcements' | 'news'>('resources')
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Content Management</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Manage learning resources and webinars.</p>
+          <p className="text-sm text-gray-500 mt-0.5">Manage resources, webinars, announcements, and news.</p>
         </div>
       </div>
 
-      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit mb-6">
-        {(['resources', 'webinars'] as const).map((t) => (
+      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit mb-6 flex-wrap">
+        {([
+          { key: 'resources', label: 'Resources' },
+          { key: 'webinars', label: 'Webinars' },
+          { key: 'announcements', label: 'Announcements' },
+          { key: 'news', label: 'News & Blog' },
+        ] as const).map(({ key, label }) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`rounded-lg px-5 py-1.5 text-sm font-medium transition-colors capitalize ${
-              tab === t ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+            key={key}
+            onClick={() => setTab(key)}
+            className={`rounded-lg px-5 py-1.5 text-sm font-medium transition-colors ${
+              tab === key ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            {t === 'resources' ? 'Resources' : 'Webinars'}
+            {label}
           </button>
         ))}
       </div>
 
       {tab === 'resources' && <ResourcesTab />}
       {tab === 'webinars' && <WebinarsTab />}
+      {tab === 'announcements' && <AnnouncementsTab />}
+      {tab === 'news' && <NewsTab />}
     </div>
   )
 }

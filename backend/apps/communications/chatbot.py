@@ -20,32 +20,50 @@ def _get_sarufi():
 
 
 def send_chatbot_message(chat_id: str, message: str) -> dict:
-    """Send a message to the YRIF Chat bot and return the response dict."""
+    """Send a message to the YRIF Chat bot and return the response dict.
+
+    Uses sarufi.chat(bot_id, chat_id, message) — the SDK v0.1.x API.
+    """
     if not settings.SARUFI_API_KEY:
-        return {"reply": "The chatbot is not configured yet.", "actions": []}
+        return {"reply": "The chatbot is not configured yet."}
+
+    if not settings.SARUFI_BOT_ID:
+        return {"reply": "YRIF Chat is not yet configured. Please contact support at info@yriftz.org."}
 
     sarufi = _get_sarufi()
     if sarufi is None:
-        return {"reply": "Chatbot service is unavailable. Please try again later.", "actions": []}
+        return {"reply": "Chatbot service is unavailable. Please try again later."}
 
     try:
         bot_id = int(settings.SARUFI_BOT_ID)
-        bot = sarufi.get_bot(id=bot_id)
-        response = bot.respond(message=message, chat_id=str(chat_id), message_type="text")
+        response = sarufi.chat(
+            bot_id=bot_id,
+            chat_id=str(chat_id),
+            message=message,
+            message_type="text",
+            channel="general",
+        )
 
-        # Sarufi returns {"message": [{"type": "text", "content": "..."}], ...}
-        messages = response.get("message", [])
-        if messages:
-            text_parts = [
-                m.get("content", "") or m.get("text", "")
-                for m in messages
-                if isinstance(m, dict)
-            ]
-            reply = " ".join(filter(None, text_parts)) or "I didn't understand that. Please rephrase."
+        # Response is a dict: {"message": [...], "memory": {...}, ...}
+        # or {"message": "reply text"} depending on version
+        if isinstance(response, dict):
+            msg = response.get("message", "")
+            if isinstance(msg, list):
+                parts = []
+                for m in msg:
+                    if isinstance(m, dict):
+                        parts.append(m.get("content") or m.get("text") or "")
+                    elif isinstance(m, str):
+                        parts.append(m)
+                reply = " ".join(filter(None, parts)) or "I didn't understand that."
+            elif isinstance(msg, str):
+                reply = msg or "I didn't understand that."
+            else:
+                reply = str(msg) if msg else "I didn't understand that."
         else:
-            reply = response.get("reply", "I didn't understand that. Please rephrase.")
+            reply = str(response)
 
-        return {"reply": reply, "raw": response}
+        return {"reply": reply}
 
     except Exception as exc:
         logger.error("Sarufi chatbot error: %s", exc)

@@ -2,9 +2,22 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+
+def api_root(request):
+    return JsonResponse({
+        "name": "YRIF API",
+        "version": "1.0.0",
+        "status": "ok",
+        "docs": "/api/docs/",
+        "admin": "/admin/",
+    })
+
+
 urlpatterns = [
+    path("", api_root, name="home"),
     path("admin/", admin.site.urls),
     # API schema
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),

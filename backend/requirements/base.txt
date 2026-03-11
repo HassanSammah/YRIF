@@ -16,3 +16,4 @@ requests>=2.31
 reportlab>=4.1
 supabase>=2.3
 google-auth>=2.29
+sarufi>=0.5

@@ -133,11 +133,12 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-# Briq Auth / SMS / OTP
-BRIQ_API_KEY = config("BRIQ_API_KEY", default="")
+# Briq Auth / SMS / OTP  (YRIF-App-Dev)
+BRIQ_API_KEY = config("BRIQ_API_KEY", default="-7UxVFkdeQXKhKY1wMGrgJQpdw_z3slbkGBRKyJgwPw")
 BRIQ_APP_KEY = config("BRIQ_APP_KEY", default="briq_mkb71g9z39n4frg0")
 BRIQ_SMS_SENDER = config("BRIQ_SMS_SENDER", default="YRIF")
 BRIQ_BASE_URL = "https://karibu.briq.tz"
+BRIQ_WEBHOOK_SECRET = config("BRIQ_WEBHOOK_SECRET", default="")  # set in BRIQ dashboard & env
 
 # Google OAuth
 GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default="350998195827-59nlf2oraqutqvags0f5qah6k6ggprg7.apps.googleusercontent.com")
@@ -146,9 +147,9 @@ GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default="350998195827-59nlf2oraqut
 SUPABASE_URL = config("SUPABASE_URL", default="")
 SUPABASE_KEY = config("SUPABASE_KEY", default="")
 
-# Sarufi AI
-SARUFI_API_KEY = config("SARUFI_API_KEY", default="")
-SARUFI_BOT_ID = config("SARUFI_BOT_ID", default="")
+# Sarufi AI — YRIF Chat
+SARUFI_API_KEY = config("SARUFI_API_KEY", default="a81ef596bb5373986c9b85731e65ef8b7028432311f502f7ef413f2c54897bbf")
+SARUFI_BOT_ID = config("SARUFI_BOT_ID", default="")  # set to your bot ID from Sarufi dashboard
 
 # Email
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -157,4 +158,6 @@ EMAIL_PORT = config("EMAIL_PORT", default=587, cast=int)
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
-DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@yrif.or.tz")
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@yriftz.org")
+CONTACT_EMAIL = config("CONTACT_EMAIL", default="info@yriftz.org")
+ADMIN_EMAIL_LIST = [CONTACT_EMAIL]

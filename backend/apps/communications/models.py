@@ -51,6 +51,7 @@ class Notification(BaseModel):
     subject = models.CharField(max_length=300, blank=True)
     body = models.TextField()
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    is_read = models.BooleanField(default=False, db_index=True)
     sent_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -58,3 +59,44 @@ class Notification(BaseModel):
 
     def __str__(self):
         return f"[{self.channel}] → {self.recipient}"
+
+
+class Conversation(BaseModel):
+    class ConvType(models.TextChoices):
+        USER_ADMIN = "user_admin", "User ↔ Admin"
+        PEER = "peer", "Peer"
+
+    conv_type = models.CharField(
+        max_length=20, choices=ConvType.choices, default=ConvType.USER_ADMIN
+    )
+    participants = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="conversations",
+        blank=True,
+    )
+    subject = models.CharField(max_length=300, blank=True)
+
+    class Meta:
+        ordering = ["-updated_at"]
+
+    def __str__(self):
+        return f"Conversation [{self.conv_type}] – {self.id}"
+
+
+class Message(BaseModel):
+    conversation = models.ForeignKey(
+        Conversation, on_delete=models.CASCADE, related_name="messages"
+    )
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="sent_messages",
+    )
+    text = models.TextField()
+    is_read = models.BooleanField(default=False, db_index=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Msg from {self.sender_id} in {self.conversation_id}"

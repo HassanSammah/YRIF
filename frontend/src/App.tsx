@@ -1,6 +1,7 @@
 import { RouterProvider } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { router } from './routes'
+import ChatWidget from '@/components/chatbot/ChatWidget'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -12,6 +13,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
+      <ChatWidget />
     </QueryClientProvider>
   )
 }

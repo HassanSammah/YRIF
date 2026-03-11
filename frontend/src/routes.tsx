@@ -28,6 +28,8 @@ const EventManagement = lazy(() => import('@/pages/admin/EventManagement'))
 const ContentManagement = lazy(() => import('@/pages/admin/ContentManagement'))
 const Reports = lazy(() => import('@/pages/admin/Reports'))
 const MentorshipManagement = lazy(() => import('@/pages/admin/MentorshipManagement'))
+const Contact = lazy(() => import('@/pages/contact/Contact'))
+const Notifications = lazy(() => import('@/pages/notifications/Notifications'))
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user, isAdmin } = useAuth()
@@ -96,6 +98,11 @@ export const router = createBrowserRouter([
   {
     path: '/messages',
     element: <RequireAuth>{wrap(Messages)}</RequireAuth>,
+  },
+  { path: '/contact', element: wrap(Contact) },
+  {
+    path: '/notifications',
+    element: <RequireAuth>{wrap(Notifications)}</RequireAuth>,
   },
   // Admin routes
   {

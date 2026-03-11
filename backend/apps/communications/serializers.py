@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ContactInquiry, FAQ, Notification
+from .models import ContactInquiry, FAQ, Notification, Conversation, Message
 
 
 class ContactInquirySerializer(serializers.ModelSerializer):
@@ -12,11 +12,63 @@ class ContactInquirySerializer(serializers.ModelSerializer):
 class FAQSerializer(serializers.ModelSerializer):
     class Meta:
         model = FAQ
-        fields = ["id", "question", "answer", "order"]
+        fields = ["id", "question", "answer", "order", "is_published"]
+        read_only_fields = ["id"]
 
 
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
-        fields = ["id", "channel", "subject", "body", "status", "sent_at", "created_at"]
+        fields = ["id", "channel", "subject", "body", "status", "is_read", "sent_at", "created_at"]
         read_only_fields = ["id", "created_at"]
+
+
+class ConversationParticipantSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    full_name = serializers.SerializerMethodField()
+    email = serializers.EmailField()
+
+    def get_full_name(self, obj):
+        return obj.get_full_name() or obj.email
+
+
+class ConversationSerializer(serializers.ModelSerializer):
+    participants = ConversationParticipantSerializer(many=True, read_only=True)
+    participant_ids = serializers.ListField(
+        child=serializers.UUIDField(), write_only=True, required=False
+    )
+    last_message = serializers.SerializerMethodField()
+    unread_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Conversation
+        fields = [
+            "id", "conv_type", "subject", "participants", "participant_ids",
+            "last_message", "unread_count", "created_at", "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+    def get_last_message(self, obj):
+        last = obj.messages.last()
+        if last:
+            return {"text": last.text, "sender_id": str(last.sender_id), "created_at": last.created_at}
+        return None
+
+    def get_unread_count(self, obj):
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            return obj.messages.filter(is_read=False).exclude(sender=request.user).count()
+        return 0
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    sender_name = serializers.SerializerMethodField()
+    sender_id = serializers.UUIDField(source="sender.id", read_only=True)
+
+    class Meta:
+        model = Message
+        fields = ["id", "conversation", "sender_id", "sender_name", "text", "is_read", "created_at"]
+        read_only_fields = ["id", "conversation", "sender_id", "sender_name", "is_read", "created_at"]
+
+    def get_sender_name(self, obj):
+        return obj.sender.get_full_name() or obj.sender.email

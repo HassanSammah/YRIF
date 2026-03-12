@@ -68,7 +68,7 @@ export default function ChatWidget() {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label="Open YRIF Chat"
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 flex items-center justify-center transition-all hover:scale-105"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#093344] text-white shadow-lg hover:bg-[#0D9488] flex items-center justify-center transition-all hover:scale-105"
       >
         {open ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
       </button>
@@ -77,7 +77,7 @@ export default function ChatWidget() {
       {open && (
         <div className="fixed bottom-24 right-6 z-50 w-80 sm:w-96 max-h-[70vh] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-200">
           {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+          <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-[#093344] to-[#0D9488] text-white">
             <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
               <Bot className="w-4 h-4" />
             </div>
@@ -98,14 +98,14 @@ export default function ChatWidget() {
             {messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {msg.role === 'bot' && (
-                  <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5 mr-2">
-                    <Bot className="w-3 h-3 text-blue-600" />
+                  <div className="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0 mt-0.5 mr-2">
+                    <Bot className="w-3 h-3 text-[#0D9488]" />
                   </div>
                 )}
                 <div
                   className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
                     msg.role === 'user'
-                      ? 'bg-blue-600 text-white rounded-br-md'
+                      ? 'bg-[#093344] text-white rounded-br-md'
                       : 'bg-white text-gray-800 border border-gray-100 shadow-sm rounded-bl-md'
                   }`}
                 >
@@ -115,8 +115,8 @@ export default function ChatWidget() {
             ))}
             {loading && (
               <div className="flex justify-start">
-                <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5 mr-2">
-                  <Bot className="w-3 h-3 text-blue-600" />
+                <div className="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0 mt-0.5 mr-2">
+                  <Bot className="w-3 h-3 text-[#0D9488]" />
                 </div>
                 <div className="bg-white border border-gray-100 shadow-sm rounded-2xl rounded-bl-md px-4 py-2.5">
                   <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
@@ -141,7 +141,7 @@ export default function ChatWidget() {
                     setInput(prompt)
                     setTimeout(send, 0)
                   }}
-                  className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs text-blue-700 hover:bg-blue-100 transition-colors"
+                  className="rounded-full border border-[#0D9488]/30 bg-teal-50 px-3 py-1 text-xs text-[#093344] hover:bg-teal-100 transition-colors"
                 >
                   {prompt}
                 </button>
@@ -157,12 +157,12 @@ export default function ChatWidget() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') send() }}
                 placeholder="Ask YRIF Chat…"
-                className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] transition-all duration-150"
               />
               <button
                 onClick={send}
                 disabled={!input.trim() || loading}
-                className="p-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40"
+                className="rounded-xl bg-[#093344] hover:bg-[#0D9488] p-2.5 text-white transition-colors disabled:opacity-50"
               >
                 <Send className="w-4 h-4" />
               </button>

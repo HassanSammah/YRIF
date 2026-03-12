@@ -2,10 +2,17 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from 'react-query'
 import { useForm } from 'react-hook-form'
-import { Upload, ArrowLeft, Loader2, CheckCircle } from 'lucide-react'
+import { Upload, ArrowLeft, CheckCircle } from 'lucide-react'
 import { researchApi } from '@/api/research'
 import { RESEARCH_CATEGORY_LABELS } from '@/types/research'
 import type { ResearchCategory } from '@/types/research'
+import {
+  Field,
+  inputCls,
+  PrimaryButton,
+  SecondaryButton,
+  FormError,
+} from '@/components/ui'
 
 interface FormValues {
   title: string
@@ -60,20 +67,12 @@ export default function SubmitResearch() {
             : 'Your draft has been saved. Submit it from My Research when ready.'}
         </p>
         <div className="flex gap-3 justify-center">
-          <button
-            type="button"
-            onClick={() => navigate('/research/my')}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-          >
+          <PrimaryButton type="button" onClick={() => navigate('/research/my')}>
             View My Research
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/research')}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
+          </PrimaryButton>
+          <SecondaryButton type="button" onClick={() => navigate('/research')}>
             Browse Repository
-          </button>
+          </SecondaryButton>
         </div>
       </div>
     )
@@ -97,79 +96,75 @@ export default function SubmitResearch() {
       </div>
 
       <form onSubmit={handleSubmit((values) => createMutation.mutate(values))} className="space-y-5">
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-5">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
           {/* Title */}
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-              Title <span className="text-red-500">*</span>
-            </label>
+          <Field id="title" label="Title" required error={errors.title?.message}>
             <input
               id="title"
               {...register('title', { required: 'Title is required' })}
               placeholder="Research title"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputCls(!!errors.title)}
             />
-            {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>}
-          </div>
+          </Field>
 
           {/* Abstract */}
-          <div>
-            <label htmlFor="abstract" className="block text-sm font-medium text-gray-700 mb-1">
-              Abstract <span className="text-red-500">*</span>
-            </label>
+          <Field id="abstract" label="Abstract" required error={errors.abstract?.message}>
             <textarea
               id="abstract"
               {...register('abstract', { required: 'Abstract is required' })}
               rows={5}
               placeholder="Brief summary of your research (200–500 words recommended)"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputCls(!!errors.abstract, 'resize-none')}
             />
-            {errors.abstract && <p className="text-xs text-red-500 mt-1">{errors.abstract.message}</p>}
-          </div>
+          </Field>
 
           {/* Category */}
-          <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-              Category <span className="text-red-500">*</span>
-            </label>
-            <select
-              id="category"
-              {...register('category', { required: 'Category is required' })}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select a category</option>
-              {(Object.entries(RESEARCH_CATEGORY_LABELS) as [ResearchCategory, string][]).map(
-                ([val, label]) => (
-                  <option key={val} value={val}>{label}</option>
-                ),
-              )}
-            </select>
-            {errors.category && <p className="text-xs text-red-500 mt-1">{errors.category.message}</p>}
-          </div>
+          <Field id="category" label="Category" required error={errors.category?.message}>
+            <div className="relative">
+              <select
+                id="category"
+                {...register('category', { required: 'Category is required' })}
+                className={inputCls(!!errors.category, 'appearance-none pr-10 cursor-pointer')}
+              >
+                <option value="">Select a category</option>
+                {(Object.entries(RESEARCH_CATEGORY_LABELS) as [ResearchCategory, string][]).map(
+                  ([val, label]) => (
+                    <option key={val} value={val}>{label}</option>
+                  ),
+                )}
+              </select>
+              <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+          </Field>
 
           {/* Keywords */}
-          <div>
-            <label htmlFor="keywords" className="block text-sm font-medium text-gray-700 mb-1">
-              Keywords <span className="text-xs text-gray-400">(comma-separated)</span>
-            </label>
+          <Field
+            id="keywords"
+            label="Keywords"
+            hint="Separate multiple keywords with commas"
+          >
             <input
               id="keywords"
               {...register('keywords')}
               placeholder="e.g. climate change, water quality, Tanzania"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputCls(false)}
             />
-          </div>
+          </Field>
         </div>
 
         {/* File uploads */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-5">
-          <h2 className="text-sm font-semibold text-gray-700">Documents</h2>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+          <h2 className="text-sm font-semibold text-[#093344]">Documents</h2>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Research Paper (PDF or Word) <span className="text-red-500">*</span>
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-gray-700">
+              Research Paper (PDF or Word) <span className="text-red-500 ml-0.5">*</span>
             </label>
-            <label className="cursor-pointer inline-flex items-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors">
+            <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl border-2 border-dashed border-gray-200 hover:border-[#0D9488] hover:bg-teal-50/30 px-4 py-3 text-sm text-gray-500 hover:text-[#0D9488] transition-colors">
               <Upload className="w-4 h-4" />
               <span>{docName || 'Choose file…'}</span>
               <input
@@ -184,16 +179,16 @@ export default function SubmitResearch() {
               />
             </label>
             {errors.document && (
-              <p className="text-xs text-red-500 mt-1">{errors.document.message}</p>
+              <p className="text-xs text-red-600">{errors.document.message}</p>
             )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-gray-700">
               Dataset{' '}
-              <span className="text-xs text-gray-400">(optional)</span>
+              <span className="text-xs text-gray-400 font-normal">(optional)</span>
             </label>
-            <label className="cursor-pointer inline-flex items-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors">
+            <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl border-2 border-dashed border-gray-200 hover:border-[#0D9488] hover:bg-teal-50/30 px-4 py-3 text-sm text-gray-500 hover:text-[#0D9488] transition-colors">
               <Upload className="w-4 h-4" />
               <span>{datasetName || 'Choose file…'}</span>
               <input
@@ -211,36 +206,27 @@ export default function SubmitResearch() {
 
         {/* Actions */}
         <div className="flex gap-3">
-          <button
+          <SecondaryButton
             type="submit"
             onClick={() => setSubmitMode('draft')}
             disabled={createMutation.isLoading}
-            className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            className="flex-1"
           >
-            {createMutation.isLoading && submitMode === 'draft' ? (
-              <span className="inline-flex items-center gap-2 justify-center">
-                <Loader2 className="w-4 h-4 animate-spin" /> Saving…
-              </span>
-            ) : 'Save as Draft'}
-          </button>
-          <button
+            {createMutation.isLoading && submitMode === 'draft' ? 'Saving…' : 'Save as Draft'}
+          </SecondaryButton>
+          <PrimaryButton
             type="submit"
             onClick={() => setSubmitMode('submit')}
             disabled={createMutation.isLoading}
-            className="flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            loading={createMutation.isLoading && submitMode === 'submit'}
+            className="flex-1"
           >
-            {createMutation.isLoading && submitMode === 'submit' ? (
-              <span className="inline-flex items-center gap-2 justify-center">
-                <Loader2 className="w-4 h-4 animate-spin" /> Submitting…
-              </span>
-            ) : 'Submit for Review'}
-          </button>
+            {createMutation.isLoading && submitMode === 'submit' ? 'Submitting…' : 'Submit for Review'}
+          </PrimaryButton>
         </div>
 
         {createMutation.isError && (
-          <p className="text-sm text-red-600 text-center">
-            Something went wrong. Please try again.
-          </p>
+          <FormError message="Something went wrong. Please try again." />
         )}
       </form>
     </div>

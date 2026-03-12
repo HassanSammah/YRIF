@@ -12,7 +12,7 @@ import { RESOURCE_TYPE_LABELS } from '@/types/resources'
 // ── Type icons & colours ──────────────────────────────────────────────────────
 
 const TYPE_META: Record<ResourceType, { icon: React.ComponentType<any>; colour: string; bg: string }> = {
-  guide:     { icon: BookOpen, colour: 'text-blue-600',   bg: 'bg-blue-50' },
+  guide:     { icon: BookOpen, colour: 'text-[#0D9488]',   bg: 'bg-teal-50' },
   template:  { icon: FileText, colour: 'text-purple-600', bg: 'bg-purple-50' },
   dataset:   { icon: Database, colour: 'text-green-600',  bg: 'bg-green-50' },
   webinar:   { icon: Video,    colour: 'text-orange-600', bg: 'bg-orange-50' },
@@ -93,7 +93,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
           <button
             onClick={handleDownload}
             disabled={downloading}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${meta.bg} ${meta.colour} hover:opacity-80`}
+            className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium transition-colors ${meta.bg} ${meta.colour} hover:opacity-80`}
           >
             {downloading
               ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -162,7 +162,7 @@ function WebinarCard({ webinar }: { webinar: Webinar }) {
             href={webinar.recording_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:opacity-80"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:opacity-80"
           >
             <Play className="w-3.5 h-3.5" /> Watch Recording
           </a>
@@ -172,7 +172,7 @@ function WebinarCard({ webinar }: { webinar: Webinar }) {
             href={webinar.registration_link}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-600 hover:opacity-80"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-600 hover:opacity-80"
           >
             <ExternalLink className="w-3.5 h-3.5" /> Register
           </a>
@@ -247,7 +247,7 @@ export default function ResourceHub() {
             key={t}
             onClick={() => { setTab(t); setPage(1); setSearch(''); setTagFilter('') }}
             className={`rounded-lg px-5 py-1.5 text-sm font-medium transition-colors capitalize ${
-              tab === t ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+              tab === t ? 'bg-white shadow-sm text-[#093344]' : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             {t === 'resources' ? 'Resources' : 'Webinars & Sessions'}
@@ -262,7 +262,7 @@ export default function ResourceHub() {
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
           placeholder={tab === 'resources' ? 'Search resources…' : 'Search webinars…'}
-          className="w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
         />
       </div>
 
@@ -275,7 +275,7 @@ export default function ResourceHub() {
               onClick={() => { setTypeFilter(f.value); setPage(1) }}
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 typeFilter === f.value
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-[#093344] text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -294,7 +294,7 @@ export default function ResourceHub() {
               onClick={() => setWebinarFilter(v)}
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 webinarFilter === v
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-[#093344] text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -314,7 +314,7 @@ export default function ResourceHub() {
               onClick={() => setTagFilter(tagFilter === tag ? '' : tag)}
               className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs transition-colors ${
                 tagFilter === tag
-                  ? 'bg-blue-100 text-blue-700 font-medium'
+                  ? 'bg-teal-100 text-[#0D9488] font-medium'
                   : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
               }`}
             >

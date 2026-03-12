@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import {
-  Filter, Search, Loader2, CheckCircle, XCircle, Users, X, ChevronLeft, ChevronRight,
+  Filter, Search, Loader2, CheckCircle, XCircle, Users, X, ChevronLeft, ChevronRight, ChevronDown,
 } from 'lucide-react'
 import { mentorshipApi } from '@/api/mentorship'
 import type { MentorshipRequest, MentorshipMatch } from '@/types/mentorship'
@@ -14,7 +14,7 @@ import {
 
 const REQUEST_STATUS_STYLES: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-800',
-  approved: 'bg-blue-100 text-blue-800',
+  approved: 'bg-teal-100 text-teal-800',
   matched: 'bg-green-100 text-green-800',
   declined: 'bg-red-100 text-red-700',
   closed: 'bg-gray-100 text-gray-600',
@@ -22,7 +22,7 @@ const REQUEST_STATUS_STYLES: Record<string, string> = {
 
 const MATCH_STATUS_STYLES: Record<string, string> = {
   active: 'bg-green-100 text-green-800',
-  completed: 'bg-blue-100 text-blue-700',
+  completed: 'bg-teal-100 text-teal-700',
   cancelled: 'bg-red-100 text-red-700',
 }
 
@@ -70,14 +70,14 @@ function AssignMentorModal({
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
         <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center">
-          <CheckCircle className="mx-auto w-12 h-12 text-green-500 mb-4" />
-          <h2 className="text-lg font-bold text-gray-900 mb-2">Match Created</h2>
+          <CheckCircle className="mx-auto w-12 h-12 text-emerald-500 mb-4" />
+          <h2 className="text-lg font-semibold text-[#093344] mb-2">Match Created</h2>
           <p className="text-sm text-gray-500 mb-6">
             Both mentor and mentee have been notified by email.
           </p>
           <button
             onClick={onClose}
-            className="rounded-xl bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="rounded-xl bg-[#093344] hover:bg-[#0D9488] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200"
           >
             Done
           </button>
@@ -91,7 +91,7 @@ function AssignMentorModal({
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div>
-            <h2 className="text-base font-bold text-gray-900">Assign Mentor</h2>
+            <h2 className="text-lg font-semibold text-[#093344]">Assign Mentor</h2>
             <p className="text-xs text-gray-500 mt-0.5">
               Mentee: {request.mentee_name} · Topic: {request.topic}
             </p>
@@ -108,7 +108,7 @@ function AssignMentorModal({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search mentors by name or expertise…"
-              className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-xl border border-gray-200 bg-white pl-9 pr-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
             />
           </div>
 
@@ -121,7 +121,7 @@ function AssignMentorModal({
                 key={m.id}
                 className={`flex items-start gap-3 rounded-xl border p-3 cursor-pointer transition-colors ${
                   selectedMentorId === m.id
-                    ? 'border-blue-500 bg-blue-50'
+                    ? 'border-[#0D9488] bg-teal-50'
                     : 'border-gray-100 hover:bg-gray-50'
                 }`}
               >
@@ -137,7 +137,7 @@ function AssignMentorModal({
                   <p className="text-sm font-medium text-gray-900">{m.full_name}</p>
                   <p className="text-xs text-gray-400">{m.expertise_areas || 'No expertise listed'}</p>
                   {m.is_verified && (
-                    <span className="inline-block mt-1 text-xs text-blue-600">✓ Verified</span>
+                    <span className="inline-block mt-1 text-xs text-[#0D9488]">✓ Verified</span>
                   )}
                 </div>
               </label>
@@ -152,14 +152,14 @@ function AssignMentorModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-gray-200 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="rounded-xl border border-gray-200 bg-white text-gray-700 hover:border-[#0D9488] hover:text-[#0D9488] px-5 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200"
             >
               Cancel
             </button>
             <button
               onClick={() => selectedMentorId && mutation.mutate(selectedMentorId)}
               disabled={!selectedMentorId || mutation.isLoading}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
             >
               {mutation.isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
               Create Match
@@ -202,7 +202,7 @@ function RequestActions({
             <button
               onClick={() => doAction('approved')}
               disabled={!!loading}
-              className="inline-flex items-center gap-1 rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200 disabled:opacity-50"
+              className="inline-flex items-center gap-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-2 py-1 text-xs font-semibold text-white disabled:opacity-50"
             >
               {loading === 'approved' ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
               Approve
@@ -210,7 +210,7 @@ function RequestActions({
             <button
               onClick={() => doAction('declined')}
               disabled={!!loading}
-              className="inline-flex items-center gap-1 rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-200 disabled:opacity-50"
+              className="inline-flex items-center gap-1 rounded-xl bg-red-600 hover:bg-red-700 px-2 py-1 text-xs font-semibold text-white disabled:opacity-50"
             >
               {loading === 'declined' ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
               Decline
@@ -220,7 +220,7 @@ function RequestActions({
         {(req.status === 'pending' || req.status === 'approved') && (
           <button
             onClick={() => onAssign(req)}
-            className="inline-flex items-center gap-1 rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-700 hover:bg-green-200"
+            className="inline-flex items-center gap-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-2 py-1 text-xs font-semibold text-white"
           >
             <Users className="w-3 h-3" /> Assign Mentor
           </button>
@@ -259,7 +259,7 @@ function MatchActions({
       <button
         onClick={() => doAction('completed')}
         disabled={!!loading}
-        className="inline-flex items-center gap-1 rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200 disabled:opacity-50"
+        className="inline-flex items-center gap-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-2 py-1 text-xs font-semibold text-white disabled:opacity-50"
       >
         {loading === 'completed' ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
         Complete
@@ -267,7 +267,7 @@ function MatchActions({
       <button
         onClick={() => doAction('cancelled')}
         disabled={!!loading}
-        className="inline-flex items-center gap-1 rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-200 disabled:opacity-50"
+        className="inline-flex items-center gap-1 rounded-xl bg-red-600 hover:bg-red-700 px-2 py-1 text-xs font-semibold text-white disabled:opacity-50"
       >
         {loading === 'cancelled' ? <Loader2 className="w-3 h-3 animate-spin" /> : <XCircle className="w-3 h-3" />}
         Cancel
@@ -325,7 +325,7 @@ export default function MentorshipManagement() {
             key={t}
             onClick={() => { setTab(t); setPage(1); setStatusFilter('') }}
             className={`rounded-lg px-5 py-1.5 text-sm font-medium transition-colors ${
-              tab === t ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+              tab === t ? 'bg-white shadow-sm text-[#093344]' : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             {t === 'requests' ? 'Requests' : 'Matches'}
@@ -343,26 +343,29 @@ export default function MentorshipManagement() {
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1) }}
                 placeholder="Search topic or mentee…"
-                className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-gray-200 bg-white pl-9 pr-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
               />
             </div>
           )}
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-gray-400" />
-            <select
-              value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All statuses</option>
-              {tab === 'requests'
-                ? Object.entries(MENTORSHIP_REQUEST_STATUS_LABELS).map(([v, l]) => (
-                    <option key={v} value={v}>{l}</option>
-                  ))
-                : Object.entries(MENTORSHIP_MATCH_STATUS_LABELS).map(([v, l]) => (
-                    <option key={v} value={v}>{l}</option>
-                  ))}
-            </select>
+            <div className="relative">
+              <select
+                value={statusFilter}
+                onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300 appearance-none pr-10 cursor-pointer"
+              >
+                <option value="">All statuses</option>
+                {tab === 'requests'
+                  ? Object.entries(MENTORSHIP_REQUEST_STATUS_LABELS).map(([v, l]) => (
+                      <option key={v} value={v}>{l}</option>
+                    ))
+                  : Object.entries(MENTORSHIP_MATCH_STATUS_LABELS).map(([v, l]) => (
+                      <option key={v} value={v}>{l}</option>
+                    ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            </div>
           </div>
           {(fetchingReqs || fetchingMatches) && (
             <Loader2 className="w-4 h-4 animate-spin text-gray-400" />

@@ -37,7 +37,7 @@ function ConversationList({
           <h2 className="text-sm font-bold text-gray-900">Messages</h2>
           <button
             onClick={onNew}
-            className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100"
+            className="p-1.5 rounded-lg bg-[#093344] text-white hover:bg-[#0D9488] transition-colors"
             title="New conversation"
           >
             <Plus className="w-4 h-4" />
@@ -49,7 +49,7 @@ function ConversationList({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search…"
-            className="w-full rounded-lg border border-gray-200 pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-xl border border-gray-200 bg-white pl-8 pr-3 py-1.5 text-xs text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
           />
         </div>
       </div>
@@ -97,7 +97,7 @@ function ConversationItem({
     <button
       onClick={onClick}
       className={`w-full text-left px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${
-        isActive ? 'bg-blue-50 border-l-2 border-l-blue-500' : ''
+        isActive ? 'bg-teal-50 border-l-2 border-l-[#0D9488]' : ''
       }`}
     >
       <div className="flex items-start gap-2.5">
@@ -108,7 +108,7 @@ function ConversationItem({
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-gray-900 truncate">{displayName}</span>
             {conv.unread_count > 0 && (
-              <span className="ml-1 flex-shrink-0 w-4 h-4 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center">
+              <span className="ml-1 flex-shrink-0 w-4 h-4 rounded-full bg-[#0D9488] text-white text-xs flex items-center justify-center">
                 {conv.unread_count}
               </span>
             )}
@@ -206,7 +206,7 @@ function ChatThread({
                   <div
                     className={`rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
                       isOwn
-                        ? 'bg-blue-600 text-white rounded-br-md'
+                        ? 'bg-[#093344] text-white rounded-br-md'
                         : 'bg-white text-gray-800 border border-gray-100 shadow-sm rounded-bl-md'
                     }`}
                   >
@@ -237,12 +237,12 @@ function ChatThread({
             }}
             placeholder="Type a message… (Enter to send)"
             rows={1}
-            className="flex-1 resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 max-h-32 overflow-y-auto"
+            className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] transition-all duration-150 max-h-32 overflow-y-auto"
           />
           <button
             onClick={handleSend}
             disabled={!text.trim() || sendMutation.isLoading}
-            className="p-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 flex-shrink-0"
+            className="rounded-xl bg-[#093344] hover:bg-[#0D9488] p-2.5 text-white transition-colors disabled:opacity-50 flex-shrink-0"
           >
             {sendMutation.isLoading
               ? <Loader2 className="w-4 h-4 animate-spin" />
@@ -285,7 +285,7 @@ function NewConversationModal({ onClose, onCreate }: { onClose: () => void; onCr
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="e.g. Question about my application"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
           />
         </div>
         <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-xl mb-4">
@@ -297,13 +297,13 @@ function NewConversationModal({ onClose, onCreate }: { onClose: () => void; onCr
         )}
         <div className="flex gap-2">
           <button onClick={onClose}
-            className="flex-1 rounded-xl border border-gray-200 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            className="flex-1 rounded-xl border border-gray-200 bg-white text-gray-700 hover:border-[#0D9488] hover:text-[#0D9488] py-2 text-sm font-semibold">
             Cancel
           </button>
           <button
             onClick={() => mutation.mutate()}
             disabled={mutation.isLoading}
-            className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
           >
             {mutation.isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
             Start
@@ -351,7 +351,7 @@ export default function Messages() {
               <p className="text-xs text-gray-400 mt-1">or start a new one to contact YRIF support</p>
               <button
                 onClick={() => setShowNew(true)}
-                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200"
               >
                 <Plus className="w-4 h-4" /> New conversation
               </button>

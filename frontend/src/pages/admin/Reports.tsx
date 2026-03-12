@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from 'react-query'
 import {
-  Download, Loader2, Search, ChevronLeft, ChevronRight,
+  Download, Loader2, Search, ChevronLeft, ChevronRight, ChevronDown,
 } from 'lucide-react'
 import { adminApi } from '@/api/admin'
 import type { ReportType, ExportParams, AuditLogEntry } from '@/types/admin'
@@ -57,7 +57,7 @@ function ExportHistory() {
               {data.map((exp) => (
                 <tr key={exp.id} className="hover:bg-gray-50/50">
                   <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 capitalize">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-[#0D9488] capitalize">
                       {exp.report_type}
                     </span>
                   </td>
@@ -134,19 +134,22 @@ function AuditLogTable() {
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1) }}
             placeholder="Search by actor or target…"
-            className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-xl border border-gray-200 bg-white pl-9 pr-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
           />
         </div>
-        <select
-          value={actionFilter}
-          onChange={(e) => { setActionFilter(e.target.value); setPage(1) }}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">All actions</option>
-          {Object.entries(ACTION_LABEL_MAP).map(([v, l]) => (
-            <option key={v} value={v}>{l}</option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            value={actionFilter}
+            onChange={(e) => { setActionFilter(e.target.value); setPage(1) }}
+            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300 appearance-none pr-10 cursor-pointer"
+          >
+            <option value="">All actions</option>
+            {Object.entries(ACTION_LABEL_MAP).map(([v, l]) => (
+              <option key={v} value={v}>{l}</option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        </div>
         {isFetching && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
       </div>
 
@@ -277,7 +280,7 @@ export default function Reports() {
             key={t.value}
             onClick={() => setTab(t.value)}
             className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${
-              tab === t.value ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+              tab === t.value ? 'bg-white shadow-sm text-[#093344]' : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             {t.label}
@@ -297,7 +300,7 @@ export default function Reports() {
                 onClick={() => { setReportType(rt.value); setRoleFilter(''); setStatusFilter('') }}
                 className={`w-full text-left rounded-xl border p-3 transition-colors ${
                   reportType === rt.value
-                    ? 'border-blue-500 bg-blue-50'
+                    ? 'border-[#0D9488] bg-teal-50'
                     : 'border-gray-100 bg-white hover:bg-gray-50'
                 }`}
               >
@@ -318,21 +321,21 @@ export default function Reports() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Date From</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Date From</label>
                 <input
                   type="date"
                   value={dateFrom}
                   onChange={(e) => setDateFrom(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Date To</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Date To</label>
                 <input
                   type="date"
                   value={dateTo}
                   onChange={(e) => setDateTo(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
                 />
               </div>
             </div>
@@ -341,30 +344,36 @@ export default function Reports() {
             {reportType === 'members' && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Filter by Role</label>
-                  <select
-                    value={roleFilter}
-                    onChange={(e) => setRoleFilter(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">All roles</option>
-                    {(Object.keys(USER_ROLE_LABELS) as UserRole[]).map((r) => (
-                      <option key={r} value={r}>{USER_ROLE_LABELS[r]}</option>
-                    ))}
-                  </select>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Filter by Role</label>
+                  <div className="relative">
+                    <select
+                      value={roleFilter}
+                      onChange={(e) => setRoleFilter(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300 appearance-none pr-10 cursor-pointer"
+                    >
+                      <option value="">All roles</option>
+                      {(Object.keys(USER_ROLE_LABELS) as UserRole[]).map((r) => (
+                        <option key={r} value={r}>{USER_ROLE_LABELS[r]}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Filter by Status</label>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">All statuses</option>
-                    {(Object.keys(USER_STATUS_LABELS) as UserStatus[]).map((s) => (
-                      <option key={s} value={s}>{USER_STATUS_LABELS[s]}</option>
-                    ))}
-                  </select>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Filter by Status</label>
+                  <div className="relative">
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300 appearance-none pr-10 cursor-pointer"
+                    >
+                      <option value="">All statuses</option>
+                      {(Object.keys(USER_STATUS_LABELS) as UserStatus[]).map((s) => (
+                        <option key={s} value={s}>{USER_STATUS_LABELS[s]}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  </div>
                 </div>
               </div>
             )}
@@ -372,17 +381,20 @@ export default function Reports() {
             {/* Research status filter */}
             {reportType === 'research' && (
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Filter by Status</label>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">All statuses</option>
-                  {RESEARCH_STATUSES.map((s) => (
-                    <option key={s} value={s}>{RESEARCH_STATUS_LABELS[s]}</option>
-                  ))}
-                </select>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Filter by Status</label>
+                <div className="relative">
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300 appearance-none pr-10 cursor-pointer"
+                  >
+                    <option value="">All statuses</option>
+                    {RESEARCH_STATUSES.map((s) => (
+                      <option key={s} value={s}>{RESEARCH_STATUS_LABELS[s]}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                </div>
               </div>
             )}
 
@@ -406,7 +418,7 @@ export default function Reports() {
             <button
               onClick={handleExport}
               disabled={exporting}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
             >
               {exporting
                 ? <Loader2 className="w-4 h-4 animate-spin" />

@@ -74,7 +74,7 @@ function FeedbackModal({ match, onClose }: { match: MentorshipMatch; onClose: ()
           <p className="text-sm text-gray-500 mb-6">Thank you for your feedback!</p>
           <button
             onClick={onClose}
-            className="rounded-xl bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
           >
             Close
           </button>
@@ -129,7 +129,7 @@ function FeedbackModal({ match, onClose }: { match: MentorshipMatch; onClose: ()
               {...register('feedback_text', { required: 'Feedback is required' })}
               rows={5}
               placeholder="Share your experience with this mentorship…"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300 resize-none"
             />
             {errors.feedback_text && (
               <p className="mt-1 text-xs text-red-600">{errors.feedback_text.message}</p>
@@ -144,14 +144,14 @@ function FeedbackModal({ match, onClose }: { match: MentorshipMatch; onClose: ()
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-gray-200 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="rounded-xl border border-gray-200 bg-white text-gray-700 hover:border-[#0D9488] hover:text-[#0D9488] px-4 py-2.5 text-sm font-semibold"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={mutation.isLoading}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
             >
               {mutation.isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
               Submit
@@ -194,7 +194,7 @@ function NewRequestModal({ onClose }: { onClose: () => void }) {
           <p className="text-sm text-gray-500 mb-6">An admin will review and match you with a mentor soon.</p>
           <button
             onClick={onClose}
-            className="rounded-xl bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
           >
             Done
           </button>
@@ -221,7 +221,7 @@ function NewRequestModal({ onClose }: { onClose: () => void }) {
             <input
               {...register('topic', { required: 'Topic is required' })}
               placeholder="e.g. Environmental data analysis"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
             />
             {errors.topic && (
               <p className="mt-1 text-xs text-red-600">{errors.topic.message}</p>
@@ -233,7 +233,7 @@ function NewRequestModal({ onClose }: { onClose: () => void }) {
               {...register('message')}
               rows={4}
               placeholder="Tell us what you're looking for in a mentor…"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300 resize-none"
             />
           </div>
 
@@ -245,14 +245,14 @@ function NewRequestModal({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-gray-200 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="rounded-xl border border-gray-200 bg-white text-gray-700 hover:border-[#0D9488] hover:text-[#0D9488] px-4 py-2.5 text-sm font-semibold"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={mutation.isLoading}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
             >
               {mutation.isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
               Submit Request
@@ -359,7 +359,7 @@ function MenteeView() {
         </div>
         <button
           onClick={() => setShowNewRequest(true)}
-          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
         >
           + New Request
         </button>

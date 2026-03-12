@@ -3,7 +3,7 @@ import { useQuery } from 'react-query'
 import { Link } from 'react-router-dom'
 import {
   Search, BookOpen, Download, Eye, Filter,
-  ChevronLeft, ChevronRight, Loader2,
+  ChevronLeft, ChevronRight, Loader2, ChevronDown,
 } from 'lucide-react'
 import { researchApi } from '@/api/research'
 import { RESEARCH_CATEGORY_LABELS } from '@/types/research'
@@ -60,12 +60,12 @@ export default function ResearchRepository() {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search title, abstract, keywords…"
-                className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-gray-200 bg-white pl-9 pr-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
               />
             </div>
             <button
               type="submit"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200"
             >
               Search
             </button>
@@ -73,16 +73,19 @@ export default function ResearchRepository() {
 
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-gray-400" />
-            <select
-              value={category}
-              onChange={(e) => { setCategory(e.target.value as ResearchCategory | ''); setPage(1) }}
-              aria-label="Filter by category"
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={category}
+                onChange={(e) => { setCategory(e.target.value as ResearchCategory | ''); setPage(1) }}
+                aria-label="Filter by category"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300 appearance-none pr-10 cursor-pointer"
+              >
+                {CATEGORIES.map((c) => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            </div>
           </div>
         </div>
       </div>
@@ -107,19 +110,19 @@ export default function ResearchRepository() {
             {data.results.map((r) => (
               <div
                 key={r.id}
-                className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:border-blue-200 transition-colors"
+                className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:border-[#0D9488]/40 transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                      <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-700">
+                      <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-teal-50 text-[#0D9488]">
                         {RESEARCH_CATEGORY_LABELS[r.category]}
                       </span>
                     </div>
 
                     <Link
                       to={`/research/${r.id}`}
-                      className="text-base font-semibold text-gray-900 hover:text-blue-700 line-clamp-2 block"
+                      className="text-base font-semibold text-gray-900 hover:text-[#0D9488] line-clamp-2 block"
                     >
                       {r.title}
                     </Link>
@@ -161,7 +164,7 @@ export default function ResearchRepository() {
 
                   <Link
                     to={`/research/${r.id}`}
-                    className="flex-shrink-0 rounded-lg bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 hover:bg-blue-100 whitespace-nowrap"
+                    className="flex-shrink-0 rounded-xl border border-gray-200 bg-white text-gray-700 hover:border-[#0D9488] hover:text-[#0D9488] px-3 py-2 text-xs font-semibold shadow-sm transition-all duration-200 whitespace-nowrap"
                   >
                     View
                   </Link>

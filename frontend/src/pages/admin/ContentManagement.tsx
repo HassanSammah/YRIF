@@ -25,6 +25,35 @@ const TYPE_ICONS: Record<ResourceType, React.ComponentType<any>> = {
   other: FileText,
 }
 
+// Shared design-system class strings
+const INPUT_CLS =
+  'w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300'
+
+const SELECT_CLS =
+  'w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300 appearance-none pr-10 cursor-pointer'
+
+const LABEL_CLS = 'block text-sm font-medium text-gray-700 mb-1.5'
+
+const BTN_PRIMARY =
+  'rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/50 focus:ring-offset-2'
+
+const BTN_SECONDARY =
+  'rounded-xl border border-gray-200 bg-white text-gray-700 hover:border-[#0D9488] hover:text-[#0D9488] px-4 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200'
+
+const BTN_DANGER =
+  'rounded-xl bg-red-600 hover:bg-red-700 px-4 py-2.5 text-sm font-semibold text-white'
+
+const CHECKBOX_CLS = 'h-4 w-4 rounded border-gray-300 text-[#0D9488] focus:ring-[#0D9488]/40'
+
+// SVG chevron for select wrappers
+const SelectChevron = () => (
+  <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  </div>
+)
+
 function TagInput({
   value,
   onChange,
@@ -48,7 +77,7 @@ function TagInput({
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); add() } }}
           placeholder="Add tag and press Enter"
-          className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={INPUT_CLS}
         />
         <button
           type="button"
@@ -63,13 +92,13 @@ function TagInput({
           {value.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700"
+              className="inline-flex items-center gap-1 rounded-full bg-[#0D9488]/10 px-2 py-0.5 text-xs text-[#0D9488]"
             >
               {tag}
               <button
                 type="button"
                 onClick={() => onChange(value.filter((t) => t !== tag))}
-                className="hover:text-blue-900"
+                className="hover:text-[#093344]"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -135,9 +164,9 @@ function ResourceFormModal({ resource, onClose }: ResourceFormProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg my-auto">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-base font-bold text-gray-900">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg my-auto">
+        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+          <h2 className="text-lg font-semibold text-[#093344]">
             {isEdit ? 'Edit Resource' : 'New Resource'}
           </h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100">
@@ -150,56 +179,59 @@ function ResourceFormModal({ resource, onClose }: ResourceFormProps) {
           className="p-6 space-y-4"
         >
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className={LABEL_CLS}>
               Title <span className="text-red-500">*</span>
             </label>
             <input
               {...register('title', { required: 'Title is required' })}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={INPUT_CLS}
             />
             {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title.message}</p>}
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Type <span className="text-red-500">*</span></label>
-            <select
-              {...register('resource_type', { required: true })}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {RESOURCE_TYPES.map((t) => (
-                <option key={t} value={t}>{RESOURCE_TYPE_LABELS[t]}</option>
-              ))}
-            </select>
+            <label className={LABEL_CLS}>Type <span className="text-red-500">*</span></label>
+            <div className="relative">
+              <select
+                {...register('resource_type', { required: true })}
+                className={SELECT_CLS}
+              >
+                {RESOURCE_TYPES.map((t) => (
+                  <option key={t} value={t}>{RESOURCE_TYPE_LABELS[t]}</option>
+                ))}
+              </select>
+              <SelectChevron />
+            </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
+            <label className={LABEL_CLS}>Description</label>
             <textarea
               {...register('description')}
               rows={3}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className={`${INPUT_CLS} resize-none`}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">External URL</label>
+            <label className={LABEL_CLS}>External URL</label>
             <input
               {...register('external_url')}
               type="url"
               placeholder="https://…"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={INPUT_CLS}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className={LABEL_CLS}>
               Upload File <span className="text-gray-400">(optional)</span>
             </label>
             <input
               {...register('file')}
               type="file"
               ref={fileRef}
-              className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-[#0D9488]/10 file:text-[#0D9488] hover:file:bg-[#0D9488]/20"
             />
             {resource?.file_url && (
               <p className="text-xs text-gray-400 mt-1">Current: {resource.file_url}</p>
@@ -207,7 +239,7 @@ function ResourceFormModal({ resource, onClose }: ResourceFormProps) {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Tags</label>
+            <label className={LABEL_CLS}>Tags</label>
             <Controller
               name="tags"
               control={control}
@@ -223,7 +255,7 @@ function ResourceFormModal({ resource, onClose }: ResourceFormProps) {
               {...register('is_published')}
               type="checkbox"
               id="res-published"
-              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className={CHECKBOX_CLS}
             />
             <label htmlFor="res-published" className="text-sm text-gray-700">Published</label>
           </div>
@@ -236,14 +268,14 @@ function ResourceFormModal({ resource, onClose }: ResourceFormProps) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-gray-200 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className={BTN_SECONDARY}
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={mutation.isLoading}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className={`inline-flex items-center gap-2 ${BTN_PRIMARY}`}
             >
               {mutation.isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
               {isEdit ? 'Save Changes' : 'Create'}
@@ -301,9 +333,9 @@ function WebinarFormModal({ webinar, onClose }: WebinarFormProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg my-auto">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-base font-bold text-gray-900">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg my-auto">
+        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+          <h2 className="text-lg font-semibold text-[#093344]">
             {isEdit ? 'Edit Webinar' : 'New Webinar'}
           </h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100">
@@ -313,59 +345,59 @@ function WebinarFormModal({ webinar, onClose }: WebinarFormProps) {
 
         <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="p-6 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className={LABEL_CLS}>
               Title <span className="text-red-500">*</span>
             </label>
             <input
               {...register('title', { required: 'Title is required' })}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={INPUT_CLS}
             />
             {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title.message}</p>}
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className={LABEL_CLS}>
               Date & Time <span className="text-red-500">*</span>
             </label>
             <input
               {...register('scheduled_at', { required: 'Date is required' })}
               type="datetime-local"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={INPUT_CLS}
             />
             {errors.scheduled_at && <p className="mt-1 text-xs text-red-600">{errors.scheduled_at.message}</p>}
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
+            <label className={LABEL_CLS}>Description</label>
             <textarea
               {...register('description')}
               rows={3}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className={`${INPUT_CLS} resize-none`}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Registration Link</label>
+            <label className={LABEL_CLS}>Registration Link</label>
             <input
               {...register('registration_link')}
               type="url"
               placeholder="https://…"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={INPUT_CLS}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Recording URL</label>
+            <label className={LABEL_CLS}>Recording URL</label>
             <input
               {...register('recording_url')}
               type="url"
               placeholder="https://… (fill after the session)"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={INPUT_CLS}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Tags</label>
+            <label className={LABEL_CLS}>Tags</label>
             <Controller
               name="tags"
               control={control}
@@ -381,7 +413,7 @@ function WebinarFormModal({ webinar, onClose }: WebinarFormProps) {
               {...register('is_published')}
               type="checkbox"
               id="web-published"
-              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className={CHECKBOX_CLS}
             />
             <label htmlFor="web-published" className="text-sm text-gray-700">Published</label>
           </div>
@@ -394,14 +426,14 @@ function WebinarFormModal({ webinar, onClose }: WebinarFormProps) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-gray-200 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className={BTN_SECONDARY}
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={mutation.isLoading}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className={`inline-flex items-center gap-2 ${BTN_PRIMARY}`}
             >
               {mutation.isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
               {isEdit ? 'Save Changes' : 'Create'}
@@ -428,20 +460,20 @@ function DeleteConfirm({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
         <p className="text-sm font-medium text-gray-900 mb-1">Delete "{title}"?</p>
         <p className="text-xs text-gray-500 mb-5">This action cannot be undone.</p>
         <div className="flex gap-3 justify-center">
           <button
             onClick={onCancel}
-            className="rounded-xl border border-gray-200 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className={BTN_SECONDARY}
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
             disabled={loading}
-            className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            className={`inline-flex items-center gap-2 ${BTN_DANGER} disabled:opacity-50`}
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             Delete
@@ -495,30 +527,36 @@ function ResourcesTab() {
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1) }}
             placeholder="Search resources…"
-            className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`${INPUT_CLS} pl-9`}
           />
         </div>
-        <select
-          value={typeFilter}
-          onChange={(e) => { setTypeFilter(e.target.value); setPage(1) }}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">All types</option>
-          {RESOURCE_TYPES.map((t) => <option key={t} value={t}>{RESOURCE_TYPE_LABELS[t]}</option>)}
-        </select>
-        <select
-          value={pubFilter}
-          onChange={(e) => { setPubFilter(e.target.value); setPage(1) }}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">All</option>
-          <option value="true">Published</option>
-          <option value="false">Unpublished</option>
-        </select>
+        <div className="relative">
+          <select
+            value={typeFilter}
+            onChange={(e) => { setTypeFilter(e.target.value); setPage(1) }}
+            className={SELECT_CLS}
+          >
+            <option value="">All types</option>
+            {RESOURCE_TYPES.map((t) => <option key={t} value={t}>{RESOURCE_TYPE_LABELS[t]}</option>)}
+          </select>
+          <SelectChevron />
+        </div>
+        <div className="relative">
+          <select
+            value={pubFilter}
+            onChange={(e) => { setPubFilter(e.target.value); setPage(1) }}
+            className={SELECT_CLS}
+          >
+            <option value="">All</option>
+            <option value="true">Published</option>
+            <option value="false">Unpublished</option>
+          </select>
+          <SelectChevron />
+        </div>
         {isFetching && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
         <button
           onClick={() => setShowCreate(true)}
-          className="ml-auto inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className={`ml-auto inline-flex items-center gap-2 ${BTN_PRIMARY}`}
         >
           <Plus className="w-4 h-4" /> New Resource
         </button>
@@ -670,22 +708,25 @@ function WebinarsTab() {
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1) }}
             placeholder="Search webinars…"
-            className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`${INPUT_CLS} pl-9`}
           />
         </div>
-        <select
-          value={pubFilter}
-          onChange={(e) => { setPubFilter(e.target.value); setPage(1) }}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">All</option>
-          <option value="true">Published</option>
-          <option value="false">Unpublished</option>
-        </select>
+        <div className="relative">
+          <select
+            value={pubFilter}
+            onChange={(e) => { setPubFilter(e.target.value); setPage(1) }}
+            className={SELECT_CLS}
+          >
+            <option value="">All</option>
+            <option value="true">Published</option>
+            <option value="false">Unpublished</option>
+          </select>
+          <SelectChevron />
+        </div>
         {isFetching && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
         <button
           onClick={() => setShowCreate(true)}
-          className="ml-auto inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className={`ml-auto inline-flex items-center gap-2 ${BTN_PRIMARY}`}
         >
           <Plus className="w-4 h-4" /> New Webinar
         </button>
@@ -825,9 +866,9 @@ function AnnouncementFormModal({ item, onClose }: AnnouncementFormProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg my-auto">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-base font-bold text-gray-900">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg my-auto">
+        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+          <h2 className="text-lg font-semibold text-[#093344]">
             {isEdit ? 'Edit Announcement' : 'New Announcement'}
           </h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100">
@@ -836,23 +877,23 @@ function AnnouncementFormModal({ item, onClose }: AnnouncementFormProps) {
         </div>
         <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="p-6 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className={LABEL_CLS}>
               Title <span className="text-red-500">*</span>
             </label>
             <input
               {...register('title', { required: 'Title is required' })}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={INPUT_CLS}
             />
             {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title.message}</p>}
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className={LABEL_CLS}>
               Content <span className="text-red-500">*</span>
             </label>
             <textarea
               {...register('content', { required: 'Content is required' })}
               rows={6}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className={`${INPUT_CLS} resize-none`}
             />
             {errors.content && <p className="mt-1 text-xs text-red-600">{errors.content.message}</p>}
           </div>
@@ -861,7 +902,7 @@ function AnnouncementFormModal({ item, onClose }: AnnouncementFormProps) {
               {...register('is_published')}
               type="checkbox"
               id="ann-published"
-              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className={CHECKBOX_CLS}
             />
             <label htmlFor="ann-published" className="text-sm text-gray-700">Publish immediately</label>
           </div>
@@ -869,12 +910,11 @@ function AnnouncementFormModal({ item, onClose }: AnnouncementFormProps) {
             <p className="text-xs text-red-600">Something went wrong. Please try again.</p>
           )}
           <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose}
-              className="rounded-xl border border-gray-200 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <button type="button" onClick={onClose} className={BTN_SECONDARY}>
               Cancel
             </button>
             <button type="submit" disabled={mutation.isLoading}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+              className={`inline-flex items-center gap-2 ${BTN_PRIMARY}`}>
               {mutation.isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
               {isEdit ? 'Save Changes' : 'Create'}
             </button>
@@ -925,22 +965,25 @@ function AnnouncementsTab() {
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1) }}
             placeholder="Search announcements…"
-            className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`${INPUT_CLS} pl-9`}
           />
         </div>
-        <select
-          value={pubFilter}
-          onChange={(e) => { setPubFilter(e.target.value); setPage(1) }}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">All</option>
-          <option value="true">Published</option>
-          <option value="false">Draft</option>
-        </select>
+        <div className="relative">
+          <select
+            value={pubFilter}
+            onChange={(e) => { setPubFilter(e.target.value); setPage(1) }}
+            className={SELECT_CLS}
+          >
+            <option value="">All</option>
+            <option value="true">Published</option>
+            <option value="false">Draft</option>
+          </select>
+          <SelectChevron />
+        </div>
         {isFetching && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
         <button
           onClick={() => setShowCreate(true)}
-          className="ml-auto inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className={`ml-auto inline-flex items-center gap-2 ${BTN_PRIMARY}`}
         >
           <Plus className="w-4 h-4" /> New Announcement
         </button>
@@ -1070,9 +1113,9 @@ function NewsFormModal({ item, onClose }: NewsFormProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg my-auto">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-base font-bold text-gray-900">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg my-auto">
+        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+          <h2 className="text-lg font-semibold text-[#093344]">
             {isEdit ? 'Edit News Post' : 'New News Post'}
           </h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100">
@@ -1081,36 +1124,36 @@ function NewsFormModal({ item, onClose }: NewsFormProps) {
         </div>
         <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="p-6 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className={LABEL_CLS}>
               Title <span className="text-red-500">*</span>
             </label>
             <input
               {...register('title', { required: 'Title is required' })}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={INPUT_CLS}
             />
             {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title.message}</p>}
           </div>
           {!isEdit && (
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className={LABEL_CLS}>
                 Slug <span className="text-red-500">*</span>
                 <span className="ml-1 font-normal text-gray-400">(URL-friendly, e.g. my-news-post)</span>
               </label>
               <input
                 {...register('slug', { required: 'Slug is required', pattern: { value: /^[a-z0-9-]+$/, message: 'Lowercase letters, numbers and hyphens only' } })}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={INPUT_CLS}
               />
               {errors.slug && <p className="mt-1 text-xs text-red-600">{errors.slug.message}</p>}
             </div>
           )}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className={LABEL_CLS}>
               Body <span className="text-red-500">*</span>
             </label>
             <textarea
               {...register('body', { required: 'Body is required' })}
               rows={8}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className={`${INPUT_CLS} resize-none`}
             />
             {errors.body && <p className="mt-1 text-xs text-red-600">{errors.body.message}</p>}
           </div>
@@ -1119,7 +1162,7 @@ function NewsFormModal({ item, onClose }: NewsFormProps) {
               {...register('is_published')}
               type="checkbox"
               id="news-published"
-              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className={CHECKBOX_CLS}
             />
             <label htmlFor="news-published" className="text-sm text-gray-700">Publish immediately</label>
           </div>
@@ -1127,12 +1170,11 @@ function NewsFormModal({ item, onClose }: NewsFormProps) {
             <p className="text-xs text-red-600">Something went wrong. Please try again.</p>
           )}
           <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose}
-              className="rounded-xl border border-gray-200 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <button type="button" onClick={onClose} className={BTN_SECONDARY}>
               Cancel
             </button>
             <button type="submit" disabled={mutation.isLoading}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+              className={`inline-flex items-center gap-2 ${BTN_PRIMARY}`}>
               {mutation.isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
               {isEdit ? 'Save Changes' : 'Publish'}
             </button>
@@ -1183,22 +1225,25 @@ function NewsTab() {
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1) }}
             placeholder="Search news posts…"
-            className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`${INPUT_CLS} pl-9`}
           />
         </div>
-        <select
-          value={pubFilter}
-          onChange={(e) => { setPubFilter(e.target.value); setPage(1) }}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">All</option>
-          <option value="true">Published</option>
-          <option value="false">Draft</option>
-        </select>
+        <div className="relative">
+          <select
+            value={pubFilter}
+            onChange={(e) => { setPubFilter(e.target.value); setPage(1) }}
+            className={SELECT_CLS}
+          >
+            <option value="">All</option>
+            <option value="true">Published</option>
+            <option value="false">Draft</option>
+          </select>
+          <SelectChevron />
+        </div>
         {isFetching && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
         <button
           onClick={() => setShowCreate(true)}
-          className="ml-auto inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className={`ml-auto inline-flex items-center gap-2 ${BTN_PRIMARY}`}
         >
           <Plus className="w-4 h-4" /> New Post
         </button>
@@ -1295,12 +1340,13 @@ export default function ContentManagement() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Content Management</h1>
+          <h1 className="text-xl font-bold text-[#093344]">Content Management</h1>
           <p className="text-sm text-gray-500 mt-0.5">Manage resources, webinars, announcements, and news.</p>
         </div>
       </div>
 
-      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit mb-6 flex-wrap">
+      {/* Tab bar */}
+      <div className="flex border-b border-gray-200 mb-6 gap-0">
         {([
           { key: 'resources', label: 'Resources' },
           { key: 'webinars', label: 'Webinars' },
@@ -1310,8 +1356,10 @@ export default function ContentManagement() {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`rounded-lg px-5 py-1.5 text-sm font-medium transition-colors ${
-              tab === key ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+            className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              tab === key
+                ? 'border-[#0D9488] text-[#0D9488]'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
             {label}

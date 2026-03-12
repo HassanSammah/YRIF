@@ -175,7 +175,7 @@ export default function EventDetail() {
               <p className="text-sm text-gray-500">Log in to register for this event.</p>
               <Link
                 to="/login"
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                className="rounded-xl bg-[#093344] hover:bg-[#0D9488] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200"
               >
                 Log In
               </Link>
@@ -214,7 +214,7 @@ export default function EventDetail() {
                     id="research-select"
                     value={selectedResearch}
                     onChange={(e) => setSelectedResearch(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
                   >
                     <option value="">No submission selected</option>
                     {myResearch?.results
@@ -233,7 +233,7 @@ export default function EventDetail() {
                 type="button"
                 onClick={() => registerMutation.mutate()}
                 disabled={registerMutation.isLoading}
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
               >
                 {registerMutation.isLoading
                   ? <Loader2 className="w-4 h-4 animate-spin" />

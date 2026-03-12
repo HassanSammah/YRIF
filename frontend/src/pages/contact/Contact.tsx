@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Mail, Phone, MapPin, CheckCircle, Loader2, Send } from 'lucide-react'
+import { Mail, Phone, MapPin, CheckCircle, Send } from 'lucide-react'
 import { communicationsApi } from '@/api/communications'
+import { Field, inputCls, PrimaryButton, FormError } from '@/components/ui'
 
 interface ContactForm {
   name: string
@@ -69,9 +70,9 @@ export default function Contact() {
           </div>
 
           {/* FAQs teaser */}
-          <div className="bg-blue-50 rounded-2xl p-4">
-            <p className="text-sm font-semibold text-blue-800 mb-1">Looking for quick answers?</p>
-            <p className="text-xs text-blue-600">
+          <div className="bg-teal-50 rounded-2xl p-4">
+            <p className="text-sm font-semibold text-[#093344] mb-1">Looking for quick answers?</p>
+            <p className="text-xs text-[#0D9488]">
               Try our FAQ section or use the YRIF Chat widget (bottom-right corner) for instant help.
             </p>
           </div>
@@ -89,7 +90,7 @@ export default function Contact() {
               </p>
               <button
                 onClick={() => setSubmitted(false)}
-                className="mt-6 text-sm text-blue-600 hover:underline"
+                className="mt-6 text-sm text-[#0D9488] hover:underline"
               >
                 Send another message
               </button>
@@ -98,75 +99,62 @@ export default function Contact() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Full Name <span className="text-red-500">*</span>
-                    </label>
+                  <Field id="name" label="Full Name" required error={errors.name?.message}>
                     <input
+                      id="name"
                       {...register('name', { required: 'Name is required' })}
                       placeholder="Your full name"
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={inputCls(!!errors.name)}
                     />
-                    {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Email Address <span className="text-red-500">*</span>
-                    </label>
+                  </Field>
+                  <Field id="email" label="Email Address" required error={errors.email?.message}>
                     <input
+                      id="email"
                       {...register('email', {
                         required: 'Email is required',
                         pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Invalid email' },
                       })}
                       type="email"
                       placeholder="you@example.com"
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={inputCls(!!errors.email)}
                     />
-                    {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
-                  </div>
+                  </Field>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Subject <span className="text-red-500">*</span>
-                  </label>
+                <Field id="subject" label="Subject" required error={errors.subject?.message}>
                   <input
+                    id="subject"
                     {...register('subject', { required: 'Subject is required' })}
                     placeholder="What is your message about?"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={inputCls(!!errors.subject)}
                   />
-                  {errors.subject && <p className="mt-1 text-xs text-red-600">{errors.subject.message}</p>}
-                </div>
+                </Field>
 
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Message <span className="text-red-500">*</span>
-                  </label>
+                <Field id="message" label="Message" required error={errors.message?.message}>
                   <textarea
+                    id="message"
                     {...register('message', {
                       required: 'Message is required',
                       minLength: { value: 20, message: 'Please write at least 20 characters' },
                     })}
                     rows={5}
                     placeholder="Tell us more about your inquiry…"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    className={inputCls(!!errors.message, 'resize-none')}
                   />
-                  {errors.message && <p className="mt-1 text-xs text-red-600">{errors.message.message}</p>}
-                </div>
+                </Field>
 
-                {error && (
-                  <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
-                )}
+                {error && <FormError message={error} />}
 
                 <div className="flex justify-end">
-                  <button
+                  <PrimaryButton
                     type="submit"
                     disabled={submitting}
-                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                    loading={submitting}
+                    className="px-6"
                   >
-                    {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    <Send className="w-4 h-4" />
                     Send Message
-                  </button>
+                  </PrimaryButton>
                 </div>
               </form>
             </div>
@@ -190,8 +178,8 @@ function ContactInfo({
 }) {
   const inner = (
     <div className="flex items-start gap-3">
-      <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-        <Icon className="w-4 h-4 text-blue-600" />
+      <div className="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
+        <Icon className="w-4 h-4 text-[#0D9488]" />
       </div>
       <div>
         <p className="text-xs text-gray-400">{label}</p>

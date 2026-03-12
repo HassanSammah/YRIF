@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import {
   User as UserIcon, Phone, Building, Award,
-  Shield, CheckCircle, AlertCircle, Loader2, Save,
+  Shield, CheckCircle, AlertCircle, Loader2, Save, ChevronDown,
 } from 'lucide-react'
 import { authApi } from '@/api/accounts'
 import { useAuth } from '@/hooks/useAuth'
@@ -66,12 +66,12 @@ function PhoneVerificationSection({ phone, verified, onVerified }: {
             value={phoneInput}
             onChange={(e) => setPhoneInput(e.target.value)}
             placeholder="+255 7XX XXX XXX"
-            className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 rounded-xl border bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] border-gray-200 hover:border-gray-300"
           />
           <button
             onClick={sendOTP}
             disabled={sending || !phoneInput}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
           >
             {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send OTP'}
           </button>
@@ -83,12 +83,12 @@ function PhoneVerificationSection({ phone, verified, onVerified }: {
             onChange={(e) => setOtp(e.target.value)}
             placeholder="Enter OTP code"
             maxLength={8}
-            className="w-36 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-36 rounded-xl border bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] border-gray-200 hover:border-gray-300"
           />
           <button
             onClick={verifyOTP}
             disabled={sending || !otp}
-            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+            className="rounded-xl bg-[#0D9488] hover:bg-[#0D9488]/90 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
           >
             {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify'}
           </button>
@@ -97,7 +97,11 @@ function PhoneVerificationSection({ phone, verified, onVerified }: {
           </button>
         </div>
       )}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && (
+        <p className="text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-sm flex items-center gap-1">
+          <AlertCircle className="w-4 h-4 shrink-0" /> {error}
+        </p>
+      )}
     </div>
   )
 }
@@ -108,9 +112,9 @@ function Section({ icon: Icon, title, children }: {
   icon: React.ElementType; title: string; children: React.ReactNode
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
       <div className="flex items-center gap-2 px-6 py-4 border-b border-gray-100">
-        <Icon className="w-5 h-5 text-blue-600" />
+        <Icon className="w-5 h-5 text-[#0D9488]" />
         <h2 className="text-sm font-semibold text-gray-900">{title}</h2>
       </div>
       <div className="px-6 py-5">{children}</div>
@@ -121,13 +125,13 @@ function Section({ icon: Icon, title, children }: {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
       {children}
     </div>
   )
 }
 
-const inputCls = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+const inputCls = 'w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] border-gray-200 hover:border-gray-300'
 
 // ── Base profile form ─────────────────────────────────────────────────────────
 
@@ -173,16 +177,20 @@ function BaseProfileSection() {
       </Field>
 
       {mutation.isSuccess && (
-        <p className="text-sm text-green-600 flex items-center gap-1"><CheckCircle className="w-4 h-4" /> Saved.</p>
+        <p className="text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2 text-sm flex items-center gap-1">
+          <CheckCircle className="w-4 h-4 shrink-0" /> Saved.
+        </p>
       )}
       {mutation.isError && (
-        <p className="text-sm text-red-600 flex items-center gap-1"><AlertCircle className="w-4 h-4" /> Save failed.</p>
+        <p className="text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-sm flex items-center gap-1">
+          <AlertCircle className="w-4 h-4 shrink-0" /> Save failed.
+        </p>
       )}
 
       <button
         type="submit"
         disabled={!isDirty || mutation.isLoading}
-        className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+        className="inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
       >
         {mutation.isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
         Save changes
@@ -207,7 +215,7 @@ function MentorProfileSection() {
   return (
     <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-4">
       {data?.is_verified && (
-        <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-2 rounded-lg">
+        <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
           <CheckCircle className="w-4 h-4" /> Verified mentor
         </div>
       )}
@@ -218,7 +226,7 @@ function MentorProfileSection() {
         <input {...register('availability')} placeholder="e.g. Weekends, 2 hours/week" className={inputCls} />
       </Field>
       <button type="submit" disabled={!isDirty || mutation.isLoading}
-        className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
+        className="inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50">
         {mutation.isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
       </button>
     </form>
@@ -241,7 +249,7 @@ function PartnerProfileSection() {
   return (
     <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-4">
       {data?.is_verified && (
-        <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-2 rounded-lg">
+        <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
           <CheckCircle className="w-4 h-4" /> Verified partner
         </div>
       )}
@@ -250,10 +258,13 @@ function PartnerProfileSection() {
           <input {...register('org_name')} placeholder="Company or organisation" className={inputCls} />
         </Field>
         <Field label="Partner Type">
-          <select {...register('partner_type')} className={inputCls + ' bg-white'}>
-            <option value="industry">Industry</option>
-            <option value="community">Community</option>
-          </select>
+          <div className="relative">
+            <select {...register('partner_type')} className={inputCls + ' appearance-none'}>
+              <option value="industry">Industry</option>
+              <option value="community">Community</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          </div>
         </Field>
         <Field label="Sector">
           <input {...register('sector')} placeholder="e.g. Agriculture, Health" className={inputCls} />
@@ -263,7 +274,7 @@ function PartnerProfileSection() {
         </Field>
       </div>
       <button type="submit" disabled={!isDirty || mutation.isLoading}
-        className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
+        className="inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50">
         {mutation.isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
       </button>
     </form>
@@ -295,7 +306,7 @@ function RAProfileSection() {
         <textarea {...register('portfolio')} rows={3} placeholder="Links to work, GitHub, publications…" className={inputCls} />
       </Field>
       <button type="submit" disabled={!isDirty || mutation.isLoading}
-        className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
+        className="inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50">
         {mutation.isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
       </button>
     </form>
@@ -320,13 +331,13 @@ export default function Profile() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       {/* Header card */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-5">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-5">
         <div className="flex items-start gap-4">
-          <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+          <div className="w-14 h-14 rounded-full bg-[#093344]/10 flex items-center justify-center shrink-0">
             {user.profile?.avatar ? (
               <img src={user.profile.avatar} className="w-14 h-14 rounded-full object-cover" alt="Avatar" />
             ) : (
-              <UserIcon className="w-7 h-7 text-blue-600" />
+              <UserIcon className="w-7 h-7 text-[#093344]" />
             )}
           </div>
           <div className="flex-1 min-w-0">

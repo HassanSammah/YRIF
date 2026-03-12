@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from 'react-query'
+import { useQuery, useQueryClient } from 'react-query'
 import {
   Search, Filter, ChevronLeft, ChevronRight,
   CheckCircle, XCircle, PauseCircle, ChevronDown,
@@ -54,18 +54,18 @@ function RoleDropdown({ user, onChanged }: { user: User; onChanged: () => void }
       <button
         onClick={() => setOpen((o) => !o)}
         disabled={loading}
-        className="inline-flex items-center gap-1 rounded-md bg-gray-50 border border-gray-200 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100"
+        className="inline-flex items-center gap-1 rounded-xl border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 hover:border-[#0D9488] hover:text-[#0D9488] transition-all duration-200"
       >
         {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : USER_ROLE_LABELS[user.role]}
         <ChevronDown className="w-3 h-3" />
       </button>
       {open && (
-        <div className="absolute z-10 mt-1 w-48 rounded-lg border border-gray-200 bg-white shadow-lg py-1">
+        <div className="absolute z-10 mt-1 w-48 rounded-xl border border-gray-200 bg-white shadow-lg py-1">
           {ASSIGNABLE_ROLES.map((role) => (
             <button
               key={role}
               onClick={() => handleSelect(role)}
-              className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-50 ${role === user.role ? 'font-semibold text-blue-700' : 'text-gray-700'}`}
+              className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-50 ${role === user.role ? 'font-semibold text-[#0D9488]' : 'text-gray-700'}`}
             >
               {USER_ROLE_LABELS[role]}
             </button>
@@ -105,7 +105,7 @@ function ActionButtons({ user, onChanged }: { user: User; onChanged: () => void 
             onClick={() => doAction('active')}
             disabled={!!loading}
             title="Approve"
-            className="inline-flex items-center gap-1 rounded-md bg-green-600 px-2 py-1 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-2 py-1 text-xs font-semibold text-white disabled:opacity-50"
           >
             {isLoading('active') ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
             Approve
@@ -114,7 +114,7 @@ function ActionButtons({ user, onChanged }: { user: User; onChanged: () => void 
             onClick={() => setRejecting(true)}
             disabled={!!loading}
             title="Reject"
-            className="inline-flex items-center gap-1 rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-200 disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-xl bg-red-600 hover:bg-red-700 px-2 py-1 text-xs font-semibold text-white disabled:opacity-50"
           >
             <XCircle className="w-3 h-3" /> Reject
           </button>
@@ -125,7 +125,7 @@ function ActionButtons({ user, onChanged }: { user: User; onChanged: () => void 
           onClick={() => doAction('suspended')}
           disabled={!!loading}
           title="Suspend"
-          className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-200 disabled:opacity-50"
+          className="inline-flex items-center gap-1 rounded-xl border border-gray-200 bg-white text-gray-700 hover:border-[#0D9488] hover:text-[#0D9488] px-2 py-1 text-xs font-semibold shadow-sm transition-all duration-200 disabled:opacity-50"
         >
           {isLoading('suspended') ? <Loader2 className="w-3 h-3 animate-spin" /> : <PauseCircle className="w-3 h-3" />}
           Suspend
@@ -135,7 +135,7 @@ function ActionButtons({ user, onChanged }: { user: User; onChanged: () => void 
         <button
           onClick={() => doAction('active')}
           disabled={!!loading}
-          className="inline-flex items-center gap-1 rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-700 hover:bg-green-200 disabled:opacity-50"
+          className="inline-flex items-center gap-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-2 py-1 text-xs font-semibold text-white disabled:opacity-50"
         >
           {isLoading('active') ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
           Reactivate
@@ -148,12 +148,12 @@ function ActionButtons({ user, onChanged }: { user: User; onChanged: () => void 
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="Reason (optional)"
-            className="rounded border border-gray-300 px-2 py-1 text-xs w-40 focus:outline-none focus:ring-1 focus:ring-red-400"
+            className="w-full rounded-xl border border-gray-200 bg-white px-2 py-1 text-xs text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300 w-40"
           />
           <button
             onClick={() => doAction('rejected', reason)}
             disabled={!!loading}
-            className="rounded bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-700 disabled:opacity-50"
+            className="rounded-xl bg-red-600 hover:bg-red-700 px-2 py-1 text-xs font-semibold text-white disabled:opacity-50"
           >
             {isLoading('rejected') ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Confirm'}
           </button>
@@ -209,34 +209,40 @@ export default function UserManagement() {
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1) }}
               placeholder="Search name or email…"
-              className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-xl border border-gray-200 bg-white pl-9 pr-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
             />
           </div>
 
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-gray-400" />
-            <select
-              value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All statuses</option>
-              <option value="pending_approval">Pending Approval</option>
-              <option value="active">Active</option>
-              <option value="suspended">Suspended</option>
-              <option value="rejected">Rejected</option>
-            </select>
+            <div className="relative">
+              <select
+                value={statusFilter}
+                onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300 appearance-none pr-10 cursor-pointer"
+              >
+                <option value="">All statuses</option>
+                <option value="pending_approval">Pending Approval</option>
+                <option value="active">Active</option>
+                <option value="suspended">Suspended</option>
+                <option value="rejected">Rejected</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            </div>
 
-            <select
-              value={roleFilter}
-              onChange={(e) => { setRoleFilter(e.target.value); setPage(1) }}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All roles</option>
-              {(Object.keys(USER_ROLE_LABELS) as UserRole[]).map((r) => (
-                <option key={r} value={r}>{USER_ROLE_LABELS[r]}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={roleFilter}
+                onChange={(e) => { setRoleFilter(e.target.value); setPage(1) }}
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300 appearance-none pr-10 cursor-pointer"
+              >
+                <option value="">All roles</option>
+                {(Object.keys(USER_ROLE_LABELS) as UserRole[]).map((r) => (
+                  <option key={r} value={r}>{USER_ROLE_LABELS[r]}</option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            </div>
           </div>
 
           {isFetching && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}

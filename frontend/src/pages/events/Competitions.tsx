@@ -50,12 +50,12 @@ export default function Competitions() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search competitions…"
-              className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-xl border border-gray-200 bg-white pl-9 pr-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
             />
           </div>
           <button
             type="submit"
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200"
           >
             Search
           </button>
@@ -106,7 +106,7 @@ export default function Competitions() {
 
                   <Link
                     to={`/events/${comp.id}`}
-                    className="text-base font-semibold text-gray-900 hover:text-blue-700 mb-2 block line-clamp-2"
+                    className="text-base font-semibold text-gray-900 hover:text-[#0D9488] mb-2 block line-clamp-2"
                   >
                     {comp.title}
                   </Link>
@@ -133,7 +133,7 @@ export default function Competitions() {
 
                   <Link
                     to={`/events/${comp.id}`}
-                    className="mt-auto inline-flex justify-center items-center rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600"
+                    className="mt-auto inline-flex justify-center items-center rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200"
                   >
                     {comp.is_registration_open ? 'Enter Competition' : 'View Details'}
                   </Link>

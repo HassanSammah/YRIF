@@ -60,81 +60,90 @@ function EventFormModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 my-4">
-        <h2 className="text-base font-semibold text-gray-900 mb-4">
-          {isEdit ? 'Edit Event' : 'Create Event'}
-        </h2>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg my-4">
+        <div className="border-b border-gray-100 px-6 py-4">
+          <h2 className="text-lg font-semibold text-[#093344]">
+            {isEdit ? 'Edit Event' : 'Create Event'}
+          </h2>
+        </div>
 
-        <div className="space-y-4">
+        <div className="px-6 py-5 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Title *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Title *</label>
             <input
               {...field('title')}
               required
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Description *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Description *</label>
             <textarea
               {...field('description')}
               required
               rows={3}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Type *</label>
-              <select
-                {...field('event_type')}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {(Object.entries(EVENT_TYPE_LABELS) as [EventType, string][]).map(([val, label]) => (
-                  <option key={val} value={val}>{label}</option>
-                ))}
-              </select>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Type *</label>
+              <div className="relative">
+                <select
+                  {...field('event_type')}
+                  className="w-full appearance-none pr-10 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
+                >
+                  {(Object.entries(EVENT_TYPE_LABELS) as [EventType, string][]).map(([val, label]) => (
+                    <option key={val} value={val}>{label}</option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Max Participants</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Max Participants</label>
               <input
                 type="number"
                 min="1"
                 {...field('max_participants')}
                 placeholder="Unlimited"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Start Date *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Start Date *</label>
               <input type="datetime-local" {...field('start_date')} required
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">End Date *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">End Date *</label>
               <input type="datetime-local" {...field('end_date')} required
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Registration Deadline</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Registration Deadline</label>
             <input type="datetime-local" {...field('registration_deadline')}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Location</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Location</label>
             <input {...field('location')} placeholder="Venue or city"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
             />
           </div>
 
@@ -151,34 +160,38 @@ function EventFormModal({
 
           {form.is_online && (
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Online Link</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Online Link</label>
               <input type="url" {...field('online_link')} placeholder="https://..."
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
               />
             </div>
           )}
-        </div>
 
-        {error && <p className="text-xs text-red-500 mt-3">{error}</p>}
+          {error && (
+            <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
 
-        <div className="flex gap-2 mt-5">
-          <button
-            type="button"
-            onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isLoading}
-            className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-          >
-            {saveMutation.isLoading
-              ? <Loader2 className="w-4 h-4 animate-spin mx-auto" />
-              : isEdit ? 'Save Changes' : 'Create Event'}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 rounded-lg border border-gray-300 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            Cancel
-          </button>
+          <div className="flex gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => saveMutation.mutate()}
+              disabled={saveMutation.isLoading}
+              className="flex-1 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/50 focus:ring-offset-2"
+            >
+              {saveMutation.isLoading
+                ? <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                : isEdit ? 'Save Changes' : 'Create Event'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 rounded-xl border border-gray-200 bg-white text-gray-700 hover:border-[#0D9488] hover:text-[#0D9488] px-4 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -220,77 +233,92 @@ function PublishWinnersModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-1 flex items-center gap-2">
-          <Trophy className="w-4 h-4 text-amber-500" /> Publish Winners
-        </h2>
-        <p className="text-sm text-gray-500 mb-4 line-clamp-1 italic">{event.title}</p>
-
-        <div className="space-y-3 mb-4">
-          {winners.map((w, i) => (
-            <div key={i} className="flex gap-2">
-              <select
-                value={w.registration_id}
-                onChange={(e) => updateWinner(i, 'registration_id', e.target.value)}
-                aria-label={`Winner ${i + 1} participant`}
-                disabled={regsLoading}
-                className="flex-1 rounded-lg border border-gray-300 px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select participant…</option>
-                {(regs?.results as EventRegistration[] ?? [])
-                  .filter((r) => r.status !== 'cancelled')
-                  .map((r) => (
-                    <option key={r.id} value={r.id}>{r.participant_name}</option>
-                  ))}
-              </select>
-              <input
-                value={w.rank}
-                onChange={(e) => updateWinner(i, 'rank', e.target.value)}
-                placeholder="Rank"
-                className="w-32 rounded-lg border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {winners.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => setWinners((prev) => prev.filter((_, idx) => idx !== i))}
-                  className="text-red-400 hover:text-red-600 text-xs px-1"
-                  aria-label="Remove winner"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          ))}
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div className="border-b border-gray-100 px-6 py-4">
+          <h2 className="text-lg font-semibold text-[#093344] flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-amber-500" /> Publish Winners
+          </h2>
+          <p className="text-sm text-gray-500 mt-0.5 line-clamp-1 italic">{event.title}</p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setWinners((prev) => [...prev, { registration_id: '', rank: '' }])}
-          className="text-xs text-blue-600 hover:underline mb-4 block"
-        >
-          + Add another winner
-        </button>
+        <div className="px-6 py-5">
+          <div className="space-y-3 mb-4">
+            {winners.map((w, i) => (
+              <div key={i} className="flex gap-2">
+                <div className="relative flex-1">
+                  <select
+                    value={w.registration_id}
+                    onChange={(e) => updateWinner(i, 'registration_id', e.target.value)}
+                    aria-label={`Winner ${i + 1} participant`}
+                    disabled={regsLoading}
+                    className="w-full appearance-none pr-10 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
+                  >
+                    <option value="">Select participant…</option>
+                    {(regs?.results as EventRegistration[] ?? [])
+                      .filter((r) => r.status !== 'cancelled')
+                      .map((r) => (
+                        <option key={r.id} value={r.id}>{r.participant_name}</option>
+                      ))}
+                  </select>
+                  <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+                <input
+                  value={w.rank}
+                  onChange={(e) => updateWinner(i, 'rank', e.target.value)}
+                  placeholder="Rank"
+                  className="w-32 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
+                />
+                {winners.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setWinners((prev) => prev.filter((_, idx) => idx !== i))}
+                    className="text-red-400 hover:text-red-600 text-xs px-1"
+                    aria-label="Remove winner"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
 
-        {error && <p className="text-xs text-red-500 mb-3">{error}</p>}
-
-        <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => publishMutation.mutate()}
-            disabled={publishMutation.isLoading}
-            className="flex-1 rounded-lg bg-amber-500 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
+            onClick={() => setWinners((prev) => [...prev, { registration_id: '', rank: '' }])}
+            className="text-xs text-[#0D9488] hover:underline mb-4 block"
           >
-            {publishMutation.isLoading
-              ? <Loader2 className="w-4 h-4 animate-spin mx-auto" />
-              : 'Publish Winners'}
+            + Add another winner
           </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 rounded-lg border border-gray-300 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            Cancel
-          </button>
+
+          {error && (
+            <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 mb-3">
+              {error}
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => publishMutation.mutate()}
+              disabled={publishMutation.isLoading}
+              className="flex-1 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/50 focus:ring-offset-2"
+            >
+              {publishMutation.isLoading
+                ? <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                : 'Publish Winners'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 rounded-xl border border-gray-200 bg-white text-gray-700 hover:border-[#0D9488] hover:text-[#0D9488] px-4 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -329,7 +357,7 @@ function EventRow({ event, onRefresh }: { event: Event; onRefresh: () => void })
         <td className="px-4 py-3">
           <Link
             to={`/events/${event.id}`}
-            className="font-medium text-gray-900 hover:text-blue-700 text-sm line-clamp-1 block"
+            className="font-medium text-gray-900 hover:text-[#0D9488] text-sm line-clamp-1 block"
           >
             {event.title}
           </Link>
@@ -407,7 +435,7 @@ function EventRow({ event, onRefresh }: { event: Event; onRefresh: () => void })
                 }
               }}
               disabled={deleteMutation.isLoading}
-              className="inline-flex items-center gap-1 rounded-md bg-red-50 border border-red-100 px-2 py-1 text-xs text-red-600 hover:bg-red-100 disabled:opacity-50"
+              className="inline-flex items-center gap-1 rounded-xl bg-red-600 hover:bg-red-700 px-2 py-1 text-xs font-semibold text-white disabled:opacity-50"
             >
               {deleteMutation.isLoading
                 ? <Loader2 className="w-3 h-3 animate-spin" />
@@ -461,7 +489,7 @@ export default function EventManagement() {
         <button
           type="button"
           onClick={() => setCreating(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/50 focus:ring-offset-2"
         >
           <Plus className="w-4 h-4" /> Create Event
         </button>
@@ -476,32 +504,46 @@ export default function EventManagement() {
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1) }}
               placeholder="Search events…"
-              className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-xl border border-gray-200 bg-white pl-9 pr-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
             />
           </div>
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-gray-400" />
-            <select
-              value={typeFilter}
-              onChange={(e) => { setTypeFilter(e.target.value); setPage(1) }}
-              aria-label="Filter by type"
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All types</option>
-              {(Object.entries(EVENT_TYPE_LABELS) as [EventType, string][]).map(([v, l]) => (
-                <option key={v} value={v}>{l}</option>
-              ))}
-            </select>
-            <select
-              value={publishedFilter}
-              onChange={(e) => { setPublishedFilter(e.target.value); setPage(1) }}
-              aria-label="Filter by status"
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All statuses</option>
-              <option value="true">Published</option>
-              <option value="false">Draft</option>
-            </select>
+            <div className="relative">
+              <select
+                value={typeFilter}
+                onChange={(e) => { setTypeFilter(e.target.value); setPage(1) }}
+                aria-label="Filter by type"
+                className="appearance-none pr-10 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
+              >
+                <option value="">All types</option>
+                {(Object.entries(EVENT_TYPE_LABELS) as [EventType, string][]).map(([v, l]) => (
+                  <option key={v} value={v}>{l}</option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+            <div className="relative">
+              <select
+                value={publishedFilter}
+                onChange={(e) => { setPublishedFilter(e.target.value); setPage(1) }}
+                aria-label="Filter by status"
+                className="appearance-none pr-10 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
+              >
+                <option value="">All statuses</option>
+                <option value="true">Published</option>
+                <option value="false">Draft</option>
+              </select>
+              <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
           {isFetching && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
         </div>
@@ -519,7 +561,7 @@ export default function EventManagement() {
             <button
               type="button"
               onClick={() => setCreating(true)}
-              className="text-blue-600 hover:underline"
+              className="text-[#0D9488] hover:underline"
             >
               Create one
             </button>

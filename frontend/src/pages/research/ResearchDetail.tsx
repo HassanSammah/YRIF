@@ -142,7 +142,7 @@ export default function ResearchDetail() {
           <button
             onClick={() => downloadMutation.mutate()}
             disabled={downloadMutation.isLoading}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
           >
             {downloadMutation.isLoading
               ? <Loader2 className="w-4 h-4 animate-spin" />
@@ -169,7 +169,7 @@ export default function ResearchDetail() {
               <button
                 onClick={() => publishMutation.mutate()}
                 disabled={publishMutation.isLoading}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50 hover:bg-emerald-700"
               >
                 {publishMutation.isLoading
                   ? <Loader2 className="w-4 h-4 animate-spin" />
@@ -182,7 +182,7 @@ export default function ResearchDetail() {
                 <button
                   onClick={() => decideMutation.mutate({ decision: 'approve' })}
                   disabled={decideMutation.isLoading}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50 hover:bg-green-700"
                 >
                   <CheckCircle className="w-4 h-4" /> Approve
                 </button>
@@ -192,7 +192,7 @@ export default function ResearchDetail() {
                     decideMutation.mutate({ decision: 'reject', reason })
                   }}
                   disabled={decideMutation.isLoading}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-red-100 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-200 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white text-red-700 hover:border-red-300 hover:bg-red-50 px-4 py-2.5 text-sm font-semibold transition-all duration-200 disabled:opacity-50"
                 >
                   <XCircle className="w-4 h-4" /> Reject
                 </button>
@@ -228,13 +228,13 @@ export default function ResearchDetail() {
                 required
                 rows={4}
                 placeholder="Your review comments…"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300 resize-none"
               />
               <div className="flex items-center gap-3">
                 <select
                   value={commentForm.decision}
                   onChange={(e) => setCommentForm((f) => ({ ...f, decision: e.target.value }))}
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
                 >
                   <option value="approve">Recommend Approval</option>
                   <option value="reject">Recommend Rejection</option>
@@ -243,7 +243,7 @@ export default function ResearchDetail() {
                 <button
                   type="submit"
                   disabled={commentMutation.isLoading}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
                 >
                   {commentMutation.isLoading
                     ? <Loader2 className="w-4 h-4 animate-spin" />

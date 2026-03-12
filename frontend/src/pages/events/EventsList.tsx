@@ -3,14 +3,14 @@ import { useQuery } from 'react-query'
 import { Link } from 'react-router-dom'
 import {
   Search, Calendar, MapPin, Globe, Users, Filter,
-  ChevronLeft, ChevronRight, Loader2, Trophy,
+  ChevronLeft, ChevronRight, Loader2, Trophy, ChevronDown,
 } from 'lucide-react'
 import { eventsApi } from '@/api/events'
 import { EVENT_TYPE_LABELS } from '@/types/events'
 import type { EventType } from '@/types/events'
 
 const TYPE_COLORS: Record<EventType, string> = {
-  seminar: 'bg-blue-50 text-blue-700',
+  seminar: 'bg-teal-50 text-teal-700',
   workshop: 'bg-purple-50 text-purple-700',
   bonanza: 'bg-orange-50 text-orange-700',
   competition: 'bg-emerald-50 text-emerald-700',
@@ -68,12 +68,12 @@ export default function EventsList() {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search events…"
-                className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-xl border border-gray-200 bg-white pl-9 pr-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300"
               />
             </div>
             <button
               type="submit"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200"
             >
               Search
             </button>
@@ -81,16 +81,19 @@ export default function EventsList() {
 
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-gray-400" />
-            <select
-              value={typeFilter}
-              onChange={(e) => { setTypeFilter(e.target.value as EventType | ''); setPage(1) }}
-              aria-label="Filter by event type"
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {EVENT_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={typeFilter}
+                onChange={(e) => { setTypeFilter(e.target.value as EventType | ''); setPage(1) }}
+                aria-label="Filter by event type"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] hover:border-gray-300 appearance-none pr-10 cursor-pointer"
+              >
+                {EVENT_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            </div>
           </div>
         </div>
       </div>
@@ -117,7 +120,7 @@ export default function EventsList() {
               return (
                 <div
                   key={event.id}
-                  className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:border-blue-200 transition-colors"
+                  className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:border-[#0D9488]/40 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
@@ -140,7 +143,7 @@ export default function EventsList() {
 
                       <Link
                         to={`/events/${event.id}`}
-                        className="text-base font-semibold text-gray-900 hover:text-blue-700 block line-clamp-1"
+                        className="text-base font-semibold text-gray-900 hover:text-[#0D9488] block line-clamp-1"
                       >
                         {event.title}
                       </Link>
@@ -159,7 +162,7 @@ export default function EventsList() {
                           </span>
                         )}
                         {event.is_online && (
-                          <span className="flex items-center gap-1.5 text-blue-500">
+                          <span className="flex items-center gap-1.5 text-[#0D9488]">
                             <Globe className="w-3.5 h-3.5" /> Online
                           </span>
                         )}
@@ -173,7 +176,7 @@ export default function EventsList() {
 
                     <Link
                       to={`/events/${event.id}`}
-                      className="flex-shrink-0 rounded-lg bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 hover:bg-blue-100 whitespace-nowrap"
+                      className="flex-shrink-0 rounded-xl border border-gray-200 bg-white text-gray-700 hover:border-[#0D9488] hover:text-[#0D9488] px-3 py-2 text-xs font-semibold shadow-sm transition-all duration-200 whitespace-nowrap"
                     >
                       View
                     </Link>

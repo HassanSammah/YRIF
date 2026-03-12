@@ -6,19 +6,105 @@ on:
 
 concurrency:
   group: deploy-production
-  cancel-in-progress: false   # never cancel an in-flight production deploy
+  cancel-in-progress: false   # NEVER cancel an in-flight production deploy
 
 jobs:
-  deploy-production:
-    name: Deploy to Production
+  # ── CI gate ────────────────────────────────────────────────────────────────
+  ci:
+    name: CI gate
+    uses: ./.github/workflows/ci.yml
+
+  # ── Build & push images ────────────────────────────────────────────────────
+  build:
+    name: Build & push Docker images
     runs-on: ubuntu-latest
-    environment: production    # requires manual approval gate in GitHub settings
+    needs: ci
+    environment: production   # manual approval gate configured in GitHub Settings
+
+    permissions:
+      contents: read
+      packages: write   # required to push to GHCR
+
+    outputs:
+      backend_image: ${{ steps.be-meta.outputs.tags }}
+      frontend_image: ${{ steps.fe-meta.outputs.tags }}
+      short_sha: ${{ steps.sha.outputs.short }}
 
     steps:
       - uses: actions/checkout@v4
 
-      # ── Backend ──────────────────────────────────────────────────
-      - name: Set up Python
+      - name: Short SHA
+        id: sha
+        run: echo "short=${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ── Backend ───────────────────────────────────────────────────────────
+      - name: Backend image metadata
+        id: be-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/yrif-backend
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=prod-
+
+      - name: Build & push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ steps.be-meta.outputs.tags }}
+          labels: ${{ steps.be-meta.outputs.labels }}
+          build-args: |
+            SECRET_KEY=${{ secrets.PROD_SECRET_KEY }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ── Frontend ──────────────────────────────────────────────────────────
+      - name: Frontend image metadata
+        id: fe-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/yrif-frontend
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=prod-
+
+      - name: Build & push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ steps.fe-meta.outputs.tags }}
+          labels: ${{ steps.fe-meta.outputs.labels }}
+          build-args: |
+            VITE_API_BASE_URL=${{ secrets.PROD_API_BASE_URL }}
+            VITE_SUPABASE_URL=${{ secrets.PROD_SUPABASE_URL }}
+            VITE_SUPABASE_ANON_KEY=${{ secrets.PROD_SUPABASE_ANON_KEY }}
+            VITE_GOOGLE_CLIENT_ID=${{ secrets.PROD_GOOGLE_CLIENT_ID }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── Database migrations ────────────────────────────────────────────────────
+  migrate:
+    name: Run database migrations
+    runs-on: ubuntu-latest
+    needs: build
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -28,52 +114,95 @@ jobs:
       - name: Install backend dependencies
         run: pip install -r backend/requirements/production.txt
 
-      # ── Frontend ─────────────────────────────────────────────────
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install frontend dependencies
-        run: npm ci
-        working-directory: frontend
-
-      - name: Build frontend
+      - name: Run migrations
         env:
-          VITE_SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
-          VITE_API_BASE_URL: ${{ secrets.PROD_API_BASE_URL }}
-        run: npm run build
-        working-directory: frontend
-
-      # ── Database migrations ───────────────────────────────────────
-      - name: Run Django migrations
-        env:
+          DJANGO_SETTINGS_MODULE: config.settings.production
           SECRET_KEY: ${{ secrets.PROD_SECRET_KEY }}
           DB_NAME: ${{ secrets.PROD_DB_NAME }}
           DB_USER: ${{ secrets.PROD_DB_USER }}
           DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
           DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          DB_PORT: ${{ secrets.PROD_DB_PORT || '5432' }}
+          REDIS_URL: ${{ secrets.PROD_REDIS_URL }}
+          ALLOWED_HOSTS: ${{ secrets.PROD_ALLOWED_HOSTS }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.PROD_CORS_ALLOWED_ORIGINS }}
+          GOOGLE_CLIENT_ID: ${{ secrets.PROD_GOOGLE_CLIENT_ID }}
+          SENTRY_DSN: ${{ secrets.PROD_SENTRY_DSN }}
+          BRIQ_API_KEY: ${{ secrets.PROD_BRIQ_API_KEY || 'placeholder' }}
+          BRIQ_APP_KEY: ${{ secrets.PROD_BRIQ_APP_KEY || 'placeholder' }}
         run: |
           cd backend
+          echo "Checking for pending migrations..."
+          python manage.py showmigrations --plan | tail -20
+          echo "Running migrate..."
           python manage.py migrate --no-input
+          echo "Migrations complete."
 
-      # ── Deploy ───────────────────────────────────────────────────
-      # Replace this step with your actual deployment command.
-      - name: Deploy to production server
+  # ── Deploy ─────────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, migrate]
+    environment: production
+
+    steps:
+      - name: Trigger production deploy
         env:
           PROD_DEPLOY_HOOK: ${{ secrets.PROD_DEPLOY_HOOK }}
         run: |
-          echo "Deploying commit ${{ github.sha }} to production..."
-          # TODO: add your deploy command here, e.g.:
-          # curl -X POST "$PROD_DEPLOY_HOOK"
-          echo "Deploy step placeholder – configure PROD_DEPLOY_HOOK secret."
+          if [ -z "$PROD_DEPLOY_HOOK" ]; then
+            echo "::error::PROD_DEPLOY_HOOK secret is not set. Cannot deploy."
+            exit 1
+          fi
+          echo "Triggering production deploy for commit ${{ github.sha }}..."
+          HTTP_STATUS=$(curl -s -o /tmp/deploy_response.txt -w "%{http_code}" \
+            -X POST "$PROD_DEPLOY_HOOK" \
+            -H "Content-Type: application/json" \
+            --max-time 30)
+          cat /tmp/deploy_response.txt
+          if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 300 ]; then
+            echo "::error::Deploy hook returned HTTP $HTTP_STATUS — deploy may have failed."
+            exit 1
+          fi
+          echo "Deploy hook triggered successfully (HTTP $HTTP_STATUS)."
 
-      # ── Notify ───────────────────────────────────────────────────
+      - name: Health check (production)
+        env:
+          PROD_API_BASE_URL: ${{ secrets.PROD_API_BASE_URL }}
+        run: |
+          if [ -z "$PROD_API_BASE_URL" ]; then
+            echo "::warning::PROD_API_BASE_URL not set — skipping health check."
+            exit 0
+          fi
+          echo "Waiting 45s for deployment to settle..."
+          sleep 45
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$PROD_API_BASE_URL/health/")
+            echo "Attempt $i: HTTP $STATUS"
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Production health check passed."
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::Production health check failed after 5 attempts."
+          exit 1
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✅ Production deploy succeeded: ${{ github.sha }}"
+          echo "Deployed by: ${{ github.actor }}"
+          # Uncomment and configure to send real notifications:
+          # curl -s -X POST "${{ secrets.SLACK_WEBHOOK }}" \
+          #   -H "Content-Type: application/json" \
+          #   -d "{\"text\":\"✅ YRIF production deployed: \`${{ github.sha }}\` by ${{ github.actor }}\"}"
+
       - name: Notify on failure
         if: failure()
         run: |
-          echo "Production deploy FAILED for ${{ github.sha }}."
-          # TODO: add Slack/email/Sentry alert here
+          echo "::error::🚨 PRODUCTION deploy FAILED for commit ${{ github.sha }} by ${{ github.actor }}."
+          # Uncomment and configure to send real notifications:
+          # curl -s -X POST "${{ secrets.SLACK_WEBHOOK }}" \
+          #   -H "Content-Type: application/json" \
+          #   -d "{\"text\":\"🚨 YRIF PRODUCTION deploy FAILED: \`${{ github.sha }}\` by ${{ github.actor }}\"}"

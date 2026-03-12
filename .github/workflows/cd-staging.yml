@@ -6,19 +6,103 @@ on:
 
 concurrency:
   group: deploy-staging
-  cancel-in-progress: true
+  cancel-in-progress: true   # cancel any in-flight staging deploy when a new one starts
 
 jobs:
-  deploy-staging:
+  # ── CI gate ────────────────────────────────────────────────────────────────
+  # Re-run the full CI suite on the staging branch before deploying.
+  ci:
+    name: CI gate
+    uses: ./.github/workflows/ci.yml
+
+  # ── Build & push images ────────────────────────────────────────────────────
+  build:
+    name: Build & push Docker images
+    runs-on: ubuntu-latest
+    needs: ci
+    environment: staging
+
+    permissions:
+      contents: read
+      packages: write   # required to push to GHCR
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Docker image metadata (tags + labels)
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/yrif-backend
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=staging-
+
+      # ── Backend image ──────────────────────────────────────────────────────
+      - name: Build & push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            SECRET_KEY=${{ secrets.STAGING_SECRET_KEY }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ── Frontend image ─────────────────────────────────────────────────────
+      - name: Frontend Docker metadata
+        id: fe-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/yrif-frontend
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=staging-
+
+      - name: Build & push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ steps.fe-meta.outputs.tags }}
+          labels: ${{ steps.fe-meta.outputs.labels }}
+          build-args: |
+            VITE_API_BASE_URL=${{ secrets.STAGING_API_BASE_URL }}
+            VITE_SUPABASE_URL=${{ secrets.STAGING_SUPABASE_URL }}
+            VITE_SUPABASE_ANON_KEY=${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+            VITE_GOOGLE_CLIENT_ID=${{ secrets.STAGING_GOOGLE_CLIENT_ID }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── Deploy ─────────────────────────────────────────────────────────────────
+  deploy:
     name: Deploy to Staging
     runs-on: ubuntu-latest
+    needs: build
     environment: staging
 
     steps:
       - uses: actions/checkout@v4
 
-      # ── Backend ──────────────────────────────────────────────────
-      - name: Set up Python
+      - name: Set up Python (for migrations)
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -28,34 +112,71 @@ jobs:
       - name: Install backend dependencies
         run: pip install -r backend/requirements/production.txt
 
-      # ── Frontend ─────────────────────────────────────────────────
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install frontend dependencies
-        run: npm ci
-        working-directory: frontend
-
-      - name: Build frontend
+      - name: Run database migrations
         env:
-          VITE_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
-          VITE_API_BASE_URL: ${{ secrets.STAGING_API_BASE_URL }}
-        run: npm run build
-        working-directory: frontend
+          DJANGO_SETTINGS_MODULE: config.settings.production
+          SECRET_KEY: ${{ secrets.STAGING_SECRET_KEY }}
+          DB_NAME: ${{ secrets.STAGING_DB_NAME }}
+          DB_USER: ${{ secrets.STAGING_DB_USER }}
+          DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
+          DB_HOST: ${{ secrets.STAGING_DB_HOST }}
+          DB_PORT: ${{ secrets.STAGING_DB_PORT || '5432' }}
+          REDIS_URL: ${{ secrets.STAGING_REDIS_URL }}
+          ALLOWED_HOSTS: ${{ secrets.STAGING_ALLOWED_HOSTS }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.STAGING_CORS_ALLOWED_ORIGINS }}
+          GOOGLE_CLIENT_ID: ${{ secrets.STAGING_GOOGLE_CLIENT_ID }}
+          BRIQ_API_KEY: ${{ secrets.STAGING_BRIQ_API_KEY || 'placeholder' }}
+          BRIQ_APP_KEY: ${{ secrets.STAGING_BRIQ_APP_KEY || 'placeholder' }}
+        run: |
+          cd backend
+          python manage.py migrate --no-input
 
-      # ── Deploy ───────────────────────────────────────────────────
-      # Replace this step with your actual deployment command.
-      # Examples: Railway CLI, Render deploy hook, SSH + rsync, Docker push.
-      - name: Deploy to staging server
+      - name: Trigger staging deploy
         env:
           STAGING_DEPLOY_HOOK: ${{ secrets.STAGING_DEPLOY_HOOK }}
         run: |
-          echo "Deploying commit ${{ github.sha }} to staging..."
-          # TODO: add your deploy command here, e.g.:
-          # curl -X POST "$STAGING_DEPLOY_HOOK"
-          echo "Deploy step placeholder – configure STAGING_DEPLOY_HOOK secret."
+          if [ -z "$STAGING_DEPLOY_HOOK" ]; then
+            echo "::warning::STAGING_DEPLOY_HOOK secret is not set. Skipping deploy trigger."
+            exit 0
+          fi
+          echo "Triggering staging deploy for commit ${{ github.sha }}..."
+          HTTP_STATUS=$(curl -s -o /tmp/deploy_response.txt -w "%{http_code}" \
+            -X POST "$STAGING_DEPLOY_HOOK" \
+            -H "Content-Type: application/json" \
+            --max-time 30)
+          cat /tmp/deploy_response.txt
+          if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 300 ]; then
+            echo "::error::Deploy hook returned HTTP $HTTP_STATUS"
+            exit 1
+          fi
+          echo "Deploy hook triggered successfully (HTTP $HTTP_STATUS)."
+
+      - name: Health check (staging)
+        env:
+          STAGING_API_BASE_URL: ${{ secrets.STAGING_API_BASE_URL }}
+        run: |
+          if [ -z "$STAGING_API_BASE_URL" ]; then
+            echo "::warning::STAGING_API_BASE_URL not set — skipping health check."
+            exit 0
+          fi
+          echo "Waiting 30s for deployment to settle..."
+          sleep 30
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$STAGING_API_BASE_URL/health/")
+            echo "Attempt $i: HTTP $STATUS"
+            if [ "$STATUS" = "200" ]; then
+              echo "Health check passed."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::Health check failed after 5 attempts."
+          exit 1
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Staging deploy FAILED for commit ${{ github.sha }} on branch ${{ github.ref_name }}."
+          # Add Slack/email webhook here if needed:
+          # curl -s -X POST "${{ secrets.SLACK_WEBHOOK }}" \
+          #   -d "{\"text\":\"⚠️ YRIF staging deploy failed: ${{ github.sha }}\"}"

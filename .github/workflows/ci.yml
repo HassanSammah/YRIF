@@ -5,11 +5,14 @@ on:
     branches: [main, staging]
   pull_request:
     branches: [main, staging]
+  workflow_call:   # allows cd-staging and cd-production to call this as a reusable CI gate
 
 jobs:
+  # ── Backend ────────────────────────────────────────────────────────────────
   backend:
     name: Backend – lint & test
     runs-on: ubuntu-latest
+
     services:
       postgres:
         image: postgres:16-alpine
@@ -23,6 +26,7 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
       redis:
         image: redis:7-alpine
         ports: ['6379:6379']
@@ -35,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -45,31 +49,63 @@ jobs:
       - name: Install dependencies
         run: pip install -r backend/requirements/development.txt
 
-      - name: Run linter
+      - name: Lint with ruff
         run: |
           pip install ruff
           ruff check backend/
 
       - name: Run tests
         env:
-          SECRET_KEY: ci-secret-key
+          DJANGO_SETTINGS_MODULE: config.settings.development
+          SECRET_KEY: ci-only-secret-key-not-used-in-production
           DB_NAME: yrif_test
           DB_USER: yrif_user
           DB_PASSWORD: yrif_password
           DB_HOST: localhost
+          DB_PORT: '5432'
           REDIS_URL: redis://localhost:6379/0
+          GOOGLE_CLIENT_ID: ci-placeholder
+          BRIQ_API_KEY: ci-placeholder
+          BRIQ_APP_KEY: ci-placeholder
+          EMAIL_HOST_USER: ''
+          EMAIL_HOST_PASSWORD: ''
         run: |
           cd backend
           pytest --cov=apps --cov-report=xml -q
 
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: backend/coverage.xml
+          retention-days: 7
+
+  # ── Backend Docker build check ─────────────────────────────────────────────
+  backend-docker:
+    name: Backend – Docker build check
+    runs-on: ubuntu-latest
+    needs: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend Docker image (no push)
+        run: |
+          docker build \
+            --build-arg SECRET_KEY=ci-build-placeholder \
+            --tag yrif-backend:ci \
+            ./backend
+
+  # ── Frontend ───────────────────────────────────────────────────────────────
   frontend:
-    name: Frontend – lint & build
+    name: Frontend – lint, typecheck & build
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node
+      - name: Set up Node 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -84,6 +120,23 @@ jobs:
         run: npm run lint
         working-directory: frontend
 
+      - name: TypeScript check
+        run: npx tsc --noEmit
+        working-directory: frontend
+
       - name: Build
+        env:
+          # Dummy values so the build completes without real secrets
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+          VITE_API_BASE_URL: https://api.placeholder.com
+          VITE_GOOGLE_CLIENT_ID: 000000000000-placeholder.apps.googleusercontent.com
         run: npm run build
         working-directory: frontend
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+          retention-days: 1

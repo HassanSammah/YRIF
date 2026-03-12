@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { GoogleLogin } from '@react-oauth/google'
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, User, Mail, Lock, Phone, ChevronDown } from 'lucide-react'
 import { authApi } from '@/api/accounts'
 import { useAuthStore } from '@/store/auth'
 import type { UserRole } from '@/types/user'
+import logoDark from '@/assets/logos/logo-dark.svg'
+import logoWhite from '@/assets/logos/logo-white.svg'
 
 interface RegisterForm {
   first_name: string
@@ -17,13 +19,37 @@ interface RegisterForm {
   phone: string
 }
 
-const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
-  { value: 'youth', label: 'Youth / Student' },
-  { value: 'researcher', label: 'Young Researcher' },
-  { value: 'mentor', label: 'Mentor' },
-  { value: 'research_assistant', label: 'Research Assistant' },
-  { value: 'industry_partner', label: 'Industry / Community Partner' },
+const ROLE_OPTIONS: { value: UserRole; label: string; desc: string }[] = [
+  { value: 'youth', label: 'Youth / Student', desc: 'University or secondary school student' },
+  { value: 'researcher', label: 'Young Researcher', desc: 'Conducting independent research' },
+  { value: 'mentor', label: 'Mentor', desc: 'Guide and support young researchers' },
+  { value: 'research_assistant', label: 'Research Assistant', desc: 'Support ongoing research projects' },
+  { value: 'industry_partner', label: 'Industry / Community Partner', desc: 'Organisation or industry collaborator' },
 ]
+
+function Field({ id, label, hint, error, children }: {
+  id: string; label: string; hint?: string; error?: string; children: React.ReactNode
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700">{label}</label>
+      {children}
+      {hint && !error && <p className="text-xs text-gray-400">{hint}</p>}
+      {error && <p className="text-xs text-red-600">{error}</p>}
+    </div>
+  )
+}
+
+function inputCls(hasError?: boolean) {
+  return [
+    'w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-gray-900',
+    'placeholder:text-gray-400 transition-all duration-150',
+    'focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488]',
+    hasError
+      ? 'border-red-400 focus:ring-red-400/30 focus:border-red-400'
+      : 'border-gray-200 hover:border-gray-300',
+  ].join(' ')
+}
 
 export default function Register() {
   const navigate = useNavigate()
@@ -31,12 +57,8 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false)
   const [serverError, setServerError] = useState('')
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors, isSubmitting },
-  } = useForm<RegisterForm>({ defaultValues: { role: 'youth' } })
+  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } =
+    useForm<RegisterForm>({ defaultValues: { role: 'youth' } })
 
   const onSubmit = async (data: RegisterForm) => {
     setServerError('')
@@ -53,10 +75,7 @@ export default function Register() {
     } catch (err: unknown) {
       const errData = (err as { response?: { data?: Record<string, string | string[]> } })?.response?.data
       if (errData) {
-        const messages = Object.values(errData)
-          .flat()
-          .join(' ')
-        setServerError(messages || 'Registration failed. Please try again.')
+        setServerError(Object.values(errData).flat().join(' ') || 'Registration failed.')
       } else {
         setServerError('Registration failed. Please try again.')
       }
@@ -75,133 +94,158 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
-            <span className="text-white text-xl font-bold">Y</span>
+    <div className="min-h-screen flex">
+      {/* ── Left brand panel ── */}
+      <div className="hidden lg:flex lg:w-[38%] xl:w-[42%] flex-col bg-[#093344] relative overflow-hidden flex-shrink-0">
+        <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-white/5" />
+        <div className="absolute bottom-10 -left-12 w-56 h-56 rounded-full bg-[#0D9488]/20" />
+        <div className="absolute top-1/3 right-4 w-24 h-24 rounded-full bg-[#df8d31]/10" />
+
+        <div className="relative z-10 px-10 pt-10">
+          <img src={logoWhite} alt="YRIF" className="h-9 w-auto" />
+        </div>
+
+        <div className="relative z-10 flex-1 flex flex-col justify-center px-10 pb-10">
+          <h1 className="text-3xl font-bold text-white font-display leading-snug">
+            Join YRIF<br />and Shape<br />Tanzania's Future
+          </h1>
+          <p className="mt-4 text-white/65 text-sm leading-relaxed max-w-xs">
+            Create your account and become part of a growing community of young researchers and innovators.
+          </p>
+
+          <div className="mt-8 p-5 rounded-2xl bg-white/8 border border-white/10">
+            <p className="text-white/50 text-xs uppercase tracking-widest font-semibold mb-3">Who can join?</p>
+            <ul className="space-y-2">
+              {ROLE_OPTIONS.map((r) => (
+                <li key={r.value} className="text-sm text-white/70 flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#0D9488] mt-1.5 flex-shrink-0" />
+                  <span>
+                    <span className="text-white font-medium">{r.label}</span>
+                    {' — '}
+                    <span className="text-white/50 text-xs">{r.desc}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
-        <h2 className="mt-4 text-center text-2xl font-bold text-gray-900">
-          Create your account
-        </h2>
-        <p className="mt-1 text-center text-sm text-gray-500">
-          Join the Youth Research &amp; Innovation Foundation
+
+        <p className="relative z-10 px-10 pb-8 text-white/25 text-xs">
+          © {new Date().getFullYear()} YRIF · Tanzania
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-sm rounded-xl border border-gray-100">
+      {/* ── Right form panel ── */}
+      <div className="flex-1 flex flex-col justify-center px-6 sm:px-10 lg:px-12 xl:px-16 py-10 bg-white overflow-y-auto">
+        <div className="w-full max-w-lg mx-auto">
+          {/* Mobile logo */}
+          <div className="lg:hidden flex justify-center mb-6">
+            <img src={logoDark} alt="YRIF" className="h-9 w-auto" />
+          </div>
+
+          <div className="mb-7">
+            <h2 className="text-2xl font-bold text-[#093344] font-display">Create your account</h2>
+            <p className="text-gray-500 text-sm mt-1">Fill in your details to get started</p>
+          </div>
+
           {serverError && (
-            <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            <div className="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
               {serverError}
             </div>
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+            {/* Name row */}
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  First name
-                </label>
-                <input
-                  id="first_name"
-                  type="text"
-                  autoComplete="given-name"
-                  className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.first_name ? 'border-red-400' : 'border-gray-300'
-                  }`}
-                  {...register('first_name', { required: 'Required' })}
-                />
-                {errors.first_name && (
-                  <p className="mt-1 text-xs text-red-600">{errors.first_name.message}</p>
-                )}
-              </div>
-              <div>
-                <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Last name
-                </label>
+              <Field id="first_name" label="First name" error={errors.first_name?.message}>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                  <input
+                    id="first_name"
+                    type="text"
+                    autoComplete="given-name"
+                    placeholder="Hassan"
+                    className={`${inputCls(!!errors.first_name)} pl-9`}
+                    {...register('first_name', { required: 'Required' })}
+                  />
+                </div>
+              </Field>
+              <Field id="last_name" label="Last name" error={errors.last_name?.message}>
                 <input
                   id="last_name"
                   type="text"
                   autoComplete="family-name"
-                  className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.last_name ? 'border-red-400' : 'border-gray-300'
-                  }`}
+                  placeholder="Samma"
+                  className={inputCls(!!errors.last_name)}
                   {...register('last_name', { required: 'Required' })}
                 />
-                {errors.last_name && (
-                  <p className="mt-1 text-xs text-red-600">{errors.last_name.message}</p>
-                )}
-              </div>
+              </Field>
             </div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email address
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.email ? 'border-red-400' : 'border-gray-300'
-                }`}
-                {...register('email', {
-                  required: 'Email is required',
-                  pattern: { value: /\S+@\S+\.\S+/, message: 'Enter a valid email' },
-                })}
-              />
-              {errors.email && (
-                <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                Role
-              </label>
-              <select
-                id="role"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                {...register('role', { required: 'Select a role' })}
-              >
-                {ROLE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                Phone number{' '}
-                <span className="text-gray-400 font-normal">(optional)</span>
-              </label>
-              <input
-                id="phone"
-                type="tel"
-                autoComplete="tel"
-                placeholder="+255 7XX XXX XXX"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                {...register('phone')}
-              />
-              <p className="mt-1 text-xs text-gray-400">Used for SMS notifications and phone verification via Briq</p>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
+            {/* Email */}
+            <Field id="email" label="Email address" error={errors.email?.message}>
               <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  className={`${inputCls(!!errors.email)} pl-9`}
+                  {...register('email', {
+                    required: 'Email is required',
+                    pattern: { value: /\S+@\S+\.\S+/, message: 'Enter a valid email' },
+                  })}
+                />
+              </div>
+            </Field>
+
+            {/* Role */}
+            <Field id="role" label="I am a…" error={errors.role?.message}>
+              <div className="relative">
+                <select
+                  id="role"
+                  className={`${inputCls(!!errors.role)} appearance-none pr-9`}
+                  {...register('role', { required: 'Please select a role' })}
+                >
+                  {ROLE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              </div>
+            </Field>
+
+            {/* Phone */}
+            <Field
+              id="phone"
+              label="Phone number"
+              hint="Used for SMS notifications and Briq OTP verification"
+              error={errors.phone?.message}
+            >
+              <div className="relative">
+                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                <input
+                  id="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  placeholder="+255 7XX XXX XXX (optional)"
+                  className={`${inputCls()} pl-9`}
+                  {...register('phone')}
+                />
+              </div>
+            </Field>
+
+            {/* Password */}
+            <Field id="password" label="Password" error={errors.password?.message}>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="new-password"
-                  className={`w-full rounded-lg border px-3 py-2 pr-10 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.password ? 'border-red-400' : 'border-gray-300'
-                  }`}
+                  placeholder="Min. 8 characters"
+                  className={`${inputCls(!!errors.password)} pl-9 pr-10`}
                   {...register('password', {
                     required: 'Password is required',
                     minLength: { value: 8, message: 'At least 8 characters' },
@@ -210,71 +254,59 @@ export default function Register() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label={showPassword ? 'Hide' : 'Show'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {errors.password && (
-                <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>
-              )}
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="confirm_password" className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm password
-              </label>
+            {/* Confirm password */}
+            <Field id="confirm_password" label="Confirm password" error={errors.confirm_password?.message}>
               <input
                 id="confirm_password"
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="new-password"
-                className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.confirm_password ? 'border-red-400' : 'border-gray-300'
-                }`}
+                placeholder="Repeat password"
+                className={inputCls(!!errors.confirm_password)}
                 {...register('confirm_password', {
                   required: 'Please confirm your password',
                   validate: (val) => val === watch('password') || 'Passwords do not match',
                 })}
               />
-              {errors.confirm_password && (
-                <p className="mt-1 text-xs text-red-600">{errors.confirm_password.message}</p>
-              )}
-            </div>
+            </Field>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex justify-center items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-2"
+              className="w-full flex justify-center items-center gap-2 rounded-xl bg-[#093344] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0D9488] focus:outline-none focus:ring-2 focus:ring-[#0D9488]/50 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm mt-1"
             >
               {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Create account
             </button>
           </form>
 
-          <div className="mt-5">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-white px-3 text-gray-400">or sign up with</span>
-              </div>
-            </div>
+          {/* Divider */}
+          <div className="my-5 flex items-center gap-3">
+            <div className="flex-1 h-px bg-gray-100" />
+            <span className="text-xs text-gray-400 font-medium">or sign up with</span>
+            <div className="flex-1 h-px bg-gray-100" />
+          </div>
 
-            <div className="mt-4 flex justify-center">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => setServerError('Google sign-up failed. Please try again.')}
-                text="signup_with"
-                shape="rectangular"
-                width="320"
-              />
-            </div>
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setServerError('Google sign-up failed. Please try again.')}
+              text="signup_with"
+              shape="rectangular"
+              width="320"
+            />
           </div>
 
           <p className="mt-6 text-center text-sm text-gray-500">
             Already have an account?{' '}
-            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link to="/login" className="font-semibold text-[#0D9488] hover:text-[#093344] transition-colors">
               Sign in
             </Link>
           </p>

@@ -93,6 +93,19 @@ body {
   to   { transform: translateX(-50%); }
 }
 
+/* ─── Fix browser autofill blue background ──────────────────────────────── */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+select:-webkit-autofill,
+textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #111827 !important;
+  caret-color: #111827;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 /* ─── Sidebar scrollbar ──────────────────────────────────────────────────── */
 .scrollbar-thin::-webkit-scrollbar { width: 4px; }
 .scrollbar-track-transparent::-webkit-scrollbar-track { background: transparent; }

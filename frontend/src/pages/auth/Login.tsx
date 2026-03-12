@@ -2,12 +2,42 @@ import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { GoogleLogin } from '@react-oauth/google'
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Mail, Lock, BookOpen, Users, Trophy } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import logoDark from '@/assets/logos/logo-dark.svg'
+import logoWhite from '@/assets/logos/logo-white.svg'
 
 interface LoginForm {
   email: string
   password: string
+}
+
+// Reusable styled field
+function Field({
+  id, label, error, children,
+}: {
+  id: string; label: string; error?: string; children: React.ReactNode
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700">
+        {label}
+      </label>
+      {children}
+      {error && <p className="text-xs text-red-600 flex items-center gap-1">{error}</p>}
+    </div>
+  )
+}
+
+// Reusable input class helper
+function inputCls(hasError?: boolean) {
+  return [
+    'w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-gray-900',
+    'placeholder:text-gray-400',
+    'transition-all duration-150',
+    'focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488]',
+    hasError ? 'border-red-400 focus:ring-red-400/30 focus:border-red-400' : 'border-gray-200 hover:border-gray-300',
+  ].join(' ')
 }
 
 export default function Login() {
@@ -19,11 +49,7 @@ export default function Login() {
 
   const from = (location.state as { from?: string })?.from ?? '/dashboard'
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginForm>()
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>()
 
   const onSubmit = async (data: LoginForm) => {
     setServerError('')
@@ -36,7 +62,7 @@ export default function Login() {
           ?.response?.data?.detail ??
         (err as { response?: { data?: { non_field_errors?: string[] } } })
           ?.response?.data?.non_field_errors?.[0] ??
-        'Sign in failed. Please try again.'
+        'Sign in failed. Please check your credentials.'
       setServerError(msg)
     }
   }
@@ -46,124 +72,152 @@ export default function Login() {
     if (!credentialResponse.credential) return
     try {
       const result = await googleLogin(credentialResponse.credential)
-      if (result.is_new) {
-        navigate('/pending-approval', { replace: true })
-      } else {
-        navigate(from, { replace: true })
-      }
+      navigate(result.is_new ? '/pending-approval' : from, { replace: true })
     } catch {
       setServerError('Google sign-in failed. Please try again.')
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
-            <span className="text-white text-xl font-bold">Y</span>
+    <div className="min-h-screen flex">
+      {/* ── Left panel (brand) ── */}
+      <div className="hidden lg:flex lg:w-[46%] xl:w-[52%] flex-col bg-[#093344] relative overflow-hidden">
+        {/* Background decorations */}
+        <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-white/5" />
+        <div className="absolute bottom-0 -left-16 w-64 h-64 rounded-full bg-[#0D9488]/20" />
+        <div className="absolute top-1/2 right-8 w-32 h-32 rounded-full bg-[#df8d31]/10" />
+
+        {/* Logo */}
+        <div className="relative z-10 px-10 pt-10">
+          <img src={logoWhite} alt="YRIF" className="h-9 w-auto" />
+        </div>
+
+        {/* Center content */}
+        <div className="relative z-10 flex-1 flex flex-col justify-center px-10 pb-10">
+          <h1 className="text-3xl xl:text-4xl font-bold text-white font-display leading-tight">
+            Empowering<br />Tanzania's Youth<br />Through Research
+          </h1>
+          <p className="mt-4 text-white/70 text-base leading-relaxed max-w-xs">
+            Join thousands of young researchers, mentors, and innovators on the YRIF national platform.
+          </p>
+
+          <div className="mt-10 space-y-4">
+            {[
+              { icon: BookOpen, label: 'Publish & showcase research' },
+              { icon: Users, label: 'Connect with expert mentors' },
+              { icon: Trophy, label: 'Compete in national events' },
+            ].map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#0D9488]/30 flex items-center justify-center flex-shrink-0">
+                  <Icon className="w-4 h-4 text-[#0D9488]" />
+                </div>
+                <span className="text-white/80 text-sm">{label}</span>
+              </div>
+            ))}
           </div>
         </div>
-        <h2 className="mt-4 text-center text-2xl font-bold text-gray-900">
-          Sign in to YRIF
-        </h2>
-        <p className="mt-1 text-center text-sm text-gray-500">
-          Youth Research &amp; Innovation Foundation
+
+        {/* Footer tagline */}
+        <p className="relative z-10 px-10 pb-8 text-white/30 text-xs">
+          © {new Date().getFullYear()} Youth Research & Innovation Foundation · Tanzania
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-sm rounded-xl border border-gray-100">
+      {/* ── Right panel (form) ── */}
+      <div className="flex-1 flex flex-col justify-center px-6 sm:px-10 lg:px-14 xl:px-20 py-12 bg-white">
+        <div className="w-full max-w-md mx-auto">
+          {/* Mobile logo */}
+          <div className="lg:hidden flex justify-center mb-8">
+            <img src={logoDark} alt="YRIF" className="h-10 w-auto" />
+          </div>
+
+          {/* Heading */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-[#093344] font-display">Welcome back</h2>
+            <p className="text-gray-500 text-sm mt-1">Sign in to your YRIF account</p>
+          </div>
+
+          {/* Error */}
           {serverError && (
-            <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            <div className="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
               {serverError}
             </div>
           )}
 
+          {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email address
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.email ? 'border-red-400' : 'border-gray-300'
-                }`}
-                {...register('email', {
-                  required: 'Email is required',
-                  pattern: { value: /\S+@\S+\.\S+/, message: 'Enter a valid email' },
-                })}
-              />
-              {errors.email && (
-                <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
+            <Field id="email" label="Email address" error={errors.email?.message}>
               <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  className={`${inputCls(!!errors.email)} pl-10`}
+                  {...register('email', {
+                    required: 'Email is required',
+                    pattern: { value: /\S+@\S+\.\S+/, message: 'Enter a valid email' },
+                  })}
+                />
+              </div>
+            </Field>
+
+            <Field id="password" label="Password" error={errors.password?.message}>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
-                  className={`w-full rounded-lg border px-3 py-2 pr-10 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.password ? 'border-red-400' : 'border-gray-300'
-                  }`}
+                  placeholder="••••••••"
+                  className={`${inputCls(!!errors.password)} pl-10 pr-10`}
                   {...register('password', { required: 'Password is required' })}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {errors.password && (
-                <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>
-              )}
-            </div>
+            </Field>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex justify-center items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full flex justify-center items-center gap-2 rounded-xl bg-[#093344] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0D9488] focus:outline-none focus:ring-2 focus:ring-[#0D9488]/50 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm"
             >
               {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
               Sign in
             </button>
           </form>
 
-          <div className="mt-5">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-white px-3 text-gray-400">or continue with</span>
-              </div>
-            </div>
-
-            <div className="mt-4 flex justify-center">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => setServerError('Google sign-in failed. Please try again.')}
-                text="signin_with"
-                shape="rectangular"
-                width="320"
-              />
-            </div>
+          {/* Divider */}
+          <div className="my-6 flex items-center gap-3">
+            <div className="flex-1 h-px bg-gray-100" />
+            <span className="text-xs text-gray-400 font-medium">or continue with</span>
+            <div className="flex-1 h-px bg-gray-100" />
           </div>
 
-          <p className="mt-6 text-center text-sm text-gray-500">
-            Don&apos;t have an account?{' '}
-            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              Sign up
+          {/* Google */}
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setServerError('Google sign-in failed. Please try again.')}
+              text="signin_with"
+              shape="rectangular"
+              width="320"
+            />
+          </div>
+
+          {/* Footer */}
+          <p className="mt-8 text-center text-sm text-gray-500">
+            Don't have an account?{' '}
+            <Link to="/register" className="font-semibold text-[#0D9488] hover:text-[#093344] transition-colors">
+              Create one
             </Link>
           </p>
         </div>

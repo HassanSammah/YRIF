@@ -1,136 +1,115 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom'
-import { useAuth } from '@/hooks/useAuth'
-
-// Lazy imports for code splitting
+import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
+import { useAuth } from '@/hooks/useAuth'
+import AppLayout from '@/components/layout/AppLayout'
+import { SkeletonPage } from '@/components/common/Skeleton'
+import ErrorBoundary from '@/components/common/ErrorBoundary'
 
-const Login = lazy(() => import('@/pages/auth/Login'))
-const Register = lazy(() => import('@/pages/auth/Register'))
-const PendingApproval = lazy(() => import('@/pages/auth/PendingApproval'))
-const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'))
-const Profile = lazy(() => import('@/pages/profile/Profile'))
+// ── Lazy page imports ─────────────────────────────────────────────────────────
+
+const Login              = lazy(() => import('@/pages/auth/Login'))
+const Register           = lazy(() => import('@/pages/auth/Register'))
+const PendingApproval    = lazy(() => import('@/pages/auth/PendingApproval'))
+const Dashboard          = lazy(() => import('@/pages/dashboard/Dashboard'))
+const Profile            = lazy(() => import('@/pages/profile/Profile'))
 const ResearchRepository = lazy(() => import('@/pages/research/ResearchRepository'))
-const ResearchDetail = lazy(() => import('@/pages/research/ResearchDetail'))
-const SubmitResearch = lazy(() => import('@/pages/research/SubmitResearch'))
-const MyResearch = lazy(() => import('@/pages/research/MyResearch'))
-const EventsList = lazy(() => import('@/pages/events/EventsList'))
-const EventDetail = lazy(() => import('@/pages/events/EventDetail'))
-const Competitions = lazy(() => import('@/pages/events/Competitions'))
-const MyCertificates = lazy(() => import('@/pages/events/MyCertificates'))
-const MentorDirectory = lazy(() => import('@/pages/mentorship/MentorDirectory'))
-const MyMentorship = lazy(() => import('@/pages/mentorship/MyMentorship'))
-const ResourceHub = lazy(() => import('@/pages/resources/ResourceHub'))
-const Messages = lazy(() => import('@/pages/messaging/Messages'))
-const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'))
-const UserManagement = lazy(() => import('@/pages/admin/UserManagement'))
+const ResearchDetail     = lazy(() => import('@/pages/research/ResearchDetail'))
+const SubmitResearch     = lazy(() => import('@/pages/research/SubmitResearch'))
+const MyResearch         = lazy(() => import('@/pages/research/MyResearch'))
+const EventsList         = lazy(() => import('@/pages/events/EventsList'))
+const EventDetail        = lazy(() => import('@/pages/events/EventDetail'))
+const Competitions       = lazy(() => import('@/pages/events/Competitions'))
+const MyCertificates     = lazy(() => import('@/pages/events/MyCertificates'))
+const MentorDirectory    = lazy(() => import('@/pages/mentorship/MentorDirectory'))
+const MyMentorship       = lazy(() => import('@/pages/mentorship/MyMentorship'))
+const ResourceHub        = lazy(() => import('@/pages/resources/ResourceHub'))
+const Messages           = lazy(() => import('@/pages/messaging/Messages'))
+const Contact            = lazy(() => import('@/pages/contact/Contact'))
+const Notifications      = lazy(() => import('@/pages/notifications/Notifications'))
+const AdminDashboard     = lazy(() => import('@/pages/admin/AdminDashboard'))
+const UserManagement     = lazy(() => import('@/pages/admin/UserManagement'))
 const ResearchManagement = lazy(() => import('@/pages/admin/ResearchManagement'))
-const EventManagement = lazy(() => import('@/pages/admin/EventManagement'))
-const ContentManagement = lazy(() => import('@/pages/admin/ContentManagement'))
-const Reports = lazy(() => import('@/pages/admin/Reports'))
-const MentorshipManagement = lazy(() => import('@/pages/admin/MentorshipManagement'))
-const Contact = lazy(() => import('@/pages/contact/Contact'))
-const Notifications = lazy(() => import('@/pages/notifications/Notifications'))
+const EventManagement    = lazy(() => import('@/pages/admin/EventManagement'))
+const ContentManagement  = lazy(() => import('@/pages/admin/ContentManagement'))
+const Reports            = lazy(() => import('@/pages/admin/Reports'))
+const MentorshipMgmt     = lazy(() => import('@/pages/admin/MentorshipManagement'))
 
-function RequireAuth({ children }: { children: React.ReactNode }) {
+// ── Guards ────────────────────────────────────────────────────────────────────
+
+function RequireAuth() {
   const { isAuthenticated, user, isAdmin } = useAuth()
   if (!isAuthenticated) return <Navigate to="/login" replace />
-  // Suspended/rejected users cannot proceed
   if (user?.status === 'suspended' || user?.status === 'rejected') {
     return <Navigate to="/login" replace />
   }
   if (user?.status === 'pending_approval' && !isAdmin) {
     return <Navigate to="/pending-approval" replace />
   }
-  return <>{children}</>
+  return <AppLayout />
 }
 
-function RequireAdmin({ children }: { children: React.ReactNode }) {
+function RequireAdmin() {
   const { isAdmin } = useAuth()
   if (!isAdmin) return <Navigate to="/dashboard" replace />
-  return <>{children}</>
+  return <Outlet />
 }
 
-const wrap = (Component: React.ComponentType) => (
-  <Suspense fallback={<div>Loading...</div>}>
-    <Component />
-  </Suspense>
-)
+// ── Page wrapper ──────────────────────────────────────────────────────────────
+
+function wrap(Component: React.ComponentType) {
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<SkeletonPage />}>
+        <Component />
+      </Suspense>
+    </ErrorBoundary>
+  )
+}
+
+// ── Router ────────────────────────────────────────────────────────────────────
 
 export const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/dashboard" replace /> },
-  { path: '/login', element: wrap(Login) },
-  { path: '/register', element: wrap(Register) },
+
+  // Public (no layout shell)
+  { path: '/login',            element: wrap(Login) },
+  { path: '/register',         element: wrap(Register) },
   { path: '/pending-approval', element: wrap(PendingApproval) },
+
+  // Protected — AppLayout shell
   {
-    path: '/dashboard',
-    element: <RequireAuth>{wrap(Dashboard)}</RequireAuth>,
-  },
-  {
-    path: '/profile',
-    element: <RequireAuth>{wrap(Profile)}</RequireAuth>,
-  },
-  { path: '/research', element: wrap(ResearchRepository) },
-  { path: '/research/:id', element: wrap(ResearchDetail) },
-  {
-    path: '/research/submit',
-    element: <RequireAuth>{wrap(SubmitResearch)}</RequireAuth>,
-  },
-  {
-    path: '/research/my',
-    element: <RequireAuth>{wrap(MyResearch)}</RequireAuth>,
-  },
-  { path: '/events', element: wrap(EventsList) },
-  { path: '/events/:id', element: wrap(EventDetail) },
-  { path: '/competitions', element: wrap(Competitions) },
-  {
-    path: '/certificates',
-    element: <RequireAuth>{wrap(MyCertificates)}</RequireAuth>,
-  },
-  { path: '/mentors', element: wrap(MentorDirectory) },
-  {
-    path: '/mentorship',
-    element: <RequireAuth>{wrap(MyMentorship)}</RequireAuth>,
-  },
-  {
-    path: '/resources',
-    element: <RequireAuth>{wrap(ResourceHub)}</RequireAuth>,
-  },
-  {
-    path: '/messages',
-    element: <RequireAuth>{wrap(Messages)}</RequireAuth>,
-  },
-  { path: '/contact', element: wrap(Contact) },
-  {
-    path: '/notifications',
-    element: <RequireAuth>{wrap(Notifications)}</RequireAuth>,
-  },
-  // Admin routes
-  {
-    path: '/admin',
-    element: <RequireAdmin>{wrap(AdminDashboard)}</RequireAdmin>,
-  },
-  {
-    path: '/admin/users',
-    element: <RequireAdmin>{wrap(UserManagement)}</RequireAdmin>,
-  },
-  {
-    path: '/admin/research',
-    element: <RequireAdmin>{wrap(ResearchManagement)}</RequireAdmin>,
-  },
-  {
-    path: '/admin/events',
-    element: <RequireAdmin>{wrap(EventManagement)}</RequireAdmin>,
-  },
-  {
-    path: '/admin/content',
-    element: <RequireAdmin>{wrap(ContentManagement)}</RequireAdmin>,
-  },
-  {
-    path: '/admin/reports',
-    element: <RequireAdmin>{wrap(Reports)}</RequireAdmin>,
-  },
-  {
-    path: '/admin/mentorship',
-    element: <RequireAdmin>{wrap(MentorshipManagement)}</RequireAdmin>,
+    element: <RequireAuth />,
+    children: [
+      { path: '/dashboard',       element: wrap(Dashboard) },
+      { path: '/profile',         element: wrap(Profile) },
+      { path: '/research',        element: wrap(ResearchRepository) },
+      { path: '/research/submit', element: wrap(SubmitResearch) },
+      { path: '/research/my',     element: wrap(MyResearch) },
+      { path: '/research/:id',    element: wrap(ResearchDetail) },
+      { path: '/events',          element: wrap(EventsList) },
+      { path: '/events/:id',      element: wrap(EventDetail) },
+      { path: '/competitions',    element: wrap(Competitions) },
+      { path: '/certificates',    element: wrap(MyCertificates) },
+      { path: '/mentors',         element: wrap(MentorDirectory) },
+      { path: '/mentorship',      element: wrap(MyMentorship) },
+      { path: '/resources',       element: wrap(ResourceHub) },
+      { path: '/messages',        element: wrap(Messages) },
+      { path: '/notifications',   element: wrap(Notifications) },
+      { path: '/contact',         element: wrap(Contact) },
+
+      // Admin-only (still inside AppLayout shell)
+      {
+        element: <RequireAdmin />,
+        children: [
+          { path: '/admin',            element: wrap(AdminDashboard) },
+          { path: '/admin/users',      element: wrap(UserManagement) },
+          { path: '/admin/research',   element: wrap(ResearchManagement) },
+          { path: '/admin/events',     element: wrap(EventManagement) },
+          { path: '/admin/content',    element: wrap(ContentManagement) },
+          { path: '/admin/reports',    element: wrap(Reports) },
+          { path: '/admin/mentorship', element: wrap(MentorshipMgmt) },
+        ],
+      },
+    ],
   },
 ])

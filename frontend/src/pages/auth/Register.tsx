@@ -299,10 +299,10 @@ export default function Register() {
           <div className="mb-3 flex justify-center">
             <Link
               to="/auth/briq"
-              className="w-[320px] flex items-center gap-3 rounded border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-150 shadow-sm"
+              className="w-[320px] h-10 flex items-center gap-3 rounded border border-gray-300 bg-white px-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-150 shadow-sm"
             >
-              <img src={briqLogo} alt="BRIQ" className="w-6 h-6 object-contain shrink-0" />
-              <span className="flex-1 text-center">Sign up with BRIQ</span>
+              <img src={briqLogo} alt="BRIQ" className="w-5 h-5 object-contain shrink-0" />
+              <span className="flex-1 text-center">BRIQ Auth</span>
             </Link>
           </div>
 

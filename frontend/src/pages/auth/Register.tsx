@@ -8,6 +8,7 @@ import { useAuthStore } from '@/store/auth'
 import type { UserRole } from '@/types/user'
 import logoDark from '@/assets/logos/logo-dark.svg'
 import logoWhite from '@/assets/logos/logo-white.svg'
+import briqLogo from '@/assets/logos/briq-logo.png'
 
 interface RegisterForm {
   first_name: string
@@ -300,12 +301,7 @@ export default function Register() {
               to="/auth/briq"
               className="w-[320px] flex items-center gap-3 rounded border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-150 shadow-sm"
             >
-              <span className="flex items-center justify-center w-6 h-6 shrink-0">
-                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6">
-                  <rect width="40" height="40" rx="6" fill="#002244"/>
-                  <text x="20" y="27" textAnchor="middle" fontSize="16" fontWeight="bold" fontFamily="Arial, sans-serif" fill="#00B4D8">B</text>
-                </svg>
-              </span>
+              <img src={briqLogo} alt="BRIQ" className="w-6 h-6 object-contain shrink-0" />
               <span className="flex-1 text-center">Sign up with BRIQ</span>
             </Link>
           </div>

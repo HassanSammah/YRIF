@@ -71,7 +71,7 @@ export default function Register() {
         role: data.role,
         phone: data.phone || undefined,
       })
-      navigate('/pending-approval', { replace: true })
+      navigate('/auth/verify-email', { state: { email: data.email }, replace: true })
     } catch (err: unknown) {
       const errData = (err as { response?: { data?: Record<string, string | string[]> } })?.response?.data
       if (errData) {
@@ -87,7 +87,7 @@ export default function Register() {
     if (!credentialResponse.credential) return
     try {
       await googleLogin(credentialResponse.credential)
-      navigate('/pending-approval', { replace: true })
+      navigate('/dashboard', { replace: true })
     } catch {
       setServerError('Google sign-up failed. Please try again.')
     }
@@ -292,6 +292,17 @@ export default function Register() {
             <div className="flex-1 h-px bg-gray-100" />
             <span className="text-xs text-gray-400 font-medium">or sign up with</span>
             <div className="flex-1 h-px bg-gray-100" />
+          </div>
+
+          {/* BRIQ phone auth */}
+          <div className="mb-3 flex justify-center">
+            <Link
+              to="/auth/briq"
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:border-[#0D9488] hover:text-[#0D9488] transition-all duration-200 shadow-sm"
+            >
+              <Phone className="w-4 h-4" />
+              Sign up with Phone (BRIQ Auth)
+            </Link>
           </div>
 
           <div className="flex justify-center">

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import {
@@ -8,7 +8,7 @@ import {
 import { authApi } from '@/api/accounts'
 import { useAuth } from '@/hooks/useAuth'
 import type { Profile, MentorProfile, PartnerProfile, ResearchAssistantProfile } from '@/types/user'
-import { USER_STATUS_LABELS, USER_ROLE_LABELS } from '@/types/user'
+import { USER_STATUS_LABELS, USER_ROLE_LABELS, EDUCATION_LEVELS } from '@/types/user'
 
 // ── Phone Verification ────────────────────────────────────────────────────────
 
@@ -20,6 +20,7 @@ function PhoneVerificationSection({ phone, verified, onVerified }: {
   const [step, setStep] = useState<'idle' | 'sent'>('idle')
   const [phoneInput, setPhoneInput] = useState(phone)
   const [otp, setOtp] = useState('')
+  const [otpId, setOtpId] = useState('')
   const [error, setError] = useState('')
   const [sending, setSending] = useState(false)
 
@@ -27,7 +28,8 @@ function PhoneVerificationSection({ phone, verified, onVerified }: {
     setError('')
     setSending(true)
     try {
-      await authApi.requestPhoneOTP(phoneInput)
+      const res = await authApi.requestPhoneOTP(phoneInput)
+      setOtpId(res.data.otp_id || '')
       setStep('sent')
     } catch {
       setError('Failed to send OTP. Check your phone number.')
@@ -40,7 +42,7 @@ function PhoneVerificationSection({ phone, verified, onVerified }: {
     setError('')
     setSending(true)
     try {
-      await authApi.verifyPhoneOTP(phoneInput, otp)
+      await authApi.verifyPhoneOTP(phoneInput, otpId, otp)
       onVerified()
       setStep('idle')
     } catch {
@@ -146,7 +148,11 @@ function BaseProfileSection() {
     (data: Partial<Profile>) => authApi.updateProfile(data).then((r) => r.data),
     { onSuccess: () => qc.invalidateQueries('profile') },
   )
-  const { register, handleSubmit, formState: { isDirty } } = useForm<Profile>({ values: profile })
+  const { register, handleSubmit, reset } = useForm<Profile>()
+
+  useEffect(() => {
+    if (profile) reset(profile)
+  }, [profile, reset])
 
   if (isLoading) return <p className="text-sm text-gray-400">Loading…</p>
 
@@ -157,7 +163,30 @@ function BaseProfileSection() {
           <input {...register('institution')} placeholder="University or organisation" className={inputCls} />
         </Field>
         <Field label="Education Level">
-          <input {...register('education_level')} placeholder="e.g. Bachelor's, Master's" className={inputCls} />
+          <div className="relative">
+            <select
+              {...register('education_level')}
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 appearance-none pr-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] transition-all duration-150"
+            >
+              <option value="">Select education level</option>
+              <optgroup label="Secondary School">
+                {EDUCATION_LEVELS.filter((e) => e.group === 'Secondary').map((e) => (
+                  <option key={e.value} value={e.value}>{e.label}</option>
+                ))}
+              </optgroup>
+              <optgroup label="University">
+                {EDUCATION_LEVELS.filter((e) => e.group === 'University').map((e) => (
+                  <option key={e.value} value={e.value}>{e.label}</option>
+                ))}
+              </optgroup>
+              <option value="other">Other</option>
+            </select>
+            <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
         </Field>
         <Field label="Region">
           <input {...register('region')} placeholder="e.g. Dar es Salaam" className={inputCls} />
@@ -189,7 +218,7 @@ function BaseProfileSection() {
 
       <button
         type="submit"
-        disabled={!isDirty || mutation.isLoading}
+        disabled={mutation.isLoading}
         className="inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
       >
         {mutation.isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
@@ -208,7 +237,11 @@ function MentorProfileSection() {
     (d: Partial<MentorProfile>) => authApi.updateMentorProfile(d).then((r) => r.data),
     { onSuccess: () => qc.invalidateQueries('mentor-profile') },
   )
-  const { register, handleSubmit, formState: { isDirty } } = useForm<MentorProfile>({ values: data })
+  const { register, handleSubmit, reset } = useForm<MentorProfile>()
+
+  useEffect(() => {
+    if (data) reset(data)
+  }, [data, reset])
 
   if (isLoading) return <p className="text-sm text-gray-400">Loading…</p>
 
@@ -225,7 +258,7 @@ function MentorProfileSection() {
       <Field label="Availability">
         <input {...register('availability')} placeholder="e.g. Weekends, 2 hours/week" className={inputCls} />
       </Field>
-      <button type="submit" disabled={!isDirty || mutation.isLoading}
+      <button type="submit" disabled={mutation.isLoading}
         className="inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50">
         {mutation.isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
       </button>
@@ -242,7 +275,11 @@ function PartnerProfileSection() {
     (d: Partial<PartnerProfile>) => authApi.updatePartnerProfile(d).then((r) => r.data),
     { onSuccess: () => qc.invalidateQueries('partner-profile') },
   )
-  const { register, handleSubmit, formState: { isDirty } } = useForm<PartnerProfile>({ values: data })
+  const { register, handleSubmit, reset } = useForm<PartnerProfile>()
+
+  useEffect(() => {
+    if (data) reset(data)
+  }, [data, reset])
 
   if (isLoading) return <p className="text-sm text-gray-400">Loading…</p>
 
@@ -273,7 +310,7 @@ function PartnerProfileSection() {
           <input {...register('contact_person')} placeholder="Primary contact name" className={inputCls} />
         </Field>
       </div>
-      <button type="submit" disabled={!isDirty || mutation.isLoading}
+      <button type="submit" disabled={mutation.isLoading}
         className="inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50">
         {mutation.isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
       </button>
@@ -290,7 +327,11 @@ function RAProfileSection() {
     (d: Partial<ResearchAssistantProfile>) => authApi.updateAssistantProfile(d).then((r) => r.data),
     { onSuccess: () => qc.invalidateQueries('ra-profile') },
   )
-  const { register, handleSubmit, formState: { isDirty } } = useForm<ResearchAssistantProfile>({ values: data })
+  const { register, handleSubmit, reset } = useForm<ResearchAssistantProfile>()
+
+  useEffect(() => {
+    if (data) reset(data)
+  }, [data, reset])
 
   if (isLoading) return <p className="text-sm text-gray-400">Loading…</p>
 
@@ -305,7 +346,7 @@ function RAProfileSection() {
       <Field label="Portfolio">
         <textarea {...register('portfolio')} rows={3} placeholder="Links to work, GitHub, publications…" className={inputCls} />
       </Field>
-      <button type="submit" disabled={!isDirty || mutation.isLoading}
+      <button type="submit" disabled={mutation.isLoading}
         className="inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50">
         {mutation.isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
       </button>
@@ -324,6 +365,7 @@ export default function Profile() {
   const statusColors: Record<string, string> = {
     active: 'bg-green-100 text-green-800',
     pending_approval: 'bg-amber-100 text-amber-800',
+    pending_email: 'bg-blue-100 text-blue-700',
     suspended: 'bg-red-100 text-red-800',
     rejected: 'bg-gray-100 text-gray-600',
   }

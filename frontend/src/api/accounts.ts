@@ -25,12 +25,39 @@ export const authApi = {
 
   logout: (refresh: string) => apiClient.post('/auth/logout/', { refresh }),
 
+  // ── Email verification ────────────────────────────────────────────────────
+  sendEmailOTP: (email: string) =>
+    apiClient.post<{ detail: string }>('/auth/verify-email/send/', { email }),
+
+  verifyEmail: (email: string, code: string) =>
+    apiClient.post<AuthResponse>('/auth/verify-email/', { email, code }),
+
+  // ── BRIQ Auth (phone-based login/signup) ──────────────────────────────────
+  briqAuthRequest: (phone_number: string) =>
+    apiClient.post<{ detail: string; otp_id: string }>('/auth/briq/request/', { phone_number }),
+
+  briqAuthVerify: (phone_number: string, otp_id: string, code: string) =>
+    apiClient.post<
+      | (AuthResponse & { needs_registration?: false })
+      | { needs_registration: true; verify_token: string }
+    >('/auth/briq/verify/', { phone_number, otp_id, code }),
+
+  briqAuthComplete: (data: {
+    phone_number: string
+    verify_token: string
+    first_name: string
+    last_name: string
+    email: string
+    password: string
+    role: string
+  }) => apiClient.post<AuthResponse>('/auth/briq/complete/', data),
+
   // ── Phone OTP ─────────────────────────────────────────────────────────────
   requestPhoneOTP: (phone_number: string) =>
-    apiClient.post<{ detail: string }>('/auth/phone/request-otp/', { phone_number }),
+    apiClient.post<{ detail: string; otp_id: string }>('/auth/phone/request-otp/', { phone_number }),
 
-  verifyPhoneOTP: (phone_number: string, code: string) =>
-    apiClient.post<{ detail: string }>('/auth/phone/verify-otp/', { phone_number, code }),
+  verifyPhoneOTP: (phone_number: string, otp_id: string, code: string) =>
+    apiClient.post<{ detail: string }>('/auth/phone/verify-otp/', { phone_number, otp_id, code }),
 
   // ── Current user ──────────────────────────────────────────────────────────
   me: () => apiClient.get<User>('/auth/me/'),
@@ -62,4 +89,9 @@ export const authApi = {
 
   updateUserRole: (id: string, role: UserRole) =>
     apiClient.patch<{ detail: string; user: User }>(`/auth/users/${id}/role/`, { role }),
+
+  updateUser: (id: string, data: { first_name?: string; last_name?: string; role?: string; status?: string }) =>
+    apiClient.patch<User>(`/auth/users/${id}/`, data),
+
+  deleteUser: (id: string) => apiClient.delete(`/auth/users/${id}/`),
 }

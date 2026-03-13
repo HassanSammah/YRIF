@@ -1,4 +1,7 @@
+import random
+import uuid
 import requests as http_requests
+from django.core.cache import cache
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -15,6 +18,7 @@ from .models import (
 from .serializers import (
     UserRegistrationSerializer,
     UserSerializer,
+    AdminUserUpdateSerializer,
     ProfileSerializer,
     MentorProfileSerializer,
     PartnerProfileSerializer,
@@ -23,10 +27,24 @@ from .serializers import (
     GoogleAuthSerializer,
     PhoneOTPRequestSerializer,
     PhoneOTPVerifySerializer,
+    EmailVerifySerializer,
+    BriqAuthRequestSerializer,
+    BriqAuthVerifySerializer,
+    BriqAuthCompleteSerializer,
     UpdateUserStatusSerializer,
     RoleAssignmentSerializer,
 )
 from . import emails as account_emails
+
+
+def _extract_otp_id(data):
+    """Safely extract otp_id from BRIQ response — handles nested and flat shapes."""
+    nested = data.get("data", {})
+    if isinstance(nested, dict):
+        otp_id = nested.get("otp_id")
+        if otp_id:
+            return otp_id
+    return data.get("otp_id", "")
 
 
 def _get_tokens(user):
@@ -44,9 +62,17 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        account_emails.notify_admin_new_registration(user)
+
+        # Generate and cache a 6-digit OTP, then send verification email
+        otp_code = str(random.randint(100000, 999999))
+        cache.set(f"email_otp:{user.email}", otp_code, timeout=900)  # 15 minutes
+        account_emails.send_email_verification_otp(user, otp_code)
+
         return Response(
-            {"detail": "Account created. Await admin approval.", "user": UserSerializer(user).data},
+            {
+                "detail": "Account created. Please verify your email.",
+                "user": UserSerializer(user).data,
+            },
             status=status.HTTP_201_CREATED,
         )
 
@@ -59,7 +85,11 @@ class LoginView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
         tokens = _get_tokens(user)
-        return Response({**tokens, "user": UserSerializer(user).data})
+        return Response({
+            **tokens,
+            "user": UserSerializer(user).data,
+            "email_verified": user.status != UserStatus.PENDING_EMAIL_VERIFICATION,
+        })
 
 
 class LogoutView(APIView):
@@ -110,9 +140,10 @@ class GoogleAuthView(APIView):
         )
         if created:
             user.set_unusable_password()
-            user.save()
+            # Google verifies email — set ACTIVE immediately
+            user.status = UserStatus.ACTIVE
+            user.save(update_fields=["status", "updated_at"])
             Profile.objects.create(user=user)
-            account_emails.notify_admin_new_registration(user)
 
         # Always upsert the provider account record
         AuthProviderAccount.objects.update_or_create(
@@ -138,7 +169,7 @@ class PhoneOTPRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = PhoneOTPRequestSerializer(data=request.data)
+        serializer = PhoneOTPRequestSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         phone_number = serializer.validated_data["phone_number"]
 
@@ -147,9 +178,10 @@ class PhoneOTPRequestView(APIView):
 
         try:
             resp = http_requests.post(
-                f"{settings.BRIQ_BASE_URL}/v1/otp/request",
+                f"{settings.BRIQ_BASE_URL}/v1/otp/request/",
                 json={
                     "phone_number": phone_number,
+                    "developer_app_id": settings.BRIQ_DEVELOPER_APP_ID,
                     "app_key": settings.BRIQ_APP_KEY,
                     "sender_id": settings.BRIQ_SMS_SENDER,
                     "minutes_to_expire": 10,
@@ -165,10 +197,13 @@ class PhoneOTPRequestView(APIView):
         if not data.get("success"):
             return Response({"detail": data.get("message", "OTP request failed.")}, status=status.HTTP_400_BAD_REQUEST)
 
+        otp_id = _extract_otp_id(data)
+        cache.set(f"briq_otp:{phone_number}", otp_id, timeout=900)  # 15 minutes
+
         profile, _ = Profile.objects.get_or_create(user=request.user)
         profile.phone = phone_number
         profile.save(update_fields=["phone"])
-        return Response({"detail": "OTP sent successfully."})
+        return Response({"detail": "OTP sent.", "otp_id": otp_id})
 
 
 class PhoneOTPVerifyView(APIView):
@@ -179,15 +214,15 @@ class PhoneOTPVerifyView(APIView):
         serializer.is_valid(raise_exception=True)
         phone_number = serializer.validated_data["phone_number"]
         code = serializer.validated_data["code"]
-
         if not settings.BRIQ_API_KEY:
             return Response({"detail": "OTP service not configured."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         try:
             resp = http_requests.post(
-                f"{settings.BRIQ_BASE_URL}/v1/otp/verify",
+                f"{settings.BRIQ_BASE_URL}/v1/otp/verify/",
                 json={
                     "phone_number": phone_number,
+                    "developer_app_id": settings.BRIQ_DEVELOPER_APP_ID,
                     "app_key": settings.BRIQ_APP_KEY,
                     "code": code,
                 },
@@ -202,10 +237,222 @@ class PhoneOTPVerifyView(APIView):
         if not data.get("success"):
             return Response({"detail": data.get("message", "Invalid OTP.")}, status=status.HTTP_400_BAD_REQUEST)
 
+        cache.delete(f"briq_otp:{phone_number}")
         profile, _ = Profile.objects.get_or_create(user=request.user)
         profile.phone_verified = True
         profile.save(update_fields=["phone_verified"])
         return Response({"detail": "Phone verified successfully."})
+
+
+# ─── Email Verification ───────────────────────────────────────────────────────
+
+class SendEmailOTPView(APIView):
+    """POST /auth/verify-email/send/ — (re)send a 6-digit email verification OTP."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get("email", "").strip().lower()
+        if not email:
+            return Response({"detail": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            # Don't reveal whether the email exists
+            return Response({"detail": "If that email is registered, a verification code has been sent."})
+
+        if user.status != UserStatus.PENDING_EMAIL_VERIFICATION:
+            return Response({"detail": "This email has already been verified."}, status=status.HTTP_400_BAD_REQUEST)
+
+        otp_code = str(random.randint(100000, 999999))
+        cache.set(f"email_otp:{email}", otp_code, timeout=900)  # 15 minutes
+        account_emails.send_email_verification_otp(user, otp_code)
+        return Response({"detail": "If that email is registered, a verification code has been sent."})
+
+
+class VerifyEmailView(APIView):
+    """POST /auth/verify-email/ — verify the 6-digit code and move user to PENDING_APPROVAL."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = EmailVerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"].lower()
+        code = serializer.validated_data["code"]
+
+        cached_code = cache.get(f"email_otp:{email}")
+        if not cached_code or cached_code != code:
+            return Response({"detail": "Invalid or expired verification code."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if user.status == UserStatus.PENDING_EMAIL_VERIFICATION:
+            user.status = UserStatus.ACTIVE
+            user.is_active = True
+            user.save(update_fields=["status", "is_active", "updated_at"])
+
+        cache.delete(f"email_otp:{email}")
+        tokens = _get_tokens(user)
+        return Response({
+            **tokens,
+            "user": UserSerializer(user).data,
+            "detail": "Email verified successfully.",
+        })
+
+
+# ─── Briq Auth — phone-first login/signup (unauthenticated) ──────────────────
+
+class BriqAuthRequestView(APIView):
+    """POST /auth/briq/request/ — send OTP to phone for login or new account signup."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = BriqAuthRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        phone_number = serializer.validated_data["phone_number"]
+
+        if not settings.BRIQ_API_KEY:
+            return Response({"detail": "OTP service not configured."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        try:
+            resp = http_requests.post(
+                f"{settings.BRIQ_BASE_URL}/v1/otp/request/",
+                json={
+                    "phone_number": phone_number,
+                    "developer_app_id": settings.BRIQ_DEVELOPER_APP_ID,
+                    "app_key": settings.BRIQ_APP_KEY,
+                    "sender_id": settings.BRIQ_SMS_SENDER,
+                    "minutes_to_expire": 10,
+                },
+                headers={"X-API-Key": settings.BRIQ_API_KEY, "Content-Type": "application/json"},
+                timeout=10,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+        except http_requests.RequestException as exc:
+            return Response({"detail": f"OTP request failed: {exc}"}, status=status.HTTP_502_BAD_GATEWAY)
+
+        if not data.get("success"):
+            return Response({"detail": data.get("message", "OTP request failed.")}, status=status.HTTP_400_BAD_REQUEST)
+
+        otp_id = _extract_otp_id(data)
+        cache.set(f"briq_auth:{phone_number}", otp_id, timeout=900)  # 15 minutes
+        return Response({"detail": "OTP sent.", "otp_id": otp_id})
+
+
+class BriqAuthVerifyView(APIView):
+    """POST /auth/briq/verify/ — verify OTP; log in existing user or prompt new user to register."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = BriqAuthVerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        phone_number = serializer.validated_data["phone_number"]
+        code = serializer.validated_data["code"]
+        if not settings.BRIQ_API_KEY:
+            return Response({"detail": "OTP service not configured."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        try:
+            resp = http_requests.post(
+                f"{settings.BRIQ_BASE_URL}/v1/otp/verify/",
+                json={
+                    "phone_number": phone_number,
+                    "developer_app_id": settings.BRIQ_DEVELOPER_APP_ID,
+                    "app_key": settings.BRIQ_APP_KEY,
+                    "code": code,
+                },
+                headers={"X-API-Key": settings.BRIQ_API_KEY, "Content-Type": "application/json"},
+                timeout=10,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+        except http_requests.RequestException as exc:
+            return Response({"detail": f"OTP verification failed: {exc}"}, status=status.HTTP_502_BAD_GATEWAY)
+
+        if not data.get("success"):
+            return Response({"detail": data.get("message", "Invalid OTP.")}, status=status.HTTP_400_BAD_REQUEST)
+
+        cache.delete(f"briq_auth:{phone_number}")
+
+        # Check whether this phone belongs to an existing user
+        profile_qs = Profile.objects.filter(phone=phone_number, phone_verified=True).select_related("user")
+        if profile_qs.exists():
+            user = profile_qs.first().user
+            if not user.is_active:
+                return Response(
+                    {"detail": "Your account has been suspended or rejected. Contact support."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            tokens = _get_tokens(user)
+            return Response({**tokens, "user": UserSerializer(user).data, "needs_registration": False})
+
+        # New phone number — issue a short-lived verify_token so the frontend can complete signup
+        verify_token = str(uuid.uuid4())
+        cache.set(f"briq_verified:{phone_number}", verify_token, timeout=1800)  # 30 minutes
+        return Response({
+            "needs_registration": True,
+            "verify_token": verify_token,
+            "phone_number": phone_number,
+        })
+
+
+class BriqAuthCompleteView(APIView):
+    """POST /auth/briq/complete/ — finish signup for new users after phone verification."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = BriqAuthCompleteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        phone_number = serializer.validated_data["phone_number"]
+        verify_token = serializer.validated_data["verify_token"]
+
+        # Validate the verify_token issued in BriqAuthVerifyView
+        cached_token = cache.get(f"briq_verified:{phone_number}")
+        if not cached_token or cached_token != verify_token:
+            return Response(
+                {"detail": "Phone verification token is invalid or expired. Please verify your phone again."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Create user — phone already verified, set ACTIVE immediately
+        user = User.objects.create_user(
+            email=serializer.validated_data["email"],
+            password=serializer.validated_data["password"],
+            first_name=serializer.validated_data["first_name"],
+            last_name=serializer.validated_data["last_name"],
+            role=serializer.validated_data["role"],
+            status=UserStatus.ACTIVE,
+        )
+
+        # Create profile with phone already verified
+        Profile.objects.create(user=user, phone=phone_number, phone_verified=True)
+
+        # Create role-specific extended profile
+        if user.role == UserRole.MENTOR:
+            MentorProfile.objects.create(user=user)
+        elif user.role == UserRole.INDUSTRY_PARTNER:
+            PartnerProfile.objects.create(user=user)
+        elif user.role == UserRole.RESEARCH_ASSISTANT:
+            ResearchAssistantProfile.objects.create(user=user)
+
+        # Link BRIQ auth provider
+        AuthProviderAccount.objects.create(
+            user=user,
+            provider=AuthProviderAccount.PROVIDER_BRIQ,
+            provider_uid=phone_number,
+        )
+
+        cache.delete(f"briq_verified:{phone_number}")
+        account_emails.send_welcome_email(user)
+
+        tokens = _get_tokens(user)
+        return Response(
+            {**tokens, "user": UserSerializer(user).data},
+            status=status.HTTP_201_CREATED,
+        )
 
 
 # ─── User Profile ─────────────────────────────────────────────────────────────
@@ -221,15 +468,21 @@ class CurrentUserView(generics.RetrieveAPIView):
 class ProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'put', 'patch', 'head', 'options']
 
     def get_object(self):
         profile, _ = Profile.objects.get_or_create(user=self.request.user)
         return profile
 
+    def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
+
 
 class MentorProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = MentorProfileSerializer
     permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'put', 'patch', 'head', 'options']
 
     def get_object(self):
         if self.request.user.role != UserRole.MENTOR:
@@ -238,10 +491,15 @@ class MentorProfileView(generics.RetrieveUpdateAPIView):
         profile, _ = MentorProfile.objects.get_or_create(user=self.request.user)
         return profile
 
+    def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
+
 
 class PartnerProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = PartnerProfileSerializer
     permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'put', 'patch', 'head', 'options']
 
     def get_object(self):
         if self.request.user.role != UserRole.INDUSTRY_PARTNER:
@@ -250,10 +508,15 @@ class PartnerProfileView(generics.RetrieveUpdateAPIView):
         profile, _ = PartnerProfile.objects.get_or_create(user=self.request.user)
         return profile
 
+    def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
+
 
 class ResearchAssistantProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = ResearchAssistantProfileSerializer
     permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'put', 'patch', 'head', 'options']
 
     def get_object(self):
         if self.request.user.role != UserRole.RESEARCH_ASSISTANT:
@@ -261,6 +524,10 @@ class ResearchAssistantProfileView(generics.RetrieveUpdateAPIView):
             raise PermissionDenied("Only research assistants have this profile.")
         profile, _ = ResearchAssistantProfile.objects.get_or_create(user=self.request.user)
         return profile
+
+    def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
 
 
 # ─── Admin: User Management ───────────────────────────────────────────────────
@@ -316,8 +583,12 @@ class RoleAssignmentView(APIView):
 
 
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = UserSerializer
     permission_classes = [IsAdmin]
     queryset = User.objects.all().select_related(
         "profile", "mentor_profile", "partner_profile", "ra_profile"
     )
+
+    def get_serializer_class(self):
+        if self.request.method in ('PUT', 'PATCH'):
+            return AdminUserUpdateSerializer
+        return UserSerializer

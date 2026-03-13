@@ -80,3 +80,83 @@ def notify_user_suspended(user):
         recipient_list=[user.email],
         fail_silently=True,
     )
+
+
+def send_email_verification_otp(user, otp_code):
+    """Send a 6-digit email verification OTP to the user."""
+    html = f"""
+    <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+      <div style="background: linear-gradient(135deg, #093344 0%, #0D9488 100%); padding: 40px 32px; text-align: center; border-radius: 12px 12px 0 0;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">YRIF</h1>
+        <p style="color: rgba(255,255,255,0.8); margin: 8px 0 0; font-size: 14px;">Youth Research &amp; Innovation Foundation</p>
+      </div>
+      <div style="padding: 40px 32px; background: #ffffff;">
+        <h2 style="color: #093344; font-size: 22px; margin: 0 0 16px;">Verify Your Email</h2>
+        <p style="color: #4B5563; font-size: 15px; line-height: 1.6; margin: 0 0 24px;">
+          Hi {user.first_name}, welcome to YRIF! Use the code below to verify your email address.
+        </p>
+        <div style="background: #f0fdfa; border: 2px solid #0D9488; border-radius: 12px; padding: 24px; text-align: center; margin: 24px 0;">
+          <p style="color: #6B7280; font-size: 13px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.05em;">Your verification code</p>
+          <p style="color: #093344; font-size: 40px; font-weight: 800; letter-spacing: 0.15em; margin: 0;">{otp_code}</p>
+          <p style="color: #9CA3AF; font-size: 12px; margin: 8px 0 0;">Expires in 15 minutes</p>
+        </div>
+        <p style="color: #6B7280; font-size: 13px; line-height: 1.6;">If you didn't create a YRIF account, you can safely ignore this email.</p>
+      </div>
+      <div style="background: #093344; padding: 20px 32px; text-align: center; border-radius: 0 0 12px 12px;">
+        <p style="color: rgba(255,255,255,0.6); font-size: 12px; margin: 0;">© 2024 Youth Research &amp; Innovation Foundation · info@yriftz.org</p>
+      </div>
+    </div>
+    """
+    send_mail(
+        subject="[YRIF] Verify your email address",
+        message=f"Your YRIF verification code is: {otp_code}. It expires in 15 minutes.",
+        from_email="noreply@yriftz.org",
+        recipient_list=[user.email],
+        html_message=html,
+        fail_silently=True,
+    )
+
+
+def send_welcome_email(user):
+    """Welcome email for users who sign up via phone (BRIQ auth) — email OTP skipped."""
+    html = f"""
+    <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+      <div style="background: linear-gradient(135deg, #093344 0%, #0D9488 100%); padding: 40px 32px; text-align: center; border-radius: 12px 12px 0 0;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">YRIF</h1>
+        <p style="color: rgba(255,255,255,0.8); margin: 8px 0 0; font-size: 14px;">Youth Research &amp; Innovation Foundation</p>
+      </div>
+      <div style="padding: 40px 32px; background: #ffffff;">
+        <h2 style="color: #093344; font-size: 22px; margin: 0 0 16px;">Welcome to YRIF!</h2>
+        <p style="color: #4B5563; font-size: 15px; line-height: 1.6; margin: 0 0 24px;">
+          Hi {user.first_name}, your account has been created successfully. Your phone number has been verified
+          and your account is now active.
+        </p>
+        <div style="text-align: center; margin: 32px 0;">
+          <a href="https://app.yriftz.org/dashboard"
+             style="background: #0D9488; color: #ffffff; text-decoration: none; padding: 14px 32px;
+                    border-radius: 8px; font-size: 15px; font-weight: 600; display: inline-block;">
+            Go to Dashboard
+          </a>
+        </div>
+        <p style="color: #6B7280; font-size: 13px; line-height: 1.6;">
+          If you have any questions, contact us at info@yriftz.org.
+        </p>
+      </div>
+      <div style="background: #093344; padding: 20px 32px; text-align: center; border-radius: 0 0 12px 12px;">
+        <p style="color: rgba(255,255,255,0.6); font-size: 12px; margin: 0;">© 2024 Youth Research &amp; Innovation Foundation · info@yriftz.org</p>
+      </div>
+    </div>
+    """
+    send_mail(
+        subject="[YRIF] Welcome to the Youth Research & Innovation Foundation",
+        message=(
+            f"Hi {user.first_name},\n\n"
+            f"Your YRIF account has been created and your phone has been verified. "
+            f"You can now log in at https://app.yriftz.org/dashboard.\n\n"
+            f"The YRIF Team"
+        ),
+        from_email="noreply@yriftz.org",
+        recipient_list=[user.email],
+        html_message=html,
+        fail_silently=True,
+    )

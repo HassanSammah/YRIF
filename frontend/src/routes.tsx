@@ -10,6 +10,8 @@ import ErrorBoundary from '@/components/common/ErrorBoundary'
 const Login              = lazy(() => import('@/pages/auth/Login'))
 const Register           = lazy(() => import('@/pages/auth/Register'))
 const PendingApproval    = lazy(() => import('@/pages/auth/PendingApproval'))
+const VerifyEmail        = lazy(() => import('@/pages/auth/VerifyEmail'))
+const BriqAuth           = lazy(() => import('@/pages/auth/BriqAuth'))
 const Dashboard          = lazy(() => import('@/pages/dashboard/Dashboard'))
 const Profile            = lazy(() => import('@/pages/profile/Profile'))
 const ResearchRepository = lazy(() => import('@/pages/research/ResearchRepository'))
@@ -42,6 +44,9 @@ function RequireAuth() {
   if (user?.status === 'suspended' || user?.status === 'rejected') {
     return <Navigate to="/login" replace />
   }
+  if (user?.status === 'pending_email') {
+    return <Navigate to="/auth/verify-email" replace />
+  }
   if (user?.status === 'pending_approval' && !isAdmin) {
     return <Navigate to="/pending-approval" replace />
   }
@@ -72,9 +77,11 @@ export const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/dashboard" replace /> },
 
   // Public (no layout shell)
-  { path: '/login',            element: wrap(Login) },
-  { path: '/register',         element: wrap(Register) },
-  { path: '/pending-approval', element: wrap(PendingApproval) },
+  { path: '/login',              element: wrap(Login) },
+  { path: '/register',           element: wrap(Register) },
+  { path: '/pending-approval',   element: wrap(PendingApproval) },
+  { path: '/auth/verify-email',  element: wrap(VerifyEmail) },
+  { path: '/auth/briq',          element: wrap(BriqAuth) },
 
   // Protected — AppLayout shell
   {

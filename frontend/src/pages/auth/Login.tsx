@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { GoogleLogin } from '@react-oauth/google'
-import { Eye, EyeOff, Loader2, Mail, Lock, BookOpen, Users, Trophy } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Mail, Lock, BookOpen, Users, Trophy, Phone } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import logoDark from '@/assets/logos/logo-dark.svg'
 import logoWhite from '@/assets/logos/logo-white.svg'
@@ -211,6 +211,17 @@ export default function Login() {
               shape="rectangular"
               width="320"
             />
+          </div>
+
+          {/* BRIQ phone auth */}
+          <div className="mt-3 flex justify-center">
+            <Link
+              to="/auth/briq"
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:border-[#0D9488] hover:text-[#0D9488] transition-all duration-200 shadow-sm"
+            >
+              <Phone className="w-4 h-4" />
+              Sign in with Phone (BRIQ Auth)
+            </Link>
           </div>
 
           {/* Footer */}

@@ -10,6 +10,7 @@ interface AuthState {
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
   googleLogin: (credential: string) => Promise<{ is_new: boolean }>
+  briqLogin: (accessToken: string, refreshToken: string, user: User) => Promise<void>
   logout: () => Promise<void>
   fetchMe: () => Promise<void>
 }
@@ -27,6 +28,12 @@ export const useAuthStore = create<AuthState>()(
         localStorage.setItem('access_token', data.access)
         localStorage.setItem('refresh_token', data.refresh)
         set({ accessToken: data.access, refreshToken: data.refresh, isAuthenticated: true, user: data.user })
+      },
+
+      briqLogin: async (accessToken, refreshToken, user) => {
+        localStorage.setItem('access_token', accessToken)
+        localStorage.setItem('refresh_token', refreshToken)
+        set({ accessToken, refreshToken, isAuthenticated: true, user })
       },
 
       googleLogin: async (credential) => {

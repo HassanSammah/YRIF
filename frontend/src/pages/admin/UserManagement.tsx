@@ -14,6 +14,7 @@ import { USER_STATUS_LABELS, USER_ROLE_LABELS } from '@/types/user'
 const STATUS_STYLES: Record<UserStatus, string> = {
   active: 'bg-green-100 text-green-800',
   pending_approval: 'bg-amber-100 text-amber-800',
+  pending_email: 'bg-blue-100 text-blue-800',
   suspended: 'bg-red-100 text-red-800',
   rejected: 'bg-gray-100 text-gray-600',
 }

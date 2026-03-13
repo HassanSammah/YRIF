@@ -17,6 +17,7 @@ class UserRole(models.TextChoices):
 
 
 class UserStatus(models.TextChoices):
+    PENDING_EMAIL_VERIFICATION = "pending_email", "Pending Email Verification"
     PENDING_APPROVAL = "pending_approval", "Pending Approval"
     ACTIVE = "active", "Active"
     SUSPENDED = "suspended", "Suspended"
@@ -37,8 +38,11 @@ class UserManager(BaseUserManager):
             raise ValueError("Email is required")
         email = self.normalize_email(email)
         role = extra_fields.get("role", UserRole.YOUTH)
-        if role in AUTO_APPROVED_ROLES and "status" not in extra_fields:
-            extra_fields["status"] = UserStatus.ACTIVE
+        if "status" not in extra_fields:
+            if role in AUTO_APPROVED_ROLES:
+                extra_fields["status"] = UserStatus.ACTIVE
+            else:
+                extra_fields["status"] = UserStatus.PENDING_EMAIL_VERIFICATION
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -60,7 +64,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     status = models.CharField(
         max_length=20,
         choices=UserStatus.choices,
-        default=UserStatus.PENDING_APPROVAL,
+        default=UserStatus.PENDING_EMAIL_VERIFICATION,
         db_index=True,
     )
     is_active = models.BooleanField(default=True)  # Django auth — False = cannot log in
@@ -119,6 +123,22 @@ class AuthProviderAccount(BaseModel):
         return f"{self.provider}:{self.provider_uid} → {self.user}"
 
 
+class EducationLevel(models.TextChoices):
+    SECONDARY_FORM1 = "secondary_form1", "Secondary – Form 1"
+    SECONDARY_FORM2 = "secondary_form2", "Secondary – Form 2"
+    SECONDARY_FORM3 = "secondary_form3", "Secondary – Form 3"
+    SECONDARY_FORM4 = "secondary_form4", "Secondary – Form 4"
+    SECONDARY_FORM5 = "secondary_form5", "Secondary – Form 5"
+    SECONDARY_FORM6 = "secondary_form6", "Secondary – Form 6"
+    UNI_CERTIFICATE = "uni_certificate", "University – Certificate"
+    UNI_DIPLOMA = "uni_diploma", "University – Diploma"
+    UNI_BACHELOR = "uni_bachelor", "University – Bachelor's Degree"
+    UNI_MASTER = "uni_master", "University – Master's Degree"
+    UNI_PHD = "uni_phd", "University – PhD"
+    UNI_POSTDOC = "uni_postdoc", "University – Postdoctoral"
+    OTHER = "other", "Other"
+
+
 class Profile(BaseModel):
     """Base profile for all users."""
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
@@ -126,12 +146,24 @@ class Profile(BaseModel):
     phone = models.CharField(max_length=20, blank=True)
     phone_verified = models.BooleanField(default=False)
     institution = models.CharField(max_length=255, blank=True)
-    education_level = models.CharField(max_length=100, blank=True)
+    education_level = models.CharField(
+        max_length=50,
+        choices=EducationLevel.choices,
+        blank=True,
+        default="",
+    )
     region = models.CharField(max_length=100, blank=True)
     skills = models.TextField(blank=True, help_text="Comma-separated list of skills")
     research_interests = models.TextField(blank=True)
     achievements = models.TextField(blank=True)
     avatar = models.ImageField(upload_to="avatars/", null=True, blank=True)
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.phone:
+            qs = Profile.objects.filter(phone=self.phone).exclude(pk=self.pk)
+            if qs.exists():
+                raise ValidationError({"phone": "This phone number is already registered."})
 
     def __str__(self):
         return f"Profile of {self.user}"

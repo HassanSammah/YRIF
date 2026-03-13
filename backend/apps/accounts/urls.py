@@ -10,7 +10,14 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
     # ── Social auth ───────────────────────────────────────────────────────────
     path("google/", views.GoogleAuthView.as_view(), name="google-auth"),
-    # ── Phone OTP (Briq) ──────────────────────────────────────────────────────
+    # ── Email verification ────────────────────────────────────────────────────
+    path("verify-email/send/", views.SendEmailOTPView.as_view(), name="send-email-otp"),
+    path("verify-email/", views.VerifyEmailView.as_view(), name="verify-email"),
+    # ── Briq phone-first auth (login + signup) ────────────────────────────────
+    path("briq/request/", views.BriqAuthRequestView.as_view(), name="briq-auth-request"),
+    path("briq/verify/", views.BriqAuthVerifyView.as_view(), name="briq-auth-verify"),
+    path("briq/complete/", views.BriqAuthCompleteView.as_view(), name="briq-auth-complete"),
+    # ── Phone OTP (Briq) — authenticated profile verification ─────────────────
     path("phone/request-otp/", views.PhoneOTPRequestView.as_view(), name="phone-otp-request"),
     path("phone/verify-otp/", views.PhoneOTPVerifyView.as_view(), name="phone-otp-verify"),
     # ── Current user ──────────────────────────────────────────────────────────

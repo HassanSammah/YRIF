@@ -171,7 +171,7 @@ class PhoneOTPRequestView(APIView):
     def post(self, request):
         serializer = PhoneOTPRequestSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        phone_number = serializer.validated_data["phone_number"]
+        phone_number = serializer.validated_data["phone_number"].lstrip('+').replace(' ', '').replace('-', '')
 
         if not settings.BRIQ_API_KEY:
             return Response({"detail": "OTP service not configured."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
@@ -212,7 +212,7 @@ class PhoneOTPVerifyView(APIView):
     def post(self, request):
         serializer = PhoneOTPVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        phone_number = serializer.validated_data["phone_number"]
+        phone_number = serializer.validated_data["phone_number"].lstrip('+').replace(' ', '').replace('-', '')
         code = serializer.validated_data["code"]
         if not settings.BRIQ_API_KEY:
             return Response({"detail": "OTP service not configured."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
@@ -312,7 +312,7 @@ class BriqAuthRequestView(APIView):
     def post(self, request):
         serializer = BriqAuthRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        phone_number = serializer.validated_data["phone_number"]
+        phone_number = serializer.validated_data["phone_number"].lstrip('+').replace(' ', '').replace('-', '')
 
         if not settings.BRIQ_API_KEY:
             return Response({"detail": "OTP service not configured."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
@@ -350,7 +350,7 @@ class BriqAuthVerifyView(APIView):
     def post(self, request):
         serializer = BriqAuthVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        phone_number = serializer.validated_data["phone_number"]
+        phone_number = serializer.validated_data["phone_number"].lstrip('+').replace(' ', '').replace('-', '')
         code = serializer.validated_data["code"]
         if not settings.BRIQ_API_KEY:
             return Response({"detail": "OTP service not configured."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)

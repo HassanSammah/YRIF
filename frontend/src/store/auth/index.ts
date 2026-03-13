@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { User } from '@/types/user'
 import { authApi } from '@/api/accounts'
+import { queryClient } from '@/lib/queryClient'
 
 interface AuthState {
   user: User | null
@@ -56,6 +57,7 @@ export const useAuthStore = create<AuthState>()(
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
         set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false })
+        queryClient.clear()
       },
 
       fetchMe: async () => {

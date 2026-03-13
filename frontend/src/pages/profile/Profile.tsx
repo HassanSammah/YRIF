@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import {
@@ -137,21 +137,25 @@ const inputCls = 'w-full rounded-xl border bg-white px-4 py-2.5 text-sm text-gra
 
 // ── Base profile form ─────────────────────────────────────────────────────────
 
-function BaseProfileSection() {
+function BaseProfileSection({ userId }: { userId: string }) {
   const qc = useQueryClient()
+  const initialized = useRef(false)
   const { data: profile, isLoading } = useQuery(
-    'profile',
+    ['profile', userId],
     () => authApi.getProfile().then((r) => r.data),
     { staleTime: 30_000 },
   )
   const mutation = useMutation(
     (data: Partial<Profile>) => authApi.updateProfile(data).then((r) => r.data),
-    { onSuccess: () => qc.invalidateQueries('profile') },
+    { onSuccess: () => qc.invalidateQueries(['profile', userId]) },
   )
   const { register, handleSubmit, reset } = useForm<Profile>()
 
   useEffect(() => {
-    if (profile) reset(profile)
+    if (profile && !initialized.current) {
+      reset(profile)
+      initialized.current = true
+    }
   }, [profile, reset])
 
   if (isLoading) return <p className="text-sm text-gray-400">Loading…</p>
@@ -230,17 +234,21 @@ function BaseProfileSection() {
 
 // ── Mentor profile form ───────────────────────────────────────────────────────
 
-function MentorProfileSection() {
+function MentorProfileSection({ userId }: { userId: string }) {
   const qc = useQueryClient()
-  const { data, isLoading } = useQuery('mentor-profile', () => authApi.getMentorProfile().then((r) => r.data))
+  const initialized = useRef(false)
+  const { data, isLoading } = useQuery(['mentor-profile', userId], () => authApi.getMentorProfile().then((r) => r.data))
   const mutation = useMutation(
     (d: Partial<MentorProfile>) => authApi.updateMentorProfile(d).then((r) => r.data),
-    { onSuccess: () => qc.invalidateQueries('mentor-profile') },
+    { onSuccess: () => qc.invalidateQueries(['mentor-profile', userId]) },
   )
   const { register, handleSubmit, reset } = useForm<MentorProfile>()
 
   useEffect(() => {
-    if (data) reset(data)
+    if (data && !initialized.current) {
+      reset(data)
+      initialized.current = true
+    }
   }, [data, reset])
 
   if (isLoading) return <p className="text-sm text-gray-400">Loading…</p>
@@ -268,17 +276,21 @@ function MentorProfileSection() {
 
 // ── Partner profile form ──────────────────────────────────────────────────────
 
-function PartnerProfileSection() {
+function PartnerProfileSection({ userId }: { userId: string }) {
   const qc = useQueryClient()
-  const { data, isLoading } = useQuery('partner-profile', () => authApi.getPartnerProfile().then((r) => r.data))
+  const initialized = useRef(false)
+  const { data, isLoading } = useQuery(['partner-profile', userId], () => authApi.getPartnerProfile().then((r) => r.data))
   const mutation = useMutation(
     (d: Partial<PartnerProfile>) => authApi.updatePartnerProfile(d).then((r) => r.data),
-    { onSuccess: () => qc.invalidateQueries('partner-profile') },
+    { onSuccess: () => qc.invalidateQueries(['partner-profile', userId]) },
   )
   const { register, handleSubmit, reset } = useForm<PartnerProfile>()
 
   useEffect(() => {
-    if (data) reset(data)
+    if (data && !initialized.current) {
+      reset(data)
+      initialized.current = true
+    }
   }, [data, reset])
 
   if (isLoading) return <p className="text-sm text-gray-400">Loading…</p>
@@ -320,17 +332,21 @@ function PartnerProfileSection() {
 
 // ── Research Assistant profile form ───────────────────────────────────────────
 
-function RAProfileSection() {
+function RAProfileSection({ userId }: { userId: string }) {
   const qc = useQueryClient()
-  const { data, isLoading } = useQuery('ra-profile', () => authApi.getAssistantProfile().then((r) => r.data))
+  const initialized = useRef(false)
+  const { data, isLoading } = useQuery(['ra-profile', userId], () => authApi.getAssistantProfile().then((r) => r.data))
   const mutation = useMutation(
     (d: Partial<ResearchAssistantProfile>) => authApi.updateAssistantProfile(d).then((r) => r.data),
-    { onSuccess: () => qc.invalidateQueries('ra-profile') },
+    { onSuccess: () => qc.invalidateQueries(['ra-profile', userId]) },
   )
   const { register, handleSubmit, reset } = useForm<ResearchAssistantProfile>()
 
   useEffect(() => {
-    if (data) reset(data)
+    if (data && !initialized.current) {
+      reset(data)
+      initialized.current = true
+    }
   }, [data, reset])
 
   if (isLoading) return <p className="text-sm text-gray-400">Loading…</p>
@@ -403,30 +419,30 @@ export default function Profile() {
           <PhoneVerificationSection
             phone={user.profile?.phone ?? ''}
             verified={user.profile?.phone_verified ?? false}
-            onVerified={() => { qc.invalidateQueries('profile'); fetchMe() }}
+            onVerified={() => { qc.invalidateQueries(['profile', user.id]); fetchMe() }}
           />
         </div>
       </div>
 
       {/* Base profile */}
       <Section icon={UserIcon} title="Profile Information">
-        <BaseProfileSection />
+        <BaseProfileSection userId={user.id} />
       </Section>
 
       {/* Role-specific extended profiles */}
       {user.role === 'mentor' && (
         <Section icon={Award} title="Mentor Profile">
-          <MentorProfileSection />
+          <MentorProfileSection userId={user.id} />
         </Section>
       )}
       {user.role === 'industry_partner' && (
         <Section icon={Building} title="Partner Profile">
-          <PartnerProfileSection />
+          <PartnerProfileSection userId={user.id} />
         </Section>
       )}
       {user.role === 'research_assistant' && (
         <Section icon={Shield} title="Research Assistant Profile">
-          <RAProfileSection />
+          <RAProfileSection userId={user.id} />
         </Section>
       )}
     </div>

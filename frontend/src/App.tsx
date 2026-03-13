@@ -1,13 +1,8 @@
 import { RouterProvider } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from 'react-query'
+import { QueryClientProvider } from 'react-query'
 import { router } from './routes'
 import ChatWidget from '@/components/chatbot/ChatWidget'
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { retry: 1, refetchOnWindowFocus: false },
-  },
-})
+import { queryClient } from '@/lib/queryClient'
 
 export default function App() {
   return (

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { GoogleLogin } from '@react-oauth/google'
-import { Eye, EyeOff, Loader2, Mail, Lock, BookOpen, Users, Trophy, Phone } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Mail, Lock, BookOpen, Users, Trophy } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import logoDark from '@/assets/logos/logo-dark.svg'
 import logoWhite from '@/assets/logos/logo-white.svg'
@@ -217,10 +217,15 @@ export default function Login() {
           <div className="mt-3 flex justify-center">
             <Link
               to="/auth/briq"
-              className="w-full flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:border-[#0D9488] hover:text-[#0D9488] transition-all duration-200 shadow-sm"
+              className="w-[320px] flex items-center gap-3 rounded border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-150 shadow-sm"
             >
-              <Phone className="w-4 h-4" />
-              Sign in with Phone (BRIQ Auth)
+              <span className="flex items-center justify-center w-6 h-6 shrink-0">
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6">
+                  <rect width="40" height="40" rx="6" fill="#002244"/>
+                  <text x="20" y="27" textAnchor="middle" fontSize="16" fontWeight="bold" fontFamily="Arial, sans-serif" fill="#00B4D8">B</text>
+                </svg>
+              </span>
+              <span className="flex-1 text-center">Sign in with BRIQ</span>
             </Link>
           </div>
 

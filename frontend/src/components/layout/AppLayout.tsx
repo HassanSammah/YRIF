@@ -51,7 +51,7 @@ export default function AppLayout() {
   const title = ROUTE_TITLES[location.pathname]
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-gradient-cream">
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}

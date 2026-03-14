@@ -48,8 +48,8 @@ function StatCard({
         <Icon className="w-5 h-5 text-white" />
       </div>
       <div className="min-w-0">
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
-        <p className="text-sm text-gray-500 mt-0.5">{label}</p>
+        <p className="text-2xl font-bold text-content-primary">{value}</p>
+        <p className="text-sm text-content-secondary mt-0.5">{label}</p>
         {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
       </div>
     </div>
@@ -67,8 +67,8 @@ function QuickAction({ to, icon: Icon, label, desc, colour }: {
         <Icon className="w-4 h-4 text-white" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-800">{label}</p>
-        <p className="text-xs text-gray-400 truncate">{desc}</p>
+        <p className="text-sm font-semibold text-content-primary">{label}</p>
+        <p className="text-xs text-content-secondary truncate">{desc}</p>
       </div>
       <ArrowRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0 transition-colors" />
     </Link>
@@ -124,7 +124,7 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold text-[#093344] font-display">
             {getGreeting()}, {name}! 👋
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-content-secondary mt-1">
             {format(new Date(), "EEEE, MMMM d, yyyy")} — Welcome to your YRIF portal.
           </p>
         </div>
@@ -168,7 +168,7 @@ export default function Dashboard() {
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-50">
               <Megaphone className="w-4 h-4 text-[#df8d31]" />
-              <h2 className="text-sm font-semibold text-gray-800">Announcements</h2>
+              <h2 className="text-sm font-semibold text-content-primary">Announcements</h2>
             </div>
             <div className="divide-y divide-gray-50">
               {loadingAnn ? (
@@ -178,8 +178,8 @@ export default function Dashboard() {
               ) : (
                 annList.slice(0, 4).map((ann) => (
                   <div key={ann.id} className="px-5 py-3.5">
-                    <p className="text-sm font-medium text-gray-800">{ann.title}</p>
-                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{ann.content}</p>
+                    <p className="text-sm font-medium text-content-primary">{ann.title}</p>
+                    <p className="text-xs text-content-secondary mt-0.5 line-clamp-2">{ann.content}</p>
                     {ann.published_at && (
                       <p className="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1">
                         <Clock className="w-3 h-3" />
@@ -197,7 +197,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
               <div className="flex items-center gap-2">
                 <CalendarDays className="w-4 h-4 text-[#0D9488]" />
-                <h2 className="text-sm font-semibold text-gray-800">Upcoming Events</h2>
+                <h2 className="text-sm font-semibold text-content-primary">Upcoming Events</h2>
               </div>
               <Link to="/events" className="text-xs text-[#0D9488] hover:underline flex items-center gap-1">
                 View all <ArrowRight className="w-3 h-3" />
@@ -220,8 +220,8 @@ export default function Dashboard() {
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 group-hover:text-[#093344] truncate">{ev.title}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">
+                      <p className="text-sm font-medium text-content-primary truncate">{ev.title}</p>
+                      <p className="text-xs text-content-secondary mt-0.5">
                         {ev.is_online ? 'Online' : ev.location} · <span className="capitalize">{ev.event_type}</span>
                       </p>
                     </div>
@@ -238,7 +238,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-purple-500" />
-                  <h2 className="text-sm font-semibold text-gray-800">My Research</h2>
+                  <h2 className="text-sm font-semibold text-content-primary">My Research</h2>
                 </div>
                 <Link to="/research/my" className="text-xs text-purple-600 hover:underline flex items-center gap-1">
                   View all <ArrowRight className="w-3 h-3" />
@@ -249,8 +249,8 @@ export default function Dashboard() {
                   <Link key={r.id} to={`/research/${r.id}`} className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 transition-colors">
                     <FileText className="w-4 h-4 text-gray-300 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">{r.title}</p>
-                      <p className="text-xs text-gray-500 capitalize">{r.category.replace('_', ' ')}</p>
+                      <p className="text-sm font-medium text-content-primary truncate">{r.title}</p>
+                      <p className="text-xs text-content-secondary capitalize">{r.category.replace('_', ' ')}</p>
                     </div>
                     <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full flex-shrink-0 ${STATUS_STYLE[r.status] ?? 'bg-gray-100 text-gray-600'}`}>
                       {STATUS_LABEL[r.status] ?? r.status}
@@ -264,7 +264,7 @@ export default function Dashboard() {
 
         {/* Right column — quick actions */}
         <div className="space-y-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400 px-1">Quick Actions</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-content-secondary px-1">Quick Actions</h2>
           <QuickAction to="/research/submit" icon={Send} label="Submit Research" desc="Upload a paper or proposal" colour="bg-purple-500" />
           <QuickAction to="/events" icon={CalendarDays} label="Browse Events" desc="Register for events" colour="bg-orange-500" />
           <QuickAction to="/competitions" icon={Trophy} label="Competitions" desc="Enter research competitions" colour="bg-[#df8d31]" />

@@ -43,7 +43,7 @@ export default function TopBar({ onMenuClick, notifCount = 0, title }: TopBarPro
       {/* Hamburger (mobile) */}
       <button
         onClick={onMenuClick}
-        className="lg:hidden p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+        className="lg:hidden p-2 rounded-lg text-content-secondary hover:text-content-primary hover:bg-gray-100 transition-colors"
         aria-label="Open navigation"
       >
         <Menu className="w-5 h-5" />
@@ -51,7 +51,7 @@ export default function TopBar({ onMenuClick, notifCount = 0, title }: TopBarPro
 
       {/* Page title */}
       {title && (
-        <span className="hidden sm:block text-sm font-semibold text-gray-700 truncate">{title}</span>
+        <span className="hidden sm:block text-sm font-semibold text-content-primary truncate">{title}</span>
       )}
 
       {/* Spacer */}
@@ -76,7 +76,7 @@ export default function TopBar({ onMenuClick, notifCount = 0, title }: TopBarPro
       ) : (
         <button
           onClick={() => setSearchOpen(true)}
-          className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-lg text-content-secondary hover:text-content-primary hover:bg-gray-100 transition-colors"
           aria-label="Search"
         >
           <Search className="w-4 h-4" />
@@ -86,7 +86,7 @@ export default function TopBar({ onMenuClick, notifCount = 0, title }: TopBarPro
       {/* Notifications */}
       <Link
         to="/notifications"
-        className="relative p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+        className="relative p-2 rounded-lg text-content-secondary hover:text-content-primary hover:bg-gray-100 transition-colors"
         aria-label="Notifications"
       >
         <Bell className="w-4 h-4" />
@@ -106,10 +106,10 @@ export default function TopBar({ onMenuClick, notifCount = 0, title }: TopBarPro
             {initials}
           </div>
           <div className="hidden sm:block text-left">
-            <p className="text-xs font-semibold text-gray-800 leading-none">
+            <p className="text-xs font-semibold text-content-primary leading-none">
               {user ? `${user.first_name || user.email.split('@')[0]}` : '—'}
             </p>
-            <p className="text-[10px] text-gray-400 leading-none mt-0.5">
+            <p className="text-[10px] text-content-secondary leading-none mt-0.5">
               {user ? USER_ROLE_LABELS[user.role] : ''}
             </p>
           </div>
@@ -118,15 +118,15 @@ export default function TopBar({ onMenuClick, notifCount = 0, title }: TopBarPro
         {dropdownOpen && (
           <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-lg border border-gray-100 py-1.5 z-50">
             <div className="px-4 py-2.5 border-b border-gray-100">
-              <p className="text-xs font-semibold text-gray-800 truncate">
+              <p className="text-xs font-semibold text-content-primary truncate">
                 {user ? `${user.first_name} ${user.last_name}`.trim() || user.email : '—'}
               </p>
-              <p className="text-[11px] text-gray-400 truncate">{user?.email}</p>
+              <p className="text-[11px] text-content-secondary truncate">{user?.email}</p>
             </div>
             <Link
               to="/profile"
               onClick={() => setDropdownOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2.5 px-4 py-2 text-sm text-content-primary hover:bg-gray-50 transition-colors"
             >
               <User className="w-3.5 h-3.5 text-gray-400" />
               View Profile
@@ -134,7 +134,7 @@ export default function TopBar({ onMenuClick, notifCount = 0, title }: TopBarPro
             <Link
               to="/profile"
               onClick={() => setDropdownOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2.5 px-4 py-2 text-sm text-content-primary hover:bg-gray-50 transition-colors"
             >
               <Settings className="w-3.5 h-3.5 text-gray-400" />
               Settings

@@ -10,11 +10,19 @@ export default {
       colors: {
         brand: {
           navy:  '#093344',
+          dark:  '#093344',
           blue:  '#1E40AF',
           teal:  '#0D9488',
           gold:  '#df8d31',
           light: '#FDFBF7',
         },
+        content: {
+          primary:   '#093344',
+          secondary: '#475569',
+        },
+      },
+      backgroundImage: {
+        'gradient-cream': 'linear-gradient(135deg, #FDFBF7 0%, #F5F1E8 100%)',
       },
       borderRadius: {
         '4xl': '2rem',

@@ -89,7 +89,9 @@ class MentorshipRequestListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        qs = MentorshipRequest.objects.select_related("mentee", "preferred_mentor")
+        qs = MentorshipRequest.objects.select_related(
+            "mentee", "mentee__profile", "preferred_mentor"
+        )
         if user.role in (UserRole.ADMIN, UserRole.STAFF, UserRole.PROGRAM_MANAGER):
             return qs.order_by("-created_at")
         if user.role == UserRole.MENTOR:
@@ -223,6 +225,81 @@ class MentorshipMatchDetailView(generics.RetrieveUpdateAPIView):
 
     def _get_topic(self, match):
         return match.request.topic if match.request else "N/A"
+
+
+# ── Mentor Accept / Decline ───────────────────────────────────────────────────
+
+class MentorAcceptView(APIView):
+    """Mentor accepts a mentorship request directed to them, auto-creating a match."""
+    permission_classes = [IsAuthenticated, IsApproved]
+
+    def post(self, request, pk):
+        user = request.user
+        if user.role != UserRole.MENTOR:
+            return Response(
+                {"detail": "Only mentors can accept requests."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        mr = get_object_or_404(
+            MentorshipRequest.objects.select_related("mentee", "mentee__profile"),
+            pk=pk,
+        )
+
+        if mr.preferred_mentor and mr.preferred_mentor != user:
+            return Response(
+                {"detail": "This request is directed to a different mentor."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if mr.status not in (MentorshipRequest.Status.PENDING, MentorshipRequest.Status.APPROVED):
+            return Response(
+                {"detail": "Request is not in a state that can be accepted."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        match = MentorshipMatch.objects.create(
+            request=mr,
+            mentor=user,
+            mentee=mr.mentee,
+            matched_by=user,
+        )
+        mr.status = MentorshipRequest.Status.MATCHED
+        mr.save(update_fields=["status", "updated_at"])
+        notify_mentorship_matched(user, mr.mentee, mr.topic)
+        return Response(MentorshipMatchSerializer(match).data, status=status.HTTP_201_CREATED)
+
+
+class MentorDeclineView(APIView):
+    """Mentor declines a mentorship request directed to them."""
+    permission_classes = [IsAuthenticated, IsApproved]
+
+    def post(self, request, pk):
+        user = request.user
+        if user.role != UserRole.MENTOR:
+            return Response(
+                {"detail": "Only mentors can decline requests."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        mr = get_object_or_404(MentorshipRequest, pk=pk)
+
+        if mr.preferred_mentor and mr.preferred_mentor != user:
+            return Response(
+                {"detail": "This request is directed to a different mentor."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if mr.status not in (MentorshipRequest.Status.PENDING, MentorshipRequest.Status.APPROVED):
+            return Response(
+                {"detail": "Request cannot be declined in its current state."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        mr.status = MentorshipRequest.Status.DECLINED
+        mr.save(update_fields=["status", "updated_at"])
+        notify_mentorship_request_declined(mr.mentee, mr.topic)
+        return Response({"detail": "Request declined."})
 
 
 # ── Feedback ──────────────────────────────────────────────────────────────────

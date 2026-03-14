@@ -164,7 +164,7 @@ class BriqAuthRequestSerializer(serializers.Serializer):
 
 class BriqAuthVerifySerializer(serializers.Serializer):
     phone_number = serializers.CharField()
-    otp_id = serializers.CharField()
+    otp_id = serializers.CharField(required=False, allow_blank=True)
     code = serializers.CharField(min_length=4, max_length=8)
 
 

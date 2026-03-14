@@ -36,6 +36,13 @@ export const mentorshipApi = {
       mentor_id: mentorId,
     }),
 
+  // Mentor self-service accept / decline
+  acceptRequest: (id: string) =>
+    apiClient.post<MentorshipMatch>(`/mentorship/requests/${id}/accept/`),
+
+  declineRequest: (id: string) =>
+    apiClient.post<{ detail: string }>(`/mentorship/requests/${id}/decline/`),
+
   // ── Mentorship matches ────────────────────────────────────────────────────
   listMatches: (params?: { status?: MentorshipMatchStatus; page?: number }) =>
     apiClient.get<PaginatedResponse<MentorshipMatch>>('/mentorship/matches/', { params }),

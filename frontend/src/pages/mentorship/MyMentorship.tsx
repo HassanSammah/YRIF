@@ -3,12 +3,12 @@ import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { useForm } from 'react-hook-form'
 import {
   Users, Star, CheckCircle, Clock, MessageSquare,
-  Loader2, X,
+  Loader2, X, ChevronDown, ChevronUp, Phone, BookOpen, GraduationCap, Briefcase,
 } from 'lucide-react'
 import { mentorshipApi } from '@/api/mentorship'
 import { authApi } from '@/api/accounts'
 import { useAuth } from '@/hooks/useAuth'
-import type { MentorshipMatch, MentorshipMatchStatus } from '@/types/mentorship'
+import type { MentorshipMatch, MentorshipMatchStatus, MentorshipRequest as MentorshipRequestType } from '@/types/mentorship'
 import {
   MENTORSHIP_REQUEST_STATUS_LABELS,
   MENTORSHIP_MATCH_STATUS_LABELS,
@@ -435,9 +435,159 @@ function MenteeView() {
   )
 }
 
+// ── Incoming Request Card (Mentor) ────────────────────────────────────────────
+
+function IncomingRequestCard({
+  req,
+  onResponded,
+}: {
+  req: MentorshipRequestType
+  onResponded: () => void
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const [actionError, setActionError] = useState('')
+
+  const acceptMutation = useMutation(
+    () => mentorshipApi.acceptRequest(req.id),
+    {
+      onSuccess: onResponded,
+      onError: () => setActionError('Failed to accept. Please try again.'),
+    },
+  )
+
+  const declineMutation = useMutation(
+    () => mentorshipApi.declineRequest(req.id),
+    {
+      onSuccess: onResponded,
+      onError: () => setActionError('Failed to decline. Please try again.'),
+    },
+  )
+
+  const isPending = req.status === 'pending' || req.status === 'approved'
+  const isLoading = acceptMutation.isLoading || declineMutation.isLoading
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      {/* Header row */}
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-gray-900">{req.topic}</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              From: <span className="text-gray-700 font-medium">{req.mentee_name}</span>
+              {req.mentee_email && <span className="text-gray-400"> · {req.mentee_email}</span>}
+            </p>
+            {req.message && (
+              <p className="text-xs text-gray-500 mt-1.5 italic line-clamp-2">{req.message}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <StatusBadge
+              label={MENTORSHIP_REQUEST_STATUS_LABELS[req.status]}
+              style={REQUEST_STATUS_STYLES[req.status]}
+            />
+            <button
+              onClick={() => setExpanded((e) => !e)}
+              className="p-1 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+              title={expanded ? 'Hide profile' : 'View mentee profile'}
+            >
+              {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Action buttons — only for pending/approved requests */}
+        {isPending && (
+          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-50">
+            <button
+              onClick={() => { setActionError(''); acceptMutation.mutate() }}
+              disabled={isLoading}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50 transition-colors"
+            >
+              {acceptMutation.isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
+              Accept & Match
+            </button>
+            <button
+              onClick={() => { setActionError(''); declineMutation.mutate() }}
+              disabled={isLoading}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white text-red-600 hover:border-red-300 hover:bg-red-50 px-3 py-1.5 text-xs font-semibold disabled:opacity-50 transition-colors"
+            >
+              {declineMutation.isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <X className="w-3 h-3" />}
+              Decline
+            </button>
+            {actionError && <p className="text-xs text-red-600">{actionError}</p>}
+          </div>
+        )}
+
+        <p className="text-xs text-gray-400 mt-3">
+          Received {new Date(req.created_at).toLocaleDateString()}
+        </p>
+      </div>
+
+      {/* Expanded mentee profile details */}
+      {expanded && (
+        <div className="border-t border-gray-100 bg-gray-50 p-5 space-y-3">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Mentee Profile</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            {req.mentee_institution && (
+              <div className="flex items-start gap-2">
+                <GraduationCap className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-gray-400">Institution</p>
+                  <p className="text-gray-700 font-medium">{req.mentee_institution}</p>
+                </div>
+              </div>
+            )}
+            {req.mentee_education_level && (
+              <div className="flex items-start gap-2">
+                <BookOpen className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-gray-400">Education</p>
+                  <p className="text-gray-700 font-medium capitalize">{req.mentee_education_level.replace(/_/g, ' ')}</p>
+                </div>
+              </div>
+            )}
+            {req.mentee_phone && (
+              <div className="flex items-start gap-2">
+                <Phone className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-gray-400">Phone</p>
+                  <p className="text-gray-700 font-medium">{req.mentee_phone}</p>
+                </div>
+              </div>
+            )}
+            {req.mentee_skills && (
+              <div className="flex items-start gap-2">
+                <Briefcase className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-gray-400">Skills</p>
+                  <p className="text-gray-700 font-medium">{req.mentee_skills}</p>
+                </div>
+              </div>
+            )}
+          </div>
+          {req.mentee_bio && (
+            <div>
+              <p className="text-xs text-gray-400 mb-1">Bio</p>
+              <p className="text-xs text-gray-700 leading-relaxed">{req.mentee_bio}</p>
+            </div>
+          )}
+          {req.mentee_research_interests && (
+            <div>
+              <p className="text-xs text-gray-400 mb-1">Research Interests</p>
+              <p className="text-xs text-gray-700 leading-relaxed">{req.mentee_research_interests}</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Mentor View ───────────────────────────────────────────────────────────────
 
 function MentorView() {
+  const qc = useQueryClient()
   const [tab, setTab] = useState<'requests' | 'matches'>('matches')
   const [feedbackMatch, setFeedbackMatch] = useState<MentorshipMatch | null>(null)
 
@@ -451,6 +601,16 @@ function MentorView() {
     () => mentorshipApi.listMatches().then((r) => r.data),
   )
 
+  const handleResponded = () => {
+    qc.invalidateQueries('mentor-incoming-requests')
+    qc.invalidateQueries('matches')
+    setTab('matches')
+  }
+
+  const pendingCount = requestsData?.results.filter(
+    (r) => r.status === 'pending' || r.status === 'approved'
+  ).length ?? 0
+
   return (
     <div className="space-y-6">
       <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
@@ -458,11 +618,16 @@ function MentorView() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${
+            className={`relative rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${
               tab === t ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             {t === 'matches' ? 'My Matches' : 'Incoming Requests'}
+            {t === 'requests' && pendingCount > 0 && (
+              <span className="ml-1.5 inline-flex items-center justify-center rounded-full bg-amber-500 text-white text-[10px] font-bold w-4 h-4">
+                {pendingCount}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -496,27 +661,11 @@ function MentorView() {
             </div>
           ) : (
             requestsData.results.map((req) => (
-              <div
+              <IncomingRequestCard
                 key={req.id}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">{req.topic}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">From: {req.mentee_name}</p>
-                    {req.message && (
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-2 italic">{req.message}</p>
-                    )}
-                  </div>
-                  <StatusBadge
-                    label={MENTORSHIP_REQUEST_STATUS_LABELS[req.status]}
-                    style={REQUEST_STATUS_STYLES[req.status]}
-                  />
-                </div>
-                <p className="text-xs text-gray-400 mt-3">
-                  {new Date(req.created_at).toLocaleDateString()}
-                </p>
-              </div>
+                req={req}
+                onResponded={handleResponded}
+              />
             ))
           )}
         </div>

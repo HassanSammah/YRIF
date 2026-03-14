@@ -11,6 +11,8 @@ urlpatterns = [
     path("requests/", views.MentorshipRequestListCreateView.as_view(), name="mentorship-request-list"),
     path("requests/<uuid:pk>/", views.MentorshipRequestDetailView.as_view(), name="mentorship-request-detail"),
     path("requests/<uuid:pk>/match/", views.MatchCreateView.as_view(), name="mentorship-match-create"),
+    path("requests/<uuid:pk>/accept/", views.MentorAcceptView.as_view(), name="mentorship-request-accept"),
+    path("requests/<uuid:pk>/decline/", views.MentorDeclineView.as_view(), name="mentorship-request-decline"),
 
     # ── Mentorship matches ────────────────────────────────────────────────────
     path("matches/", views.MentorshipMatchListView.as_view(), name="mentorship-match-list"),

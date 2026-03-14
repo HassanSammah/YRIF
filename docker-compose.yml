@@ -33,7 +33,11 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: python manage.py runserver 0.0.0.0:8000 --settings=config.settings.development
+    entrypoint: []
+    command: >
+      sh -c "pip install -q -r requirements/development.txt &&
+             python manage.py migrate --settings=config.settings.development &&
+             python manage.py runserver 0.0.0.0:8000 --settings=config.settings.development"
     volumes:
       - ./backend:/app
       - media_files:/app/media
@@ -60,6 +64,8 @@ services:
       - /app/node_modules
     env_file:
       - ./frontend/.env
+    environment:
+      - BACKEND_URL=http://backend:8000
     ports:
       - "3000:3000"
     depends_on:

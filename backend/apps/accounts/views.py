@@ -37,6 +37,18 @@ from .serializers import (
 from . import emails as account_emails
 
 
+def _normalise_phone(raw: str) -> str:
+    """Return phone in E.164 format (+255XXXXXXXXX) expected by BRIQ."""
+    p = raw.strip().replace(' ', '').replace('-', '')
+    if p.startswith('0'):
+        return '+255' + p[1:]
+    if p.startswith('255') and not p.startswith('+'):
+        return '+' + p
+    if not p.startswith('+'):
+        return '+255' + p
+    return p
+
+
 def _extract_otp_id(data):
     """Safely extract otp_id from BRIQ response — handles nested and flat shapes."""
     nested = data.get("data", {})
@@ -171,17 +183,16 @@ class PhoneOTPRequestView(APIView):
     def post(self, request):
         serializer = PhoneOTPRequestSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        phone_number = serializer.validated_data["phone_number"].lstrip('+').replace(' ', '').replace('-', '')
+        phone_number = _normalise_phone(serializer.validated_data["phone_number"])
 
         if not settings.BRIQ_API_KEY:
             return Response({"detail": "OTP service not configured."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         try:
             resp = http_requests.post(
-                f"{settings.BRIQ_BASE_URL}/v1/otp/request/",
+                f"{settings.BRIQ_BASE_URL}/v1/otp/request",
                 json={
                     "phone_number": phone_number,
-                    "developer_app_id": settings.BRIQ_DEVELOPER_APP_ID,
                     "app_key": settings.BRIQ_APP_KEY,
                     "sender_id": settings.BRIQ_SMS_SENDER,
                     "minutes_to_expire": 10,
@@ -212,17 +223,16 @@ class PhoneOTPVerifyView(APIView):
     def post(self, request):
         serializer = PhoneOTPVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        phone_number = serializer.validated_data["phone_number"].lstrip('+').replace(' ', '').replace('-', '')
+        phone_number = _normalise_phone(serializer.validated_data["phone_number"])
         code = serializer.validated_data["code"]
         if not settings.BRIQ_API_KEY:
             return Response({"detail": "OTP service not configured."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         try:
             resp = http_requests.post(
-                f"{settings.BRIQ_BASE_URL}/v1/otp/verify/",
+                f"{settings.BRIQ_BASE_URL}/v1/otp/verify",
                 json={
                     "phone_number": phone_number,
-                    "developer_app_id": settings.BRIQ_DEVELOPER_APP_ID,
                     "app_key": settings.BRIQ_APP_KEY,
                     "code": code,
                 },
@@ -312,17 +322,16 @@ class BriqAuthRequestView(APIView):
     def post(self, request):
         serializer = BriqAuthRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        phone_number = serializer.validated_data["phone_number"].lstrip('+').replace(' ', '').replace('-', '')
+        phone_number = _normalise_phone(serializer.validated_data["phone_number"])
 
         if not settings.BRIQ_API_KEY:
             return Response({"detail": "OTP service not configured."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         try:
             resp = http_requests.post(
-                f"{settings.BRIQ_BASE_URL}/v1/otp/request/",
+                f"{settings.BRIQ_BASE_URL}/v1/otp/request",
                 json={
                     "phone_number": phone_number,
-                    "developer_app_id": settings.BRIQ_DEVELOPER_APP_ID,
                     "app_key": settings.BRIQ_APP_KEY,
                     "sender_id": settings.BRIQ_SMS_SENDER,
                     "minutes_to_expire": 10,
@@ -350,17 +359,16 @@ class BriqAuthVerifyView(APIView):
     def post(self, request):
         serializer = BriqAuthVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        phone_number = serializer.validated_data["phone_number"].lstrip('+').replace(' ', '').replace('-', '')
+        phone_number = _normalise_phone(serializer.validated_data["phone_number"])
         code = serializer.validated_data["code"]
         if not settings.BRIQ_API_KEY:
             return Response({"detail": "OTP service not configured."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         try:
             resp = http_requests.post(
-                f"{settings.BRIQ_BASE_URL}/v1/otp/verify/",
+                f"{settings.BRIQ_BASE_URL}/v1/otp/verify",
                 json={
                     "phone_number": phone_number,
-                    "developer_app_id": settings.BRIQ_DEVELOPER_APP_ID,
                     "app_key": settings.BRIQ_APP_KEY,
                     "code": code,
                 },
@@ -377,15 +385,21 @@ class BriqAuthVerifyView(APIView):
 
         cache.delete(f"briq_auth:{phone_number}")
 
-        # Check whether this phone belongs to an existing user
-        profile_qs = Profile.objects.filter(phone=phone_number, phone_verified=True).select_related("user")
+        # Check whether this phone belongs to an existing user (verified or not —
+        # successful OTP proves ownership, so we accept either state)
+        profile_qs = Profile.objects.filter(phone=phone_number).exclude(phone="").select_related("user")
         if profile_qs.exists():
-            user = profile_qs.first().user
+            profile = profile_qs.first()
+            user = profile.user
             if not user.is_active:
                 return Response(
                     {"detail": "Your account has been suspended or rejected. Contact support."},
                     status=status.HTTP_403_FORBIDDEN,
                 )
+            # Mark phone as verified since OTP was just proven
+            if not profile.phone_verified:
+                profile.phone_verified = True
+                profile.save(update_fields=["phone_verified"])
             tokens = _get_tokens(user)
             return Response({**tokens, "user": UserSerializer(user).data, "needs_registration": False})
 
@@ -406,7 +420,7 @@ class BriqAuthCompleteView(APIView):
     def post(self, request):
         serializer = BriqAuthCompleteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        phone_number = serializer.validated_data["phone_number"]
+        phone_number = _normalise_phone(serializer.validated_data["phone_number"])
         verify_token = serializer.validated_data["verify_token"]
 
         # Validate the verify_token issued in BriqAuthVerifyView

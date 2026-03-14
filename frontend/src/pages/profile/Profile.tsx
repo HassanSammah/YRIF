@@ -55,7 +55,9 @@ function PhoneVerificationSection({ phone, verified, onVerified }: {
   if (verified) {
     return (
       <div className="flex items-center gap-2 text-sm text-green-700">
-        <CheckCircle className="w-4 h-4" /> Phone verified
+        <CheckCircle className="w-4 h-4" />
+        <span>{phone}</span>
+        <span className="text-green-600 font-medium">· Verified</span>
       </div>
     )
   }

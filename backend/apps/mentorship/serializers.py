@@ -43,18 +43,59 @@ class MentorshipRequestSerializer(serializers.ModelSerializer):
     mentee_name = serializers.CharField(source="mentee.get_full_name", read_only=True)
     mentee_email = serializers.EmailField(source="mentee.email", read_only=True)
     preferred_mentor_name = serializers.SerializerMethodField()
+    # Mentee profile details (for mentors reviewing incoming requests)
+    mentee_bio = serializers.SerializerMethodField()
+    mentee_institution = serializers.SerializerMethodField()
+    mentee_phone = serializers.SerializerMethodField()
+    mentee_education_level = serializers.SerializerMethodField()
+    mentee_skills = serializers.SerializerMethodField()
+    mentee_research_interests = serializers.SerializerMethodField()
 
     class Meta:
         model = MentorshipRequest
         fields = [
             "id", "mentee", "mentee_name", "mentee_email",
+            "mentee_bio", "mentee_institution", "mentee_phone",
+            "mentee_education_level", "mentee_skills", "mentee_research_interests",
             "preferred_mentor", "preferred_mentor_name",
             "topic", "message", "status", "created_at",
         ]
-        read_only_fields = ["id", "mentee", "mentee_name", "mentee_email", "status", "created_at"]
+        read_only_fields = [
+            "id", "mentee", "mentee_name", "mentee_email",
+            "mentee_bio", "mentee_institution", "mentee_phone",
+            "mentee_education_level", "mentee_skills", "mentee_research_interests",
+            "status", "created_at",
+        ]
 
     def get_preferred_mentor_name(self, obj):
         return obj.preferred_mentor.get_full_name() if obj.preferred_mentor else None
+
+    def _profile(self, obj):
+        return getattr(obj.mentee, "profile", None)
+
+    def get_mentee_bio(self, obj):
+        p = self._profile(obj)
+        return p.bio if p else ""
+
+    def get_mentee_institution(self, obj):
+        p = self._profile(obj)
+        return p.institution if p else ""
+
+    def get_mentee_phone(self, obj):
+        p = self._profile(obj)
+        return p.phone if p else ""
+
+    def get_mentee_education_level(self, obj):
+        p = self._profile(obj)
+        return p.education_level if p else ""
+
+    def get_mentee_skills(self, obj):
+        p = self._profile(obj)
+        return p.skills if p else ""
+
+    def get_mentee_research_interests(self, obj):
+        p = self._profile(obj)
+        return p.research_interests if p else ""
 
 
 class MentorshipMatchSerializer(serializers.ModelSerializer):

@@ -42,6 +42,12 @@ export interface MentorshipRequest {
   mentee: string
   mentee_name: string
   mentee_email: string
+  mentee_bio: string
+  mentee_institution: string
+  mentee_phone: string
+  mentee_education_level: string
+  mentee_skills: string
+  mentee_research_interests: string
   preferred_mentor: string | null
   preferred_mentor_name: string | null
   topic: string

@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import AppLayout from '@/components/layout/AppLayout'
 import { SkeletonPage } from '@/components/common/Skeleton'
@@ -39,7 +39,13 @@ const MentorshipMgmt     = lazy(() => import('@/pages/admin/MentorshipManagement
 // ── Guards ────────────────────────────────────────────────────────────────────
 
 function RequireAuth() {
-  const { isAuthenticated, user, isAdmin } = useAuth()
+  const { isAuthenticated, user, isAdmin, fetchMe } = useAuth()
+
+  // Silently refresh user data after rehydration from localStorage
+  useEffect(() => {
+    if (isAuthenticated) fetchMe().catch(() => {})
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!isAuthenticated) return <Navigate to="/login" replace />
   if (user?.status === 'suspended' || user?.status === 'rejected') {
     return <Navigate to="/login" replace />

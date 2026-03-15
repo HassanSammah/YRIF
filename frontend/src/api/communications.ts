@@ -1,6 +1,6 @@
 import apiClient from './client'
 import type { PaginatedResponse } from '@/types/api'
-import type { NotificationItem, Conversation, Message } from '@/types/messaging'
+import type { NotificationItem, Conversation, Message, UserSearchResult } from '@/types/messaging'
 
 export interface FAQ {
   id: string
@@ -11,7 +11,7 @@ export interface FAQ {
 }
 
 export const communicationsApi = {
-  // ── Public ──────────────────────────────────────────────────────────────
+  // ── Public ────────────────────────────────────────────────────────────────
   submitContact: (data: { name: string; email: string; subject: string; message: string }) =>
     apiClient.post('/communications/contact/', data),
 
@@ -21,7 +21,7 @@ export const communicationsApi = {
   sendChatMessage: (message: string, chat_id: string) =>
     apiClient.post<{ reply: string }>('/communications/chatbot/', { message, chat_id }),
 
-  // ── Notifications ────────────────────────────────────────────────────────
+  // ── Notifications ──────────────────────────────────────────────────────────
   getNotifications: () =>
     apiClient.get<NotificationItem[]>('/communications/notifications/'),
 
@@ -31,7 +31,11 @@ export const communicationsApi = {
   markRead: (id: string) =>
     apiClient.post(`/communications/notifications/${id}/read/`),
 
-  // ── Conversations ────────────────────────────────────────────────────────
+  // ── User search (for new conversations) ───────────────────────────────────
+  searchUsers: (q: string, role?: string) =>
+    apiClient.get<UserSearchResult[]>('/communications/users/search/', { params: { q, role } }),
+
+  // ── Conversations ──────────────────────────────────────────────────────────
   listConversations: () =>
     apiClient.get<PaginatedResponse<Conversation>>('/communications/conversations/'),
 
@@ -41,14 +45,25 @@ export const communicationsApi = {
   getConversation: (id: string) =>
     apiClient.get<Conversation>(`/communications/conversations/${id}/`),
 
-  // ── Messages ─────────────────────────────────────────────────────────────
+  /** Get or create a peer / research-collab conversation with a specific user. */
+  startPeerConversation: (user_id: string, subject?: string, conv_type?: string) =>
+    apiClient.post<Conversation>('/communications/conversations/peer/', { user_id, subject, conv_type }),
+
+  /** Get or create the mentorship conversation for a match. */
+  startMentorshipConversation: (match_id: string) =>
+    apiClient.post<Conversation>('/communications/conversations/mentorship/', { match_id }),
+
+  // ── Messages ───────────────────────────────────────────────────────────────
   listMessages: (convId: string) =>
-    apiClient.get<PaginatedResponse<Message>>(`/communications/conversations/${convId}/messages/`),
+    apiClient.get<PaginatedResponse<Message> | Message[]>(
+      `/communications/conversations/${convId}/messages/`,
+      { params: { page_size: 500 } },
+    ),
 
   sendMessage: (convId: string, text: string) =>
     apiClient.post<Message>(`/communications/conversations/${convId}/messages/`, { text }),
 
-  // ── Admin ────────────────────────────────────────────────────────────────
+  // ── Admin ──────────────────────────────────────────────────────────────────
   adminListFaqs: () =>
     apiClient.get<FAQ[]>('/communications/admin/faqs/'),
 

@@ -18,10 +18,15 @@ urlpatterns = [
     path("notifications/read/", views.NotificationMarkReadView.as_view(), name="notifications-read-all"),
     path("notifications/<uuid:pk>/read/", views.NotificationMarkReadView.as_view(), name="notification-read"),
 
+    # Authenticated: user search (for starting conversations)
+    path("users/search/", views.UserSearchView.as_view(), name="user-search"),
+
     # Authenticated: conversations
     path("conversations/", views.ConversationListCreateView.as_view(), name="conversations"),
     path("conversations/<uuid:pk>/", views.ConversationDetailView.as_view(), name="conversation-detail"),
     path("conversations/<uuid:conv_id>/messages/", views.MessageListCreateView.as_view(), name="messages"),
+    path("conversations/peer/", views.StartPeerConversationView.as_view(), name="start-peer"),
+    path("conversations/mentorship/", views.StartMentorshipConversationView.as_view(), name="start-mentorship"),
 
     # Admin
     path("admin/faqs/", views.AdminFAQView.as_view(), name="admin-faqs"),

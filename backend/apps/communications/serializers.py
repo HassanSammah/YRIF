@@ -27,9 +27,23 @@ class ConversationParticipantSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     full_name = serializers.SerializerMethodField()
     email = serializers.EmailField()
+    role = serializers.CharField(default="")
+    avatar = serializers.SerializerMethodField()
 
     def get_full_name(self, obj):
         return obj.get_full_name() or obj.email
+
+    def get_avatar(self, obj):
+        try:
+            profile = getattr(obj, "profile", None)
+            if profile and profile.avatar:
+                request = self.context.get("request")
+                if request:
+                    return request.build_absolute_uri(profile.avatar.url)
+                return profile.avatar.url
+        except Exception:
+            pass
+        return None
 
 
 class ConversationSerializer(serializers.ModelSerializer):
@@ -39,11 +53,13 @@ class ConversationSerializer(serializers.ModelSerializer):
     )
     last_message = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
+    conv_type_display = serializers.CharField(source="get_conv_type_display", read_only=True)
 
     class Meta:
         model = Conversation
         fields = [
-            "id", "conv_type", "subject", "participants", "participant_ids",
+            "id", "conv_type", "conv_type_display", "subject",
+            "participants", "participant_ids",
             "last_message", "unread_count", "created_at", "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
@@ -51,7 +67,11 @@ class ConversationSerializer(serializers.ModelSerializer):
     def get_last_message(self, obj):
         last = obj.messages.last()
         if last:
-            return {"text": last.text, "sender_id": str(last.sender_id), "created_at": last.created_at}
+            return {
+                "text": last.text,
+                "sender_id": str(last.sender_id),
+                "created_at": last.created_at.isoformat(),
+            }
         return None
 
     def get_unread_count(self, obj):

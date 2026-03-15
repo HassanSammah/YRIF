@@ -1,5 +1,6 @@
 import logging
 from django.utils import timezone
+from django.db.models import Q
 from django.conf import settings
 from rest_framework import generics, status
 from rest_framework.views import APIView
@@ -326,3 +327,128 @@ class AdminBroadcastNotificationView(APIView):
         ]
         Notification.objects.bulk_create(notifications, batch_size=500)
         return Response({"sent": len(notifications)})
+
+
+# ── User Search (for new conversations) ───────────────────────────────────────
+
+class UserSearchView(APIView):
+    """Search active users by name/email to start a conversation."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        q = request.query_params.get("q", "").strip()
+        role = request.query_params.get("role", "").strip()
+        if len(q) < 2:
+            return Response([])
+        qs = User.objects.filter(status="active").exclude(pk=request.user.pk).filter(
+            Q(first_name__icontains=q)
+            | Q(last_name__icontains=q)
+            | Q(email__icontains=q)
+        )
+        if role:
+            qs = qs.filter(role=role)
+        qs = qs.select_related("profile")[:20]
+        data = [
+            {
+                "id": str(u.id),
+                "full_name": u.get_full_name() or u.email,
+                "email": u.email,
+                "role": u.role,
+                "avatar": (
+                    request.build_absolute_uri(u.profile.avatar.url)
+                    if hasattr(u, "profile") and u.profile and u.profile.avatar
+                    else None
+                ),
+            }
+            for u in qs
+        ]
+        return Response(data)
+
+
+# ── Start Peer Conversation ────────────────────────────────────────────────────
+
+class StartPeerConversationView(APIView):
+    """Get or create a peer conversation between current user and target user."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user_id = request.data.get("user_id")
+        subject = request.data.get("subject", "")
+        conv_type = request.data.get("conv_type", Conversation.ConvType.PEER)
+
+        # Validate conv_type
+        valid_types = [Conversation.ConvType.PEER, Conversation.ConvType.RESEARCH_COLLAB]
+        if conv_type not in valid_types:
+            conv_type = Conversation.ConvType.PEER
+
+        if not user_id:
+            return Response({"detail": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            target = User.objects.get(pk=user_id, status="active")
+        except User.DoesNotExist:
+            return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Reuse existing conversation of the same type between these two users
+        existing = (
+            Conversation.objects.filter(conv_type=conv_type, participants=request.user)
+            .filter(participants=target)
+            .first()
+        )
+        if existing:
+            serializer = ConversationSerializer(existing, context={"request": request})
+            return Response(serializer.data)
+
+        conv = Conversation.objects.create(
+            conv_type=conv_type,
+            subject=subject or f"{request.user.get_full_name() or request.user.email} & {target.get_full_name() or target.email}",
+        )
+        conv.participants.add(request.user, target)
+        serializer = ConversationSerializer(conv, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+# ── Start Mentorship Conversation ──────────────────────────────────────────────
+
+class StartMentorshipConversationView(APIView):
+    """Get or create the mentorship conversation for a given match."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        match_id = request.data.get("match_id")
+        if not match_id:
+            return Response({"detail": "match_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            from apps.mentorship.models import MentorshipMatch
+            match = MentorshipMatch.objects.select_related("mentor", "mentee", "request").get(
+                pk=match_id
+            )
+        except Exception:
+            return Response({"detail": "Match not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.user not in (match.mentor, match.mentee):
+            return Response({"detail": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
+
+        # Reuse existing mentorship conversation between this exact pair
+        existing = (
+            Conversation.objects.filter(
+                conv_type=Conversation.ConvType.MENTORSHIP,
+                participants=match.mentor,
+            )
+            .filter(participants=match.mentee)
+            .first()
+        )
+        if existing:
+            serializer = ConversationSerializer(existing, context={"request": request})
+            return Response(serializer.data)
+
+        topic = ""
+        if match.request:
+            topic = match.request.topic
+        conv = Conversation.objects.create(
+            conv_type=Conversation.ConvType.MENTORSHIP,
+            subject=topic or "Mentorship Session",
+        )
+        conv.participants.add(match.mentor, match.mentee)
+        serializer = ConversationSerializer(conv, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

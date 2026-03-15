@@ -65,6 +65,8 @@ class Conversation(BaseModel):
     class ConvType(models.TextChoices):
         USER_ADMIN = "user_admin", "User ↔ Admin"
         PEER = "peer", "Peer"
+        MENTORSHIP = "mentorship", "Mentorship"
+        RESEARCH_COLLAB = "research_collab", "Research Collaboration"
 
     conv_type = models.CharField(
         max_length=20, choices=ConvType.choices, default=ConvType.USER_ADMIN

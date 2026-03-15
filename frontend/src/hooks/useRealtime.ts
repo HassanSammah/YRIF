@@ -1,11 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase'
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL ?? '',
-  import.meta.env.VITE_SUPABASE_ANON_KEY ?? ''
-)
-
+/** Generic broadcast channel hook (kept for backwards compat). */
 export function useRealtimeChannel(channelName: string, onMessage: (payload: unknown) => void) {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
 

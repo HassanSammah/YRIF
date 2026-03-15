@@ -3,7 +3,7 @@ import {
   LayoutDashboard, BookOpen, Send, FolderOpen, CalendarDays, Trophy,
   Award, Users2, Heart, Library, MessageSquare, Bell, LogOut,
   ChevronRight, Settings, BarChart3, FileText, Handshake, Megaphone,
-  X, Shield, GraduationCap,
+  X, Shield, GraduationCap, GitBranch,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { USER_ROLE_LABELS } from '@/types/user'
@@ -36,17 +36,22 @@ export default function Sidebar({ open, onClose, notifCount = 0 }: SidebarProps)
     navigate('/login')
   }
 
+  const researchItems: NavItem[] = [
+    { to: '/research', icon: FolderOpen, label: 'Repository' },
+    { to: '/research/submit', icon: Send, label: 'Submit Research' },
+    { to: '/research/my', icon: BookOpen, label: 'My Submissions' },
+  ]
+  if (user?.role === 'research_assistant') {
+    researchItems.push({ to: '/research/open', icon: GitBranch, label: 'Open Projects' })
+  }
+
   const mainSections: NavSection[] = [
     {
       items: [{ to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' }],
     },
     {
       title: 'Research',
-      items: [
-        { to: '/research', icon: FolderOpen, label: 'Repository' },
-        { to: '/research/submit', icon: Send, label: 'Submit Research' },
-        { to: '/research/my', icon: BookOpen, label: 'My Submissions' },
-      ],
+      items: researchItems,
     },
     {
       title: 'Events',

@@ -36,6 +36,11 @@ class Research(BaseModel):
     downloads_count = models.PositiveIntegerField(default=0)
     rejection_reason = models.TextField(blank=True)
     published_at = models.DateTimeField(null=True, blank=True)
+    open_for_collaboration = models.BooleanField(default=False, db_index=True)
+    collaboration_description = models.TextField(
+        blank=True,
+        help_text="Describe what kind of RA collaboration you are looking for.",
+    )
 
     class Meta:
         ordering = ["-created_at"]
@@ -78,3 +83,36 @@ class ReviewAssignment(BaseModel):
 
     def __str__(self):
         return f"Assignment: {self.reviewer} → {self.research}"
+
+
+class RAJoinRequestStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    ACCEPTED = "accepted", "Accepted"
+    DECLINED = "declined", "Declined"
+
+
+class RAJoinRequest(BaseModel):
+    """An RA proactively requests to join an open research project."""
+    research = models.ForeignKey(
+        Research,
+        on_delete=models.CASCADE,
+        related_name="ra_join_requests",
+    )
+    ra = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="ra_join_requests_sent",
+    )
+    message = models.TextField(blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=RAJoinRequestStatus.choices,
+        default=RAJoinRequestStatus.PENDING,
+        db_index=True,
+    )
+
+    class Meta:
+        unique_together = [["research", "ra"]]
+
+    def __str__(self):
+        return f"{self.ra} → {self.research} ({self.status})"

@@ -18,6 +18,7 @@ const ResearchRepository = lazy(() => import('@/pages/research/ResearchRepositor
 const ResearchDetail     = lazy(() => import('@/pages/research/ResearchDetail'))
 const SubmitResearch     = lazy(() => import('@/pages/research/SubmitResearch'))
 const MyResearch         = lazy(() => import('@/pages/research/MyResearch'))
+const OpenProjects       = lazy(() => import('@/pages/research/OpenProjects'))
 const EventsList         = lazy(() => import('@/pages/events/EventsList'))
 const EventDetail        = lazy(() => import('@/pages/events/EventDetail'))
 const Competitions       = lazy(() => import('@/pages/events/Competitions'))
@@ -99,6 +100,7 @@ export const router = createBrowserRouter([
       { path: '/research',        element: wrap(ResearchRepository) },
       { path: '/research/submit', element: wrap(SubmitResearch) },
       { path: '/research/my',     element: wrap(MyResearch) },
+      { path: '/research/open',   element: wrap(OpenProjects) },
       { path: '/research/:id',    element: wrap(ResearchDetail) },
       { path: '/events',          element: wrap(EventsList) },
       { path: '/events/:id',      element: wrap(EventDetail) },

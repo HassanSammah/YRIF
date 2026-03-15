@@ -209,3 +209,36 @@ class ResearchAssistantProfile(BaseModel):
 
     def __str__(self):
         return f"RAProfile of {self.user}"
+
+
+class DeletionRequestStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    APPROVED = "approved", "Approved"
+    REJECTED = "rejected", "Rejected"
+
+
+class DeletionRequest(BaseModel):
+    """A user's request to have their account permanently deleted (requires admin approval)."""
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="deletion_request",
+    )
+    reason = models.TextField(blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=DeletionRequestStatus.choices,
+        default=DeletionRequestStatus.PENDING,
+        db_index=True,
+    )
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolved_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="deletion_requests_resolved",
+    )
+
+    def __str__(self):
+        return f"DeletionRequest for {self.user} ({self.status})"

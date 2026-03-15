@@ -72,8 +72,8 @@ export default function Login() {
     setServerError('')
     if (!credentialResponse.credential) return
     try {
-      const result = await googleLogin(credentialResponse.credential)
-      navigate(result.is_new ? '/pending-approval' : from, { replace: true })
+      await googleLogin(credentialResponse.credential)
+      navigate(from, { replace: true })
     } catch {
       setServerError('Google sign-in failed. Please try again.')
     }

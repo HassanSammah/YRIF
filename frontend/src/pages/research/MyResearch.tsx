@@ -1,6 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
-import { Plus, FileText, Clock, ChevronRight, Loader2, Send } from 'lucide-react'
+import { Plus, FileText, Clock, ChevronRight, Loader2, Send, Users } from 'lucide-react'
 import { SkeletonCard } from '@/components/common/Skeleton'
 import { researchApi } from '@/api/research'
 import { RESEARCH_CATEGORY_LABELS, RESEARCH_STATUS_LABELS } from '@/types/research'
@@ -46,6 +46,20 @@ function ResearchCard({ research, onSubmit }: { research: Research; onSubmit: (i
           </p>
 
           <p className="text-xs text-gray-500 mt-1">{STATUS_HINT[research.status]}</p>
+
+          {/* RA join request badge */}
+          {(() => {
+            const pending = research.ra_join_requests?.filter(r => r.status === 'pending').length ?? 0
+            return pending > 0 ? (
+              <Link
+                to={`/research/${research.id}`}
+                className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-medium text-[#0D9488] bg-[#f0fdfa] border border-[#0D9488]/20 rounded-full px-2.5 py-0.5 hover:bg-[#ccfbf1] transition-colors"
+              >
+                <Users className="w-3 h-3" />
+                {pending} RA request{pending > 1 ? 's' : ''} pending
+              </Link>
+            ) : null
+          })()}
 
           {research.status === 'rejected' && research.rejection_reason && (
             <p className="text-xs text-red-600 mt-1.5 bg-red-50 rounded px-2 py-1">

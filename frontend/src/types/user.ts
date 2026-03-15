@@ -86,6 +86,19 @@ export interface User {
   ra_profile: ResearchAssistantProfile | null
 }
 
+export interface DeletionRequest {
+  id: string
+  user: string
+  user_name: string
+  user_email: string
+  reason: string
+  status: 'pending' | 'approved' | 'rejected'
+  requested_at: string
+  resolved_at: string | null
+  resolved_by: string | null
+  resolved_by_name: string | null
+}
+
 export const EDUCATION_LEVELS = [
   { value: '', label: 'Select education level' },
   { value: 'secondary_form1', label: 'Secondary – Form 1', group: 'Secondary' },

@@ -10,10 +10,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from django.conf import settings
 from apps.core.permissions import IsAdmin
+from django.utils import timezone as dj_timezone
 from .models import (
     User, UserStatus, UserRole,
     Profile, MentorProfile, PartnerProfile, ResearchAssistantProfile,
-    AuthProviderAccount,
+    AuthProviderAccount, DeletionRequest, DeletionRequestStatus,
 )
 from .serializers import (
     UserRegistrationSerializer,
@@ -33,6 +34,7 @@ from .serializers import (
     BriqAuthCompleteSerializer,
     UpdateUserStatusSerializer,
     RoleAssignmentSerializer,
+    DeletionRequestSerializer,
 )
 from . import emails as account_emails
 
@@ -299,12 +301,15 @@ class VerifyEmailView(APIView):
         except User.DoesNotExist:
             return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        if user.status == UserStatus.PENDING_EMAIL_VERIFICATION:
+        was_pending = user.status == UserStatus.PENDING_EMAIL_VERIFICATION
+        if was_pending:
             user.status = UserStatus.ACTIVE
             user.is_active = True
             user.save(update_fields=["status", "is_active", "updated_at"])
 
         cache.delete(f"email_otp:{email}")
+        if was_pending:
+            account_emails.send_post_verification_welcome_email(user)
         tokens = _get_tokens(user)
         return Response({
             **tokens,
@@ -606,3 +611,130 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method in ('PUT', 'PATCH'):
             return AdminUserUpdateSerializer
         return UserSerializer
+
+
+# ─── Email Change ─────────────────────────────────────────────────────────────
+
+class ChangeEmailView(APIView):
+    """POST /auth/change-email/ — send OTP to new email for verification."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        new_email = request.data.get("new_email", "").strip().lower()
+        if not new_email:
+            return Response({"detail": "new_email is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        from django.core.validators import validate_email as django_validate_email
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            django_validate_email(new_email)
+        except DjangoValidationError:
+            return Response({"detail": "Enter a valid email address."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(email=new_email).exclude(pk=request.user.pk).exists():
+            return Response({"detail": "This email is already in use."}, status=status.HTTP_400_BAD_REQUEST)
+
+        otp_code = str(random.randint(100000, 999999))
+        cache.set(f"email_change_otp:{request.user.id}:{new_email}", otp_code, timeout=900)
+        cache.set(f"email_change_pending:{request.user.id}", new_email, timeout=900)
+        account_emails.send_email_change_otp(request.user, new_email, otp_code)
+        return Response({"detail": "Verification code sent to your new email address."})
+
+
+class ConfirmEmailChangeView(APIView):
+    """POST /auth/change-email/confirm/ — verify OTP and update email."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        new_email = request.data.get("new_email", "").strip().lower()
+        code = request.data.get("code", "").strip()
+
+        if not new_email or not code:
+            return Response({"detail": "new_email and code are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        pending = cache.get(f"email_change_pending:{request.user.id}")
+        if pending != new_email:
+            return Response({"detail": "No pending email change for this address."}, status=status.HTTP_400_BAD_REQUEST)
+
+        cached_code = cache.get(f"email_change_otp:{request.user.id}:{new_email}")
+        if not cached_code or cached_code != code:
+            return Response({"detail": "Invalid or expired verification code."}, status=status.HTTP_400_BAD_REQUEST)
+
+        request.user.email = new_email
+        request.user.save(update_fields=["email", "updated_at"])
+        cache.delete(f"email_change_otp:{request.user.id}:{new_email}")
+        cache.delete(f"email_change_pending:{request.user.id}")
+        return Response({"detail": "Email updated successfully.", "user": UserSerializer(request.user).data})
+
+
+# ─── Account Deletion Requests ────────────────────────────────────────────────
+
+class DeletionRequestView(APIView):
+    """POST /auth/deletion-request/ — authenticated user submits a deletion request."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if DeletionRequest.objects.filter(user=request.user, status=DeletionRequestStatus.PENDING).exists():
+            return Response(
+                {"detail": "You already have a pending deletion request."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        reason = request.data.get("reason", "")
+        deletion_req = DeletionRequest.objects.create(user=request.user, reason=reason)
+        return Response(
+            DeletionRequestSerializer(deletion_req).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class DeletionRequestListView(generics.ListAPIView):
+    """GET /auth/deletion-requests/ — admin lists all deletion requests."""
+    serializer_class = DeletionRequestSerializer
+    permission_classes = [IsAdmin]
+    filterset_fields = ["status"]
+    ordering = ["-created_at"]
+
+    def get_queryset(self):
+        return DeletionRequest.objects.select_related("user", "resolved_by").order_by("-created_at")
+
+
+class DeletionRequestApproveView(APIView):
+    """POST /auth/deletion-requests/<pk>/approve/ — admin approves, deletes user."""
+    permission_classes = [IsAdmin]
+
+    def post(self, request, pk):
+        deletion_req = generics.get_object_or_404(
+            DeletionRequest.objects.select_related("user"), pk=pk
+        )
+        if deletion_req.status != DeletionRequestStatus.PENDING:
+            return Response(
+                {"detail": "This request has already been resolved."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user = deletion_req.user
+        # Send farewell email before deleting (we still have the email)
+        account_emails.send_deletion_approved_email(user)
+        # Cascade-delete the user (DeletionRequest has CASCADE so it goes too)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class DeletionRequestRejectView(APIView):
+    """POST /auth/deletion-requests/<pk>/reject/ — admin rejects deletion request."""
+    permission_classes = [IsAdmin]
+
+    def post(self, request, pk):
+        deletion_req = generics.get_object_or_404(
+            DeletionRequest.objects.select_related("user"), pk=pk
+        )
+        if deletion_req.status != DeletionRequestStatus.PENDING:
+            return Response(
+                {"detail": "This request has already been resolved."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        deletion_req.status = DeletionRequestStatus.REJECTED
+        deletion_req.resolved_at = dj_timezone.now()
+        deletion_req.resolved_by = request.user
+        deletion_req.save(update_fields=["status", "resolved_at", "resolved_by", "updated_at"])
+        account_emails.send_deletion_rejected_email(deletion_req.user)
+        return Response(DeletionRequestSerializer(deletion_req).data)

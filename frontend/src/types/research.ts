@@ -36,6 +36,20 @@ export interface ReviewAssignment {
   created_at: string
 }
 
+export type RAJoinRequestStatus = 'pending' | 'accepted' | 'declined'
+
+export interface RAJoinRequest {
+  id: string
+  research: string
+  research_title: string
+  ra: string
+  ra_name: string
+  ra_email: string
+  message: string
+  status: RAJoinRequestStatus
+  created_at: string
+}
+
 export interface Research {
   id: string
   title: string
@@ -44,6 +58,7 @@ export interface Research {
   status: ResearchStatus
   author: string
   author_name: string
+  author_institution?: string
   author_email?: string
   document: string
   dataset: string | null
@@ -53,6 +68,10 @@ export interface Research {
   rejection_reason?: string
   published_at: string | null
   created_at: string
+  open_for_collaboration?: boolean
+  collaboration_description?: string
+  ra_join_requests?: RAJoinRequest[]
+  pending_ra_join_count?: number
   reviews?: ResearchReview[]
   assignments?: ReviewAssignment[]
 }

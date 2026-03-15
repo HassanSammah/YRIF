@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { useState } from 'react'
 import {
   Download, Eye, ArrowLeft, Calendar, User, Tag,
-  Loader2, CheckCircle, XCircle, FileText, MessageSquare,
+  Loader2, CheckCircle, XCircle, FileText, MessageSquare, GitBranch, Users,
 } from 'lucide-react'
 import { researchApi } from '@/api/research'
 import { useAuth } from '@/hooks/useAuth'
@@ -82,6 +82,31 @@ export default function ResearchDetail() {
   const isAuthor = user?.id === research.author
   const isAssignedReviewer = research.assignments?.some((a) => a.reviewer === user?.id)
   const canComment = isAssignedReviewer || isAdmin
+
+  // Collaboration settings state
+  const [collabOpen, setCollabOpen] = useState(research.open_for_collaboration ?? false)
+  const [collabDesc, setCollabDesc] = useState(research.collaboration_description ?? '')
+  const [collabSaved, setCollabSaved] = useState(false)
+
+  const collabSettingsMutation = useMutation(
+    (data: { open_for_collaboration: boolean; collaboration_description: string }) =>
+      researchApi.updateCollabSettings(id!, data),
+    {
+      onSuccess: (res) => {
+        qc.invalidateQueries(['research', id])
+        setCollabOpen(res.data.open_for_collaboration ?? false)
+        setCollabDesc(res.data.collaboration_description ?? '')
+        setCollabSaved(true)
+        setTimeout(() => setCollabSaved(false), 3000)
+      },
+    },
+  )
+
+  const joinRequestDecideMutation = useMutation(
+    ({ requestId, status }: { requestId: string; status: 'accepted' | 'declined' }) =>
+      researchApi.decideJoinRequest(requestId, status),
+    { onSuccess: () => qc.invalidateQueries(['research', id]) },
+  )
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
@@ -286,7 +311,7 @@ export default function ResearchDetail() {
 
       {/* Reviewer assignments (admin only) */}
       {isAdmin && !!research.assignments?.length && (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-4">
           <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
             <FileText className="w-4 h-4" />
             Reviewer Assignments
@@ -302,6 +327,87 @@ export default function ResearchDetail() {
                 }`}>
                   {a.state === 'completed' ? 'Completed' : 'Assigned'}
                 </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Collaboration Settings (author only, for submitted/active research) */}
+      {isAuthor && research.status !== 'draft' && research.status !== 'rejected' && (
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-4">
+          <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <GitBranch className="w-4 h-4 text-[#0D9488]" />
+            RA Collaboration
+          </h2>
+          <div className="space-y-3">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <div
+                onClick={() => setCollabOpen(v => !v)}
+                className={`relative w-10 h-5.5 rounded-full transition-colors cursor-pointer ${collabOpen ? 'bg-[#0D9488]' : 'bg-gray-200'}`}
+                style={{ height: '22px', width: '40px', flexShrink: 0 }}
+              >
+                <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${collabOpen ? 'translate-x-[18px]' : ''}`} />
+              </div>
+              <span className="text-sm text-gray-700">
+                {collabOpen ? 'Open for RA collaboration' : 'Not open for collaboration'}
+              </span>
+            </label>
+            {collabOpen && (
+              <textarea
+                value={collabDesc}
+                onChange={(e) => setCollabDesc(e.target.value)}
+                placeholder="Describe what kind of RA support you're looking for (optional)…"
+                rows={3}
+                className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] resize-none"
+              />
+            )}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => collabSettingsMutation.mutate({ open_for_collaboration: collabOpen, collaboration_description: collabDesc })}
+                disabled={collabSettingsMutation.isLoading}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#093344] hover:bg-[#0D9488] px-3 py-2 text-xs font-semibold text-white transition-colors disabled:opacity-60"
+              >
+                {collabSettingsMutation.isLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+                Save
+              </button>
+              {collabSaved && <span className="text-xs text-emerald-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Saved</span>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RA Join Requests (author only) */}
+      {isAuthor && !!research.ra_join_requests?.filter(r => r.status === 'pending').length && (
+        <div className="bg-white rounded-xl border border-[#0D9488]/20 shadow-sm p-5">
+          <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <Users className="w-4 h-4 text-[#0D9488]" />
+            RA Join Requests ({research.ra_join_requests.filter(r => r.status === 'pending').length} pending)
+          </h2>
+          <div className="space-y-3">
+            {research.ra_join_requests.filter(r => r.status === 'pending').map((req) => (
+              <div key={req.id} className="flex items-start justify-between gap-4 rounded-lg bg-gray-50 p-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900">{req.ra_name}</p>
+                  <p className="text-xs text-gray-500">{req.ra_email}</p>
+                  {req.message && <p className="text-xs text-gray-600 mt-1">{req.message}</p>}
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <button
+                    onClick={() => joinRequestDecideMutation.mutate({ requestId: req.id, status: 'accepted' })}
+                    disabled={joinRequestDecideMutation.isLoading}
+                    className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white transition-colors disabled:opacity-60"
+                  >
+                    <CheckCircle className="w-3 h-3" /> Accept
+                  </button>
+                  <button
+                    onClick={() => joinRequestDecideMutation.mutate({ requestId: req.id, status: 'declined' })}
+                    disabled={joinRequestDecideMutation.isLoading}
+                    className="inline-flex items-center gap-1 rounded-lg border border-gray-200 hover:border-red-300 hover:bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 transition-colors disabled:opacity-60"
+                  >
+                    <XCircle className="w-3 h-3" /> Decline
+                  </button>
+                </div>
               </div>
             ))}
           </div>

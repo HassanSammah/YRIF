@@ -8,12 +8,14 @@ from rest_framework.exceptions import PermissionDenied
 
 from apps.core.permissions import IsAdmin, IsApproved
 from apps.core.pagination import StandardPagination
-from .models import Research, ResearchStatus, ResearchReview, ReviewAssignment
+from .models import Research, ResearchStatus, ResearchReview, ReviewAssignment, RAJoinRequest, RAJoinRequestStatus
 from .serializers import (
     ResearchSerializer,
     ResearchAdminSerializer,
     ResearchReviewSerializer,
     ReviewAssignmentSerializer,
+    OpenResearchSerializer,
+    RAJoinRequestSerializer,
 )
 from .emails import notify_research_submitted, notify_research_status_changed
 
@@ -101,16 +103,16 @@ class ResearchDetailView(generics.RetrieveAPIView):
     """
     permission_classes = [AllowAny]
 
-    def get_queryset(self):
-        return Research.objects.select_related("author").prefetch_related(
-            "reviews__reviewer", "assignments__reviewer"
-        )
-
     def get_serializer_class(self):
         user = self.request.user
         if user.is_authenticated and user.role in ("admin", "staff", "program_manager"):
             return ResearchAdminSerializer
         return ResearchSerializer
+
+    def get_queryset(self):
+        return Research.objects.select_related("author", "author__profile").prefetch_related(
+            "reviews__reviewer", "assignments__reviewer", "ra_join_requests__ra"
+        )
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -282,3 +284,127 @@ class ResearchPublishView(APIView):
         research.save(update_fields=["status", "published_at", "updated_at"])
         notify_research_status_changed(research)
         return Response(ResearchAdminSerializer(research, context={"request": request}).data)
+
+
+# ── RA: Open research projects ─────────────────────────────────────────────────
+
+class OpenResearchListView(generics.ListAPIView):
+    """Authenticated users can browse research projects open for RA collaboration."""
+    serializer_class = OpenResearchSerializer
+    permission_classes = [IsAuthenticated, IsApproved]
+    pagination_class = StandardPagination
+    filterset_fields = ["category"]
+    search_fields = ["title", "abstract", "keywords"]
+
+    def get_queryset(self):
+        return Research.objects.filter(
+            open_for_collaboration=True,
+            status__in=[
+                ResearchStatus.SUBMITTED,
+                ResearchStatus.UNDER_REVIEW,
+                ResearchStatus.APPROVED,
+                ResearchStatus.PUBLISHED,
+            ],
+        ).select_related("author", "author__profile").prefetch_related("ra_join_requests")
+
+
+class RAJoinRequestCreateView(APIView):
+    """RA submits a request to join an open research project."""
+    permission_classes = [IsAuthenticated, IsApproved]
+
+    def post(self, request, pk):
+        from apps.accounts.models import UserRole
+        if request.user.role != UserRole.RESEARCH_ASSISTANT:
+            return Response(
+                {"detail": "Only research assistants can send join requests."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        research = generics.get_object_or_404(
+            Research, pk=pk, open_for_collaboration=True
+        )
+        if research.author_id == request.user.id:
+            return Response(
+                {"detail": "You cannot join your own research."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        existing = RAJoinRequest.objects.filter(research=research, ra=request.user).first()
+        if existing:
+            return Response(
+                {"detail": f"You already have a {existing.status} request for this project."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        join_req = RAJoinRequest.objects.create(
+            research=research,
+            ra=request.user,
+            message=request.data.get("message", ""),
+        )
+        return Response(
+            RAJoinRequestSerializer(join_req).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class RAJoinRequestDecideView(APIView):
+    """Research author accepts or declines an RA join request."""
+    permission_classes = [IsAuthenticated, IsApproved]
+
+    def patch(self, request, pk):
+        join_req = generics.get_object_or_404(
+            RAJoinRequest.objects.select_related("research", "ra"),
+            pk=pk,
+        )
+        if join_req.research.author_id != request.user.id:
+            return Response(
+                {"detail": "Only the research author can decide on join requests."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if join_req.status != RAJoinRequestStatus.PENDING:
+            return Response(
+                {"detail": "This request has already been decided."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        decision = request.data.get("status")
+        if decision not in (RAJoinRequestStatus.ACCEPTED, RAJoinRequestStatus.DECLINED):
+            return Response(
+                {"detail": "status must be 'accepted' or 'declined'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        join_req.status = decision
+        join_req.save(update_fields=["status", "updated_at"])
+
+        if decision == RAJoinRequestStatus.ACCEPTED:
+            from apps.mentorship.models import ResearchCollaboration
+            ResearchCollaboration.objects.get_or_create(
+                requester=join_req.research.author,
+                research_assistant=join_req.ra,
+                defaults={"notes": f"Via RA join request on: {join_req.research.title}"},
+            )
+
+        return Response(RAJoinRequestSerializer(join_req).data)
+
+
+class RAMyJoinRequestsView(generics.ListAPIView):
+    """RA sees all their own join requests and their statuses."""
+    serializer_class = RAJoinRequestSerializer
+    permission_classes = [IsAuthenticated, IsApproved]
+
+    def get_queryset(self):
+        return RAJoinRequest.objects.filter(
+            ra=self.request.user
+        ).select_related("research", "ra").order_by("-created_at")
+
+
+class ResearchCollaborationSettingsView(APIView):
+    """Research author toggles open_for_collaboration and collaboration_description."""
+    permission_classes = [IsAuthenticated, IsApproved]
+
+    def patch(self, request, pk):
+        research = generics.get_object_or_404(Research, pk=pk, author=request.user)
+        research.open_for_collaboration = request.data.get(
+            "open_for_collaboration", research.open_for_collaboration
+        )
+        research.collaboration_description = request.data.get(
+            "collaboration_description", research.collaboration_description
+        )
+        research.save(update_fields=["open_for_collaboration", "collaboration_description", "updated_at"])
+        return Response(ResearchSerializer(research, context={"request": request}).data)

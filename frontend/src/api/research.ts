@@ -1,5 +1,5 @@
 import apiClient from './client'
-import type { Research, ResearchReview, ReviewAssignment } from '@/types/research'
+import type { Research, ResearchReview, ReviewAssignment, RAJoinRequest } from '@/types/research'
 import type { PaginatedResponse } from '@/types/api'
 
 export const researchApi = {
@@ -45,4 +45,20 @@ export const researchApi = {
 
   publish: (id: string) =>
     apiClient.post<Research>(`/research/${id}/publish/`, {}),
+
+  // ── RA: Open Projects ──────────────────────────────────────────────────────
+  listOpenProjects: (params?: { category?: string; search?: string; page?: number }) =>
+    apiClient.get<PaginatedResponse<Research>>('/research/open/', { params }),
+
+  submitJoinRequest: (researchId: string, message: string) =>
+    apiClient.post<RAJoinRequest>(`/research/${researchId}/join-request/`, { message }),
+
+  decideJoinRequest: (joinRequestId: string, status: 'accepted' | 'declined') =>
+    apiClient.patch<RAJoinRequest>(`/research/join-requests/${joinRequestId}/`, { status }),
+
+  myJoinRequests: () =>
+    apiClient.get<PaginatedResponse<RAJoinRequest>>('/research/my-join-requests/'),
+
+  updateCollabSettings: (id: string, data: { open_for_collaboration?: boolean; collaboration_description?: string }) =>
+    apiClient.patch<Research>(`/research/${id}/collaboration-settings/`, data),
 }

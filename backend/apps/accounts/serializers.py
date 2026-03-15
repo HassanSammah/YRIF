@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate
 from .models import (
     User, UserStatus, UserRole,
     Profile, MentorProfile, PartnerProfile, ResearchAssistantProfile,
-    AuthProviderAccount,
+    AuthProviderAccount, DeletionRequest,
 )
 
 
@@ -14,6 +14,12 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         exclude = ["user"]
         read_only_fields = ["id", "created_at", "updated_at", "phone_verified"]
+
+    def update(self, instance, validated_data):
+        new_phone = validated_data.get("phone")
+        if new_phone is not None and new_phone != instance.phone:
+            validated_data["phone_verified"] = False
+        return super().update(instance, validated_data)
 
 
 class MentorProfileSerializer(serializers.ModelSerializer):
@@ -205,9 +211,53 @@ class RoleAssignmentSerializer(serializers.Serializer):
     role = serializers.ChoiceField(choices=UserRole.choices)
 
 
+class AdminProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = [
+            "bio", "phone", "institution", "region", "education_level",
+            "skills", "research_interests", "achievements",
+        ]
+
+
 class AdminUserUpdateSerializer(serializers.ModelSerializer):
-    """Admin-only: edit basic user fields."""
+    """Admin-only: edit user fields and base profile."""
+    profile = AdminProfileUpdateSerializer(required=False)
 
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "role", "status", "is_active"]
+        fields = ["first_name", "last_name", "email", "role", "status", "is_active", "profile"]
+
+    def validate_email(self, value):
+        qs = User.objects.filter(email=value)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("A user with this email already exists.")
+        return value
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop("profile", None)
+        instance = super().update(instance, validated_data)
+        if profile_data:
+            Profile.objects.filter(user=instance).update(**profile_data)
+        return instance
+
+
+class DeletionRequestSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source="user.get_full_name", read_only=True)
+    user_email = serializers.CharField(source="user.email", read_only=True)
+    resolved_by_name = serializers.SerializerMethodField()
+    requested_at = serializers.DateTimeField(source="created_at", read_only=True)
+
+    class Meta:
+        model = DeletionRequest
+        fields = [
+            "id", "user", "user_name", "user_email",
+            "reason", "status", "requested_at", "resolved_at",
+            "resolved_by", "resolved_by_name",
+        ]
+        read_only_fields = ["id", "user", "status", "resolved_at", "resolved_by", "requested_at"]
+
+    def get_resolved_by_name(self, obj):
+        return obj.resolved_by.get_full_name() if obj.resolved_by else None

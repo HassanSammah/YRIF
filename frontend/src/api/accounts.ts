@@ -1,5 +1,5 @@
 import apiClient from './client'
-import type { User, Profile, MentorProfile, PartnerProfile, ResearchAssistantProfile, UserStatus, UserRole } from '@/types/user'
+import type { User, Profile, MentorProfile, PartnerProfile, ResearchAssistantProfile, UserStatus, UserRole, DeletionRequest } from '@/types/user'
 import type { TokenPair, PaginatedResponse } from '@/types/api'
 
 export interface AuthResponse extends TokenPair {
@@ -90,8 +90,31 @@ export const authApi = {
   updateUserRole: (id: string, role: UserRole) =>
     apiClient.patch<{ detail: string; user: User }>(`/auth/users/${id}/role/`, { role }),
 
-  updateUser: (id: string, data: { first_name?: string; last_name?: string; role?: string; status?: string }) =>
-    apiClient.patch<User>(`/auth/users/${id}/`, data),
+  updateUser: (id: string, data: {
+    first_name?: string; last_name?: string; email?: string;
+    role?: string; status?: string; is_active?: boolean;
+    profile?: { bio?: string; phone?: string; institution?: string; region?: string; education_level?: string; skills?: string; research_interests?: string; achievements?: string }
+  }) => apiClient.patch<User>(`/auth/users/${id}/`, data),
 
   deleteUser: (id: string) => apiClient.delete(`/auth/users/${id}/`),
+
+  // ── Email change ──────────────────────────────────────────────────────────
+  changeEmail: (new_email: string) =>
+    apiClient.post<{ detail: string }>('/auth/change-email/', { new_email }),
+
+  confirmEmailChange: (new_email: string, code: string) =>
+    apiClient.post<{ detail: string; user: User }>('/auth/change-email/confirm/', { new_email, code }),
+
+  // ── Account deletion requests ─────────────────────────────────────────────
+  requestDeletion: (reason?: string) =>
+    apiClient.post<DeletionRequest>('/auth/deletion-request/', { reason: reason ?? '' }),
+
+  listDeletionRequests: (params?: { page?: number }) =>
+    apiClient.get<PaginatedResponse<DeletionRequest>>('/auth/deletion-requests/', { params }),
+
+  approveDeletion: (id: string) =>
+    apiClient.post<void>(`/auth/deletion-requests/${id}/approve/`, {}),
+
+  rejectDeletion: (id: string) =>
+    apiClient.post<DeletionRequest>(`/auth/deletion-requests/${id}/reject/`, {}),
 }

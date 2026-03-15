@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from 'react-query'
 import {
   User as UserIcon, Phone, Building, Award,
   Shield, CheckCircle, AlertCircle, Loader2, Save, ChevronDown,
+  Mail, Trash2,
 } from 'lucide-react'
 import { authApi } from '@/api/accounts'
 import { useAuth } from '@/hooks/useAuth'
@@ -372,6 +373,233 @@ function RAProfileSection({ userId }: { userId: string }) {
   )
 }
 
+// ── Email Change ──────────────────────────────────────────────────────────────
+
+function ChangeEmailSection({ currentEmail, onChanged }: {
+  currentEmail: string
+  onChanged: () => void
+}) {
+  type EmailStep = 'idle' | 'entering' | 'otp' | 'done'
+  const [step, setStep] = useState<EmailStep>('idle')
+  const [newEmail, setNewEmail] = useState('')
+  const [code, setCode] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const sendCode = async () => {
+    setError('')
+    setLoading(true)
+    try {
+      await authApi.changeEmail(newEmail)
+      setStep('otp')
+    } catch (e: any) {
+      setError(e?.response?.data?.new_email?.[0] ?? e?.response?.data?.detail ?? 'Failed to send code.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const verify = async () => {
+    setError('')
+    setLoading(true)
+    try {
+      await authApi.confirmEmailChange(newEmail, code)
+      setStep('done')
+      setTimeout(() => { setStep('idle'); setNewEmail(''); setCode(''); onChanged() }, 3000)
+    } catch (e: any) {
+      setError(e?.response?.data?.detail ?? 'Invalid or expired code.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (step === 'done') {
+    return (
+      <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
+        <CheckCircle className="w-4 h-4 shrink-0" /> Email updated successfully.
+      </div>
+    )
+  }
+
+  if (step === 'idle') {
+    return (
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-700">{currentEmail}</span>
+        <button
+          onClick={() => setStep('entering')}
+          className="text-xs font-medium text-[#0D9488] hover:underline"
+        >
+          Change
+        </button>
+      </div>
+    )
+  }
+
+  if (step === 'entering') {
+    return (
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <input
+            type="email"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            placeholder="New email address"
+            className="flex-1 rounded-xl border bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] border-gray-200"
+          />
+          <button
+            onClick={sendCode}
+            disabled={loading || !newEmail}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Code'}
+          </button>
+          <button onClick={() => { setStep('idle'); setNewEmail('') }} className="text-sm text-gray-500 hover:underline">
+            Cancel
+          </button>
+        </div>
+        {error && <p className="text-red-600 text-xs">{error}</p>}
+      </div>
+    )
+  }
+
+  // step === 'otp'
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-gray-500">Enter the verification code sent to <strong>{newEmail}</strong></p>
+      <div className="flex gap-2 flex-wrap">
+        <input
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          placeholder="6-digit code"
+          maxLength={8}
+          className="w-36 rounded-xl border bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] border-gray-200"
+        />
+        <button
+          onClick={verify}
+          disabled={loading || !code}
+          className="rounded-xl bg-[#0D9488] hover:bg-[#0D9488]/90 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
+        >
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify'}
+        </button>
+        <button onClick={() => { setStep('idle'); setNewEmail(''); setCode('') }} className="text-sm text-gray-500 hover:underline">
+          Cancel
+        </button>
+      </div>
+      {error && <p className="text-red-600 text-xs">{error}</p>}
+    </div>
+  )
+}
+
+// ── Account Deletion ───────────────────────────────────────────────────────────
+
+function AccountDeletionSection() {
+  type DelStep = 'idle' | 'confirming' | 'submitted'
+  const [step, setStep] = useState<DelStep>('idle')
+  const [reason, setReason] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const submit = async () => {
+    setError('')
+    setLoading(true)
+    try {
+      await authApi.requestDeletion(reason)
+      setStep('submitted')
+    } catch (e: any) {
+      setError(e?.response?.data?.detail ?? 'Failed to submit request. You may already have a pending request.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (step === 'submitted') {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-5">
+        <div className="flex items-center gap-2 mb-2">
+          <CheckCircle className="w-5 h-5 text-emerald-600" />
+          <h3 className="text-sm font-semibold text-gray-900">Request Submitted</h3>
+        </div>
+        <p className="text-sm text-gray-600">
+          Your deletion request has been submitted. An admin will review it shortly. You will receive an email with the outcome.
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <div className="bg-white rounded-2xl border border-red-100 shadow-sm px-6 py-5">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">Delete Account</h3>
+            <p className="text-xs text-gray-500">
+              Request permanent deletion of your account and data. An admin must approve before anything is deleted.
+            </p>
+          </div>
+          <button
+            onClick={() => setStep('confirming')}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors shrink-0"
+          >
+            <Trash2 className="w-4 h-4" /> Request Deletion
+          </button>
+        </div>
+      </div>
+
+      {/* Modal */}
+      {step === 'confirming' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-gray-900">Request Account Deletion</h2>
+                <p className="text-xs text-gray-500">Sorry to see you go.</p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600">
+              Your request will be reviewed by an admin before your account is permanently removed.
+              You can continue using your account until the request is approved.
+            </p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Reason (optional)</label>
+              <textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Let us know why you're leaving…"
+                rows={3}
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-300/40 focus:border-red-400 resize-none"
+              />
+            </div>
+            {error && (
+              <p className="text-red-600 text-xs bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+                {error}
+              </p>
+            )}
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => { setStep('idle'); setReason(''); setError('') }}
+                className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submit}
+                disabled={loading}
+                className="inline-flex items-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors disabled:opacity-50"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                Submit Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function Profile() {
@@ -414,15 +642,24 @@ export default function Profile() {
           </div>
         </div>
 
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
-            <Phone className="w-4 h-4" /> Phone verification
+        <div className="mt-4 pt-4 border-t border-gray-100 space-y-4">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+              <Mail className="w-4 h-4" /> Email address
+            </div>
+            <ChangeEmailSection currentEmail={user.email} onChanged={() => fetchMe()} />
           </div>
-          <PhoneVerificationSection
-            phone={user.profile?.phone ?? ''}
-            verified={user.profile?.phone_verified ?? false}
-            onVerified={() => { qc.invalidateQueries(['profile', user.id]); fetchMe() }}
-          />
+          <div>
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+              <Phone className="w-4 h-4" /> Phone verification
+              <span className="text-xs text-gray-400 font-normal">· Changing your number will reset verification</span>
+            </div>
+            <PhoneVerificationSection
+              phone={user.profile?.phone ?? ''}
+              verified={user.profile?.phone_verified ?? false}
+              onVerified={() => { qc.invalidateQueries(['profile', user.id]); fetchMe() }}
+            />
+          </div>
         </div>
       </div>
 
@@ -447,6 +684,9 @@ export default function Profile() {
           <RAProfileSection userId={user.id} />
         </Section>
       )}
+
+      {/* Account deletion */}
+      <AccountDeletionSection />
     </div>
   )
 }

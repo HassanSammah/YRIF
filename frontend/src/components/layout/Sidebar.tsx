@@ -148,7 +148,7 @@ export default function Sidebar({ open, onClose, notifCount = 0 }: SidebarProps)
                   <li key={item.to}>
                     <NavLink
                       to={item.to}
-                      end={item.to === '/dashboard' || item.to === '/admin'}
+                      end={item.to === '/dashboard' || item.to === '/admin' || item.to === '/research'}
                       onClick={onClose}
                       className={({ isActive }) =>
                         `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${

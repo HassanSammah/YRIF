@@ -28,7 +28,7 @@ def notify_contact_received(name: str, email: str, subject: str, message: str) -
         ),
         from_email=_FROM,
         recipient_list=[CONTACT_EMAIL],
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -48,7 +48,7 @@ def notify_contact_auto_reply(name: str, email: str, subject: str) -> None:
         ),
         from_email=_FROM,
         recipient_list=[email],
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -65,7 +65,7 @@ def notify_research_submitted(user, title: str) -> None:
         ),
         from_email=_FROM,
         recipient_list=[user.email],
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -87,7 +87,7 @@ def notify_research_status_changed(user, title: str, new_status: str) -> None:
         ),
         from_email=_FROM,
         recipient_list=[user.email],
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -106,7 +106,7 @@ def notify_event_registration_confirmed(user, event_title: str, event_date: str)
         ),
         from_email=_FROM,
         recipient_list=[user.email],
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -123,7 +123,7 @@ def notify_competition_results(user, competition_title: str, result: str) -> Non
         ),
         from_email=_FROM,
         recipient_list=[user.email],
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -140,7 +140,7 @@ def notify_mentorship_request_received(mentor, mentee_name: str, topic: str) -> 
         ),
         from_email=_FROM,
         recipient_list=[mentor.email],
-        fail_silently=True,
+        fail_silently=False,
     )
 
 

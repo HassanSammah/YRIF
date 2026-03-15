@@ -612,6 +612,17 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
             return AdminUserUpdateSerializer
         return UserSerializer
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        try:
+            instance.delete()
+        except Exception as exc:
+            return Response(
+                {"detail": f"Could not delete user: {exc}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 # ─── Email Change ─────────────────────────────────────────────────────────────
 

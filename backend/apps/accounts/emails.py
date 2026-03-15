@@ -66,7 +66,7 @@ def notify_admin_new_registration(user):
         from_email=_FROM,
         recipient_list=_admin_list(),
         html_message=_html_wrapper(content),
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -92,7 +92,7 @@ def notify_user_approved(user):
         from_email=_FROM,
         recipient_list=[user.email],
         html_message=_html_wrapper(content),
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -127,7 +127,7 @@ def notify_user_rejected(user, reason=""):
         from_email=_FROM,
         recipient_list=[user.email],
         html_message=_html_wrapper(content),
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -152,7 +152,7 @@ def notify_user_suspended(user):
         from_email=_FROM,
         recipient_list=[user.email],
         html_message=_html_wrapper(content),
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -176,7 +176,7 @@ def send_email_verification_otp(user, otp_code):
         from_email=_FROM,
         recipient_list=[user.email],
         html_message=_html_wrapper(content),
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -200,7 +200,7 @@ def send_email_change_otp(user, new_email, otp_code):
         from_email=_FROM,
         recipient_list=[new_email],
         html_message=_html_wrapper(content),
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -226,7 +226,7 @@ def send_welcome_email(user):
         from_email=_FROM,
         recipient_list=[user.email],
         html_message=_html_wrapper(content),
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -261,7 +261,7 @@ def send_post_verification_welcome_email(user):
         from_email=_FROM,
         recipient_list=[user.email],
         html_message=_html_wrapper(content),
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -289,7 +289,7 @@ def send_deletion_approved_email(user):
         from_email=_FROM,
         recipient_list=[user.email],
         html_message=_html_wrapper(content),
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -316,5 +316,5 @@ def send_deletion_rejected_email(user):
         from_email=_FROM,
         recipient_list=[user.email],
         html_message=_html_wrapper(content),
-        fail_silently=True,
+        fail_silently=False,
     )

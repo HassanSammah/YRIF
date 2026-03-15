@@ -22,7 +22,7 @@ def notify_registration_confirmed(registration):
         ),
         from_email=_FROM,
         recipient_list=[registration.participant.email],
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -38,7 +38,7 @@ def notify_registration_cancelled(registration):
         ),
         from_email=_FROM,
         recipient_list=[registration.participant.email],
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -76,5 +76,5 @@ def notify_competition_results(event, winners):
             message=message,
             from_email=_FROM,
             recipient_list=[reg.participant.email],
-            fail_silently=True,
+            fail_silently=False,
         )

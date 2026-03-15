@@ -50,7 +50,7 @@ def notify_mentorship_matched(mentor, mentee, topic):
         from_email=_FROM,
         recipient_list=[mentor.email],
         html_message=_html_wrapper(mentor_content),
-        fail_silently=True,
+        fail_silently=False,
     )
 
     mentee_content = f"""
@@ -72,7 +72,7 @@ def notify_mentorship_matched(mentor, mentee, topic):
         from_email=_FROM,
         recipient_list=[mentee.email],
         html_message=_html_wrapper(mentee_content),
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -98,7 +98,7 @@ def notify_mentorship_request_declined(mentee, topic):
         from_email=_FROM,
         recipient_list=[mentee.email],
         html_message=_html_wrapper(content),
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -125,5 +125,5 @@ def notify_match_completed(mentor, mentee, topic):
             from_email=_FROM,
             recipient_list=[user.email],
             html_message=_html_wrapper(content),
-            fail_silently=True,
+            fail_silently=False,
         )

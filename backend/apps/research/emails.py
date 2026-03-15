@@ -58,7 +58,7 @@ def notify_research_submitted(research):
         from_email=_FROM,
         recipient_list=_admin_list(),
         html_message=_html_wrapper(content),
-        fail_silently=True,
+        fail_silently=False,
     )
 
 
@@ -130,5 +130,5 @@ def notify_research_status_changed(research):
         from_email=_FROM,
         recipient_list=[research.author.email],
         html_message=_html_wrapper(content),
-        fail_silently=True,
+        fail_silently=False,
     )

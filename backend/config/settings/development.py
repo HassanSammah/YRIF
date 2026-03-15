@@ -1,4 +1,5 @@
 from .base import *  # noqa
+from decouple import config
 
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
@@ -9,4 +10,10 @@ INTERNAL_IPS = ["127.0.0.1"]
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# Use real SMTP when credentials are configured; fall back to console otherwise
+_email_user = config("EMAIL_HOST_USER", default="")
+EMAIL_BACKEND = (
+    "django.core.mail.backends.smtp.EmailBackend"
+    if _email_user
+    else "django.core.mail.backends.console.EmailBackend"
+)

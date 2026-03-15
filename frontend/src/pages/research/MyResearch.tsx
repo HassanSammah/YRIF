@@ -1,6 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { Plus, FileText, Clock, ChevronRight, Loader2, Send } from 'lucide-react'
+import { SkeletonCard } from '@/components/common/Skeleton'
 import { researchApi } from '@/api/research'
 import { RESEARCH_CATEGORY_LABELS, RESEARCH_STATUS_LABELS } from '@/types/research'
 import type { Research, ResearchStatus } from '@/types/research'
@@ -25,7 +26,7 @@ const STATUS_HINT: Record<ResearchStatus, string> = {
 
 function ResearchCard({ research, onSubmit }: { research: Research; onSubmit: (id: string) => void }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 card-lift">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -58,7 +59,7 @@ function ResearchCard({ research, onSubmit }: { research: Research; onSubmit: (i
             <button
               type="button"
               onClick={() => onSubmit(research.id)}
-              className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+              className="inline-flex items-center gap-1 rounded-lg bg-[#093344] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#0D9488] transition-colors"
             >
               <Send className="w-3 h-3" /> Submit
             </button>
@@ -92,21 +93,21 @@ export default function MyResearch() {
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">My Research</h1>
+          <h1 className="text-xl font-bold text-[#093344]">My Research</h1>
           <p className="text-sm text-gray-500 mt-0.5">Track your submissions</p>
         </div>
         <button
           type="button"
           onClick={() => navigate('/research/submit')}
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#093344] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0D9488] shadow-sm transition-all duration-200"
         >
           <Plus className="w-4 h-4" /> New Submission
         </button>
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} rows={3} />)}
         </div>
       ) : !data?.results.length ? (
         <div className="text-center py-16 bg-white rounded-xl border border-gray-100 shadow-sm">
@@ -115,7 +116,7 @@ export default function MyResearch() {
           <button
             type="button"
             onClick={() => navigate('/research/submit')}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#093344] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0D9488] shadow-sm transition-all duration-200"
           >
             <Plus className="w-4 h-4" /> Submit Your First Research
           </button>

@@ -3,11 +3,12 @@ import { useQuery } from 'react-query'
 import { Link } from 'react-router-dom'
 import {
   Search, BookOpen, Download, Eye, Filter,
-  ChevronLeft, ChevronRight, Loader2, ChevronDown,
+  ChevronLeft, ChevronRight, ChevronDown,
 } from 'lucide-react'
 import { researchApi } from '@/api/research'
 import { RESEARCH_CATEGORY_LABELS } from '@/types/research'
 import type { ResearchCategory } from '@/types/research'
+import { SkeletonResearchCard } from '@/components/common/Skeleton'
 
 const CATEGORIES: { value: ResearchCategory | ''; label: string }[] = [
   { value: '', label: 'All Categories' },
@@ -44,7 +45,7 @@ export default function ResearchRepository() {
     <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Research Repository</h1>
+        <h1 className="text-2xl font-bold text-[#093344]">Research Repository</h1>
         <p className="text-sm text-gray-500 mt-1">
           Explore published research and innovations from Tanzanian youth
         </p>
@@ -92,8 +93,8 @@ export default function ResearchRepository() {
 
       {/* Results */}
       {isLoading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        <div className="space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => <SkeletonResearchCard key={i} />)}
         </div>
       ) : !data?.results.length ? (
         <div className="text-center py-20 text-gray-400">
@@ -110,7 +111,7 @@ export default function ResearchRepository() {
             {data.results.map((r) => (
               <div
                 key={r.id}
-                className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:border-[#0D9488]/40 transition-colors"
+                className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:border-[#0D9488]/40 transition-colors card-lift"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">

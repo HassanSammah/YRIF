@@ -1,9 +1,9 @@
-/** Animated shimmer skeleton for loading states */
+/** Shimmer skeleton for loading states */
 
 function Base({ className = '' }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse bg-gray-200 rounded-lg ${className}`}
+      className={`shimmer rounded-lg ${className}`}
       role="status"
       aria-label="Loading…"
     />
@@ -25,7 +25,7 @@ export function SkeletonStat() {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-start gap-4">
       <Base className="w-11 h-11 rounded-xl flex-shrink-0" />
-      <div className="flex-1 space-y-2">
+      <div className="flex-1 space-y-2.5 pt-0.5">
         <Base className="h-6 w-16" />
         <Base className="h-3 w-28" />
       </div>
@@ -36,7 +36,7 @@ export function SkeletonStat() {
 export function SkeletonPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         <Base className="h-7 w-48" />
         <Base className="h-4 w-72" />
       </div>
@@ -53,16 +53,31 @@ export function SkeletonPage() {
 
 export function SkeletonList({ count = 5 }: { count?: number }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="flex items-center gap-3">
           <Base className="w-10 h-10 rounded-full flex-shrink-0" />
-          <div className="flex-1 space-y-1.5">
+          <div className="flex-1 space-y-2">
             <Base className="h-3.5 w-3/4" />
             <Base className="h-3 w-1/2" />
           </div>
         </div>
       ))}
+    </div>
+  )
+}
+
+export function SkeletonResearchCard() {
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-3">
+      <Base className="h-3.5 w-24 rounded-full" />
+      <Base className="h-5 w-full" />
+      <Base className="h-4 w-5/6" />
+      <div className="flex gap-3 pt-1">
+        <Base className="h-3 w-20" />
+        <Base className="h-3 w-16" />
+        <Base className="h-3 w-14" />
+      </div>
     </div>
   )
 }

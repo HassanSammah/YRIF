@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from 'react-query'
 import { Loader2, Award, Download, Trophy } from 'lucide-react'
+import { SkeletonList } from '@/components/common/Skeleton'
 import { eventsApi } from '@/api/events'
 
 function downloadBlob(blob: Blob, filename: string) {
@@ -27,15 +28,15 @@ export default function MyCertificates() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">My Certificates</h1>
+        <h1 className="text-xl font-bold text-[#093344]">My Certificates</h1>
         <p className="text-sm text-gray-500 mt-0.5">
           Download your participation and winner certificates
         </p>
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        <div className="space-y-3">
+          <SkeletonList count={4} />
         </div>
       ) : !certificates?.length ? (
         <div className="text-center py-16 bg-white rounded-xl border border-gray-100 shadow-sm">
@@ -50,7 +51,7 @@ export default function MyCertificates() {
           {certificates.map((cert) => (
             <div
               key={cert.id}
-              className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center justify-between gap-4"
+              className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center justify-between gap-4 card-lift"
             >
               <div className="flex items-center gap-3 min-w-0">
                 {cert.certificate_type === 'winner' ? (
@@ -58,8 +59,8 @@ export default function MyCertificates() {
                     <Trophy className="w-5 h-5 text-amber-500" />
                   </div>
                 ) : (
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                    <Award className="w-5 h-5 text-blue-500" />
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center">
+                    <Award className="w-5 h-5 text-[#0D9488]" />
                   </div>
                 )}
                 <div className="min-w-0">
@@ -68,7 +69,7 @@ export default function MyCertificates() {
                     <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
                       cert.certificate_type === 'winner'
                         ? 'bg-amber-50 text-amber-700'
-                        : 'bg-blue-50 text-blue-700'
+                        : 'bg-teal-50 text-[#0D9488]'
                     }`}>
                       {cert.certificate_type === 'winner' ? 'Winner' : 'Participant'}
                     </span>

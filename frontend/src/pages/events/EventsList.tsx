@@ -3,8 +3,9 @@ import { useQuery } from 'react-query'
 import { Link } from 'react-router-dom'
 import {
   Search, Calendar, MapPin, Globe, Users, Filter,
-  ChevronLeft, ChevronRight, Loader2, Trophy, ChevronDown,
+  ChevronLeft, ChevronRight, Trophy, ChevronDown,
 } from 'lucide-react'
+import { SkeletonCard } from '@/components/common/Skeleton'
 import { eventsApi } from '@/api/events'
 import { EVENT_TYPE_LABELS } from '@/types/events'
 import type { EventType } from '@/types/events'
@@ -52,7 +53,7 @@ export default function EventsList() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Events & Programmes</h1>
+        <h1 className="text-2xl font-bold text-[#093344]">Events & Programmes</h1>
         <p className="text-sm text-gray-500 mt-1">
           Discover and register for YRIF events, workshops, and competitions
         </p>
@@ -100,8 +101,8 @@ export default function EventsList() {
 
       {/* Results */}
       {isLoading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        <div className="space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} rows={3} />)}
         </div>
       ) : !data?.results.length ? (
         <div className="text-center py-20 text-gray-400">
@@ -120,7 +121,7 @@ export default function EventsList() {
               return (
                 <div
                   key={event.id}
-                  className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:border-[#0D9488]/40 transition-colors"
+                  className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:border-[#0D9488]/40 transition-colors card-lift"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">

@@ -8,6 +8,7 @@ import {
 import { mentorshipApi } from '@/api/mentorship'
 import { useAuth } from '@/hooks/useAuth'
 import type { RAListing } from '@/types/mentorship'
+import { SkeletonCard } from '@/components/common/Skeleton'
 
 // ── Request Collaboration Modal ───────────────────────────────────────────────
 
@@ -139,13 +140,13 @@ function RACard({
     : []
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 card-lift">
       <div className="flex items-start justify-between gap-2">
         <div>
           <span className="font-semibold text-gray-900 text-sm">{ra.full_name}</span>
           <p className="text-xs text-gray-400 mt-0.5">{ra.email}</p>
         </div>
-        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-sm flex-shrink-0">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#093344] to-[#0D9488] flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-sm">
           {ra.full_name.charAt(0)}
         </div>
       </div>
@@ -159,7 +160,7 @@ function RACard({
           {skillTags.slice(0, 4).map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700"
+              className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2 py-0.5 text-xs text-[#0D9488]"
             >
               <Briefcase className="w-3 h-3" />
               {tag}
@@ -228,7 +229,7 @@ export default function RADirectory() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Research Assistant Directory</h1>
+        <h1 className="text-2xl font-bold text-[#093344]">Research Assistant Directory</h1>
         <p className="text-sm text-gray-500 mt-1">
           Partner with a research assistant to support your study or project.
         </p>
@@ -251,8 +252,8 @@ export default function RADirectory() {
       )}
 
       {isLoading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-300" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} rows={4} />)}
         </div>
       ) : !data?.results.length ? (
         <div className="py-20 text-center text-sm text-gray-400">

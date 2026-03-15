@@ -17,7 +17,6 @@ export default function TopBar({ onMenuClick, notifCount = 0, title }: TopBarPro
   const [searchOpen, setSearchOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Close dropdown on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -39,11 +38,11 @@ export default function TopBar({ onMenuClick, notifCount = 0, title }: TopBarPro
     : '?'
 
   return (
-    <header className="h-14 bg-white border-b border-gray-100 flex items-center px-4 gap-3 flex-shrink-0 z-20 relative">
+    <header className="h-14 bg-white/95 backdrop-blur-sm border-b border-gray-100/80 flex items-center px-4 gap-3 flex-shrink-0 z-20 relative shadow-[0_1px_3px_rgba(9,51,68,0.04)]">
       {/* Hamburger (mobile) */}
       <button
         onClick={onMenuClick}
-        className="lg:hidden p-2 rounded-lg text-content-secondary hover:text-content-primary hover:bg-gray-100 transition-colors"
+        className="lg:hidden p-2 rounded-lg text-gray-400 hover:text-[#093344] hover:bg-gray-100 transition-colors"
         aria-label="Open navigation"
       >
         <Menu className="w-5 h-5" />
@@ -51,7 +50,7 @@ export default function TopBar({ onMenuClick, notifCount = 0, title }: TopBarPro
 
       {/* Page title */}
       {title && (
-        <span className="hidden sm:block text-sm font-semibold text-content-primary truncate">{title}</span>
+        <span className="hidden sm:block text-sm font-semibold text-[#093344] truncate">{title}</span>
       )}
 
       {/* Spacer */}
@@ -64,11 +63,11 @@ export default function TopBar({ onMenuClick, notifCount = 0, title }: TopBarPro
             autoFocus
             type="text"
             placeholder="Search…"
-            className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40"
+            className="w-full text-sm bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] transition-all"
           />
           <button
             onClick={() => setSearchOpen(false)}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600"
+            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -76,7 +75,7 @@ export default function TopBar({ onMenuClick, notifCount = 0, title }: TopBarPro
       ) : (
         <button
           onClick={() => setSearchOpen(true)}
-          className="p-2 rounded-lg text-content-secondary hover:text-content-primary hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-lg text-gray-400 hover:text-[#093344] hover:bg-gray-100 transition-colors"
           aria-label="Search"
         >
           <Search className="w-4 h-4" />
@@ -86,12 +85,12 @@ export default function TopBar({ onMenuClick, notifCount = 0, title }: TopBarPro
       {/* Notifications */}
       <Link
         to="/notifications"
-        className="relative p-2 rounded-lg text-content-secondary hover:text-content-primary hover:bg-gray-100 transition-colors"
-        aria-label="Notifications"
+        className="relative p-2 rounded-lg text-gray-400 hover:text-[#093344] hover:bg-gray-100 transition-colors"
+        aria-label={`Notifications${notifCount > 0 ? ` (${notifCount} unread)` : ''}`}
       >
         <Bell className="w-4 h-4" />
         {notifCount > 0 && (
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#df8d31] ring-2 ring-white" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#df8d31] ring-2 ring-white animate-pulse-dot" />
         )}
       </Link>
 
@@ -102,31 +101,38 @@ export default function TopBar({ onMenuClick, notifCount = 0, title }: TopBarPro
           className="flex items-center gap-2 p-1 rounded-xl hover:bg-gray-100 transition-colors"
           aria-label="Account menu"
         >
-          <div className="w-7 h-7 rounded-full bg-[#093344] flex items-center justify-center text-xs font-bold text-white">
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#093344] to-[#0D9488] flex items-center justify-center text-[11px] font-bold text-white shadow-sm">
             {initials}
           </div>
           <div className="hidden sm:block text-left">
-            <p className="text-xs font-semibold text-content-primary leading-none">
+            <p className="text-xs font-semibold text-[#093344] leading-none">
               {user ? `${user.first_name || user.email.split('@')[0]}` : '—'}
             </p>
-            <p className="text-[10px] text-content-secondary leading-none mt-0.5">
+            <p className="text-[10px] text-gray-400 leading-none mt-0.5">
               {user ? USER_ROLE_LABELS[user.role] : ''}
             </p>
           </div>
         </button>
 
         {dropdownOpen && (
-          <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-lg border border-gray-100 py-1.5 z-50">
+          <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl shadow-lg shadow-gray-200/60 border border-gray-100 py-1.5 z-50">
             <div className="px-4 py-2.5 border-b border-gray-100">
-              <p className="text-xs font-semibold text-content-primary truncate">
-                {user ? `${user.first_name} ${user.last_name}`.trim() || user.email : '—'}
-              </p>
-              <p className="text-[11px] text-content-secondary truncate">{user?.email}</p>
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#093344] to-[#0D9488] flex items-center justify-center text-xs font-bold text-white shadow-sm flex-shrink-0">
+                  {initials}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-[#093344] truncate">
+                    {user ? `${user.first_name} ${user.last_name}`.trim() || user.email : '—'}
+                  </p>
+                  <p className="text-[11px] text-gray-400 truncate">{user?.email}</p>
+                </div>
+              </div>
             </div>
             <Link
               to="/profile"
               onClick={() => setDropdownOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2 text-sm text-content-primary hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2.5 px-4 py-2 text-sm text-[#093344] hover:bg-gray-50 transition-colors"
             >
               <User className="w-3.5 h-3.5 text-gray-400" />
               View Profile
@@ -134,7 +140,7 @@ export default function TopBar({ onMenuClick, notifCount = 0, title }: TopBarPro
             <Link
               to="/profile"
               onClick={() => setDropdownOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2 text-sm text-content-primary hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2.5 px-4 py-2 text-sm text-[#093344] hover:bg-gray-50 transition-colors"
             >
               <Settings className="w-3.5 h-3.5 text-gray-400" />
               Settings

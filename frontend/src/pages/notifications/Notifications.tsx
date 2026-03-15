@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { Bell, CheckCheck, Mail, MessageSquare, Smartphone, Loader2 } from 'lucide-react'
+import { SkeletonList } from '@/components/common/Skeleton'
 import { communicationsApi } from '@/api/communications'
 import type { NotificationItem } from '@/types/messaging'
 
@@ -27,8 +28,8 @@ function NotificationRow({ item }: { item: NotificationItem }) {
 
   return (
     <div
-      className={`flex items-start gap-3 p-4 border-b border-gray-50 hover:bg-gray-50/50 transition-colors ${
-        item.is_read ? 'opacity-60' : ''
+      className={`flex items-start gap-3 px-5 py-4 border-b border-gray-50 hover:bg-gray-50/60 transition-colors ${
+        item.is_read ? 'opacity-55' : ''
       }`}
     >
       <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${CHANNEL_COLOURS[item.channel] ?? 'bg-gray-50 text-gray-500'}`}>
@@ -49,7 +50,7 @@ function NotificationRow({ item }: { item: NotificationItem }) {
         <button
           onClick={() => markRead.mutate()}
           disabled={markRead.isLoading}
-          className="flex-shrink-0 p-1 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+          className="flex-shrink-0 p-1 rounded-lg text-gray-400 hover:text-[#0D9488] hover:bg-teal-50 transition-colors"
           title="Mark as read"
         >
           <CheckCheck className="w-4 h-4" />
@@ -80,11 +81,11 @@ export default function Notifications() {
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Bell className="w-5 h-5 text-gray-400" />
+          <h1 className="text-xl font-bold text-[#093344] flex items-center gap-2">
+            <Bell className="w-5 h-5 text-[#df8d31]" />
             Notifications
             {unreadCount > 0 && (
-              <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs">
+              <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#df8d31] text-white text-xs font-bold">
                 {unreadCount}
               </span>
             )}
@@ -95,7 +96,7 @@ export default function Notifications() {
           <button
             onClick={() => markAllRead.mutate()}
             disabled={markAllRead.isLoading}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-[#0D9488] hover:text-[#0D9488] hover:bg-teal-50 transition-all duration-150"
           >
             {markAllRead.isLoading
               ? <Loader2 className="w-3 h-3 animate-spin" />
@@ -108,8 +109,8 @@ export default function Notifications() {
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin text-gray-300" />
+          <div className="p-5">
+            <SkeletonList count={5} />
           </div>
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center py-16 text-center">

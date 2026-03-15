@@ -5,6 +5,7 @@ import {
   Video, Play, ChevronLeft, ChevronRight, Loader2, Calendar,
   Eye, Tag,
 } from 'lucide-react'
+import { SkeletonCard } from '@/components/common/Skeleton'
 import { resourcesApi } from '@/api/resources'
 import type { Resource, Webinar, ResourceType } from '@/types/resources'
 import { RESOURCE_TYPE_LABELS } from '@/types/resources'
@@ -44,7 +45,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 card-lift">
       {/* Header */}
       <div className="flex items-start gap-3">
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${meta.bg}`}>
@@ -117,7 +118,7 @@ function WebinarCard({ webinar }: { webinar: Webinar }) {
   const hasRegistration = !!webinar.registration_link && !isPast
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 card-lift">
       <div className="flex items-start gap-3">
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isPast ? 'bg-gray-100' : 'bg-orange-50'}`}>
           {isPast
@@ -234,7 +235,7 @@ export default function ResourceHub() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Learning & Resources Hub</h1>
+        <h1 className="text-2xl font-bold text-[#093344]">Learning & Resources Hub</h1>
         <p className="text-sm text-gray-500 mt-1">
           Guides, templates, datasets, recorded sessions, and upcoming webinars for young researchers.
         </p>
@@ -333,8 +334,8 @@ export default function ResourceHub() {
 
       {/* Content grid */}
       {isLoading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-300" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} rows={3} />)}
         </div>
       ) : tab === 'resources' && !resourceData?.results.length ? (
         <div className="py-20 text-center text-sm text-gray-400">

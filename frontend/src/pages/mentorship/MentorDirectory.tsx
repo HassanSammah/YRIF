@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { useQuery, useMutation } from 'react-query'
 import { useForm } from 'react-hook-form'
 import {
-  Search, BadgeCheck, BookOpen, Clock, ChevronLeft, ChevronRight, Loader2, X,
+  Search, BadgeCheck, BookOpen, Clock, ChevronLeft, ChevronRight, X, Loader2,
 } from 'lucide-react'
+import { SkeletonCard } from '@/components/common/Skeleton'
 import { mentorshipApi } from '@/api/mentorship'
 import { useAuth } from '@/hooks/useAuth'
 import type { MentorListing } from '@/types/mentorship'
@@ -143,7 +144,7 @@ function MentorCard({
     : []
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3 card-lift">
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div>
@@ -155,7 +156,7 @@ function MentorCard({
           </div>
           <p className="text-xs text-gray-400 mt-0.5">{mentor.email}</p>
         </div>
-        <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-[#0D9488] font-bold text-sm flex-shrink-0">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#093344] to-[#0D9488] flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-sm">
           {mentor.full_name.charAt(0)}
         </div>
       </div>
@@ -231,7 +232,7 @@ export default function MentorDirectory() {
     <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Page header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Mentor Directory</h1>
+        <h1 className="text-2xl font-bold text-[#093344]">Mentor Directory</h1>
         <p className="text-sm text-gray-500 mt-1">
           Browse our network of expert mentors ready to guide your research journey.
         </p>
@@ -255,8 +256,8 @@ export default function MentorDirectory() {
 
       {/* Grid */}
       {isLoading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-300" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} rows={4} />)}
         </div>
       ) : !data?.results.length ? (
         <div className="py-20 text-center text-sm text-gray-400">

@@ -4,7 +4,7 @@ import { useQuery } from 'react-query'
 import {
   BookOpen, Send, CalendarDays, Trophy, Users2, Library, Bell,
   ArrowRight, Clock, CheckCircle2, FileText, Award, TrendingUp,
-  Handshake, MessageSquare, Megaphone,
+  Handshake, MessageSquare, Megaphone, Sparkles,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { useAuth } from '@/hooks/useAuth'
@@ -48,20 +48,22 @@ const STATUS_LABEL: Record<string, string> = {
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function StatCard({
-  label, value, sub, icon: Icon, colour, href,
+  label, value, sub, icon: Icon, gradient, href,
 }: {
   label: string; value: number | string; sub?: string
-  icon: React.ComponentType<{ className?: string }>; colour: string; href?: string
+  icon: React.ComponentType<{ className?: string }>; gradient: string; href?: string
 }) {
   const inner = (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-start gap-4 hover:shadow-md transition-shadow">
-      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${colour}`}>
+    <div className="group bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-start gap-4 card-lift overflow-hidden relative">
+      {/* Subtle corner accent */}
+      <div className={`absolute top-0 right-0 w-20 h-20 rounded-bl-full opacity-[0.04] ${gradient}`} />
+      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${gradient} shadow-sm`}>
         <Icon className="w-5 h-5 text-white" />
       </div>
-      <div className="min-w-0">
-        <p className="text-2xl font-bold text-content-primary">{value}</p>
-        <p className="text-sm text-content-secondary mt-0.5">{label}</p>
-        {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
+      <div className="min-w-0 relative z-10">
+        <p className="text-2xl font-bold text-[#093344] font-display leading-none">{value}</p>
+        <p className="text-sm text-gray-500 mt-1">{label}</p>
+        {sub && <p className="text-[11px] text-gray-400 mt-1">{sub}</p>}
       </div>
     </div>
   )
@@ -73,16 +75,51 @@ function QuickAction({ to, icon: Icon, label, desc, colour }: {
   label: string; desc: string; colour: string
 }) {
   return (
-    <Link to={to} className="group flex items-center gap-3 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md hover:-translate-y-0.5 transition-all">
-      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${colour}`}>
-        <Icon className="w-4 h-4 text-white" />
+    <Link
+      to={to}
+      className="group flex items-center gap-3 bg-white rounded-xl border border-gray-100 shadow-sm p-3.5 hover:shadow-md hover:border-gray-200 hover:-translate-y-0.5 transition-all duration-200"
+    >
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${colour} shadow-sm`}>
+        <Icon className="w-3.5 h-3.5 text-white" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-content-primary">{label}</p>
-        <p className="text-xs text-content-secondary truncate">{desc}</p>
+        <p className="text-sm font-semibold text-[#093344] leading-none">{label}</p>
+        <p className="text-xs text-gray-400 mt-0.5 truncate">{desc}</p>
       </div>
-      <ArrowRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0 transition-colors" />
+      <ArrowRight className="w-3 h-3 text-gray-300 group-hover:text-[#0D9488] group-hover:translate-x-0.5 flex-shrink-0 transition-all duration-200" />
     </Link>
+  )
+}
+
+function SectionHeader({
+  icon: Icon, title, iconColor, action,
+}: {
+  icon: React.ComponentType<{ className?: string }>
+  title: string; iconColor: string; action?: React.ReactNode
+}) {
+  return (
+    <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
+      <div className="flex items-center gap-2">
+        <Icon className={`w-4 h-4 ${iconColor}`} />
+        <h2 className="text-sm font-semibold text-[#093344]">{title}</h2>
+      </div>
+      {action}
+    </div>
+  )
+}
+
+function EmptyState({ icon: Icon, message, action }: {
+  icon: React.ComponentType<{ className?: string }>
+  message: string; action?: React.ReactNode
+}) {
+  return (
+    <div className="py-10 flex flex-col items-center gap-2.5 text-center">
+      <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center">
+        <Icon className="w-6 h-6 text-gray-300" />
+      </div>
+      <p className="text-sm text-gray-400">{message}</p>
+      {action}
+    </div>
   )
 }
 
@@ -129,21 +166,21 @@ export default function Dashboard() {
   const name = user ? (user.first_name || user.email.split('@')[0]) : ''
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8 fade-in-up">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-7 fade-in-up">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#093344] font-display">
+          <h1 className="text-2xl font-bold font-display text-[#093344]">
             {greeting}, {name}! 👋
           </h1>
-          <p className="text-sm text-content-secondary mt-1">
-            {format(new Date(), "EEEE, MMMM d, yyyy")} — Welcome to your YRIF portal.
+          <p className="text-sm text-gray-400 mt-1">
+            {format(new Date(), "EEEE, MMMM d, yyyy")} · YRIF Platform
           </p>
         </div>
         {isAdmin && (
           <Link
             to="/admin"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#093344] text-white rounded-xl text-sm font-medium hover:bg-[#0a3d53] transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#093344] text-white rounded-xl text-sm font-semibold hover:bg-[#0D9488] transition-all duration-200 shadow-sm"
           >
             <TrendingUp className="w-4 h-4" />
             Admin Dashboard
@@ -152,46 +189,75 @@ export default function Dashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {loadingResearch ? (
           <><SkeletonStat /><SkeletonStat /></>
         ) : (
           <>
-            <StatCard label="My Research" value={researchList.length} sub={`${publishedCount} published`} icon={BookOpen} colour="bg-purple-500" href="/research/my" />
-            <StatCard label="Published" value={publishedCount} sub="In repository" icon={CheckCircle2} colour="bg-green-500" href="/research" />
+            <StatCard
+              label="My Research"
+              value={researchList.length}
+              sub={`${publishedCount} published`}
+              icon={BookOpen}
+              gradient="bg-gradient-to-br from-purple-500 to-purple-600"
+              href="/research/my"
+            />
+            <StatCard
+              label="Published"
+              value={publishedCount}
+              sub="In repository"
+              icon={CheckCircle2}
+              gradient="bg-gradient-to-br from-emerald-500 to-teal-600"
+              href="/research"
+            />
           </>
         )}
         {loadingRegs ? (
           <><SkeletonStat /><SkeletonStat /></>
         ) : (
           <>
-            <StatCard label="Events Joined" value={regsList.length} sub={`${upcomingRegs} upcoming`} icon={CalendarDays} colour="bg-orange-500" href="/events" />
-            <StatCard label="Certificates" value={certsList.length} sub="Earned" icon={Award} colour="bg-[#df8d31]" href="/certificates" />
+            <StatCard
+              label="Events Joined"
+              value={regsList.length}
+              sub={`${upcomingRegs} upcoming`}
+              icon={CalendarDays}
+              gradient="bg-gradient-to-br from-orange-400 to-orange-500"
+              href="/events"
+            />
+            <StatCard
+              label="Certificates"
+              value={certsList.length}
+              sub="Earned"
+              icon={Award}
+              gradient="bg-gradient-to-br from-[#df8d31] to-amber-500"
+              href="/certificates"
+            />
           </>
         )}
       </div>
 
       {/* Body */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Left column */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-5">
 
           {/* Announcements */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-50">
-              <Megaphone className="w-4 h-4 text-[#df8d31]" />
-              <h2 className="text-sm font-semibold text-content-primary">Announcements</h2>
-            </div>
+            <SectionHeader
+              icon={Megaphone}
+              title="Announcements"
+              iconColor="text-[#df8d31]"
+            />
             <div className="divide-y divide-gray-50">
               {loadingAnn ? (
                 <div className="p-5"><SkeletonCard rows={2} /></div>
               ) : annList.length === 0 ? (
-                <p className="py-10 text-sm text-gray-400 text-center">No announcements.</p>
+                <EmptyState icon={Megaphone} message="No announcements right now." />
               ) : (
                 annList.slice(0, 4).map((ann) => (
-                  <div key={ann.id} className="px-5 py-3.5">
-                    <p className="text-sm font-medium text-content-primary">{ann.title}</p>
-                    <p className="text-xs text-content-secondary mt-0.5 line-clamp-2">{ann.content}</p>
+                  <div key={ann.id} className="px-5 py-3.5 hover:bg-gray-50/60 transition-colors">
+                    <p className="text-sm font-medium text-[#093344]">{ann.title}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">{ann.content}</p>
                     {ann.published_at && (
                       <p className="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1">
                         <Clock className="w-3 h-3" />
@@ -206,25 +272,38 @@ export default function Dashboard() {
 
           {/* Upcoming events */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
-              <div className="flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 text-[#0D9488]" />
-                <h2 className="text-sm font-semibold text-content-primary">Upcoming Events</h2>
-              </div>
-              <Link to="/events" className="text-xs text-[#0D9488] hover:underline flex items-center gap-1">
-                View all <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
+            <SectionHeader
+              icon={CalendarDays}
+              title="Upcoming Events"
+              iconColor="text-[#0D9488]"
+              action={
+                <Link to="/events" className="text-xs text-[#0D9488] hover:text-[#093344] flex items-center gap-1 font-medium transition-colors">
+                  View all <ArrowRight className="w-3 h-3" />
+                </Link>
+              }
+            />
             <div className="divide-y divide-gray-50">
               {loadingEvents ? (
                 <div className="p-5"><SkeletonCard rows={2} /></div>
               ) : eventsList.length === 0 ? (
-                <p className="py-10 text-sm text-gray-400 text-center">No upcoming events.</p>
+                <EmptyState
+                  icon={CalendarDays}
+                  message="No upcoming events."
+                  action={
+                    <Link to="/events" className="text-xs font-medium text-[#0D9488] hover:underline">
+                      Browse all events
+                    </Link>
+                  }
+                />
               ) : (
-                eventsList.map((ev) => (
-                  <Link key={ev.id} to={`/events/${ev.id}`} className="flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50 transition-colors group">
-                    <div className="w-10 h-10 rounded-xl bg-[#093344]/5 flex flex-col items-center justify-center flex-shrink-0">
-                      <span className="text-[9px] font-bold text-[#093344] uppercase leading-tight">
+                eventsList.slice(0, 5).map((ev) => (
+                  <Link
+                    key={ev.id}
+                    to={`/events/${ev.id}`}
+                    className="flex items-start gap-3.5 px-5 py-3.5 hover:bg-gray-50/60 transition-colors group"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-[#093344]/5 border border-[#093344]/8 flex flex-col items-center justify-center flex-shrink-0">
+                      <span className="text-[9px] font-bold text-[#0D9488] uppercase leading-tight tracking-wide">
                         {format(new Date(ev.start_date), 'MMM')}
                       </span>
                       <span className="text-sm font-bold text-[#093344] leading-none">
@@ -232,12 +311,12 @@ export default function Dashboard() {
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-content-primary truncate">{ev.title}</p>
-                      <p className="text-xs text-content-secondary mt-0.5">
+                      <p className="text-sm font-medium text-[#093344] truncate">{ev.title}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">
                         {ev.is_online ? 'Online' : ev.location} · <span className="capitalize">{ev.event_type}</span>
                       </p>
                     </div>
-                    <ArrowRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0 mt-1" />
+                    <ArrowRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-[#0D9488] group-hover:translate-x-0.5 flex-shrink-0 mt-1 transition-all duration-200" />
                   </Link>
                 ))
               )}
@@ -247,22 +326,29 @@ export default function Dashboard() {
           {/* My research (if any) */}
           {!loadingResearch && researchList.length > 0 && (
             <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-purple-500" />
-                  <h2 className="text-sm font-semibold text-content-primary">My Research</h2>
-                </div>
-                <Link to="/research/my" className="text-xs text-purple-600 hover:underline flex items-center gap-1">
-                  View all <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
+              <SectionHeader
+                icon={BookOpen}
+                title="My Research"
+                iconColor="text-purple-500"
+                action={
+                  <Link to="/research/my" className="text-xs text-purple-600 hover:text-purple-800 flex items-center gap-1 font-medium transition-colors">
+                    View all <ArrowRight className="w-3 h-3" />
+                  </Link>
+                }
+              />
               <div className="divide-y divide-gray-50">
                 {researchList.slice(0, 3).map((r) => (
-                  <Link key={r.id} to={`/research/${r.id}`} className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 transition-colors">
-                    <FileText className="w-4 h-4 text-gray-300 flex-shrink-0" />
+                  <Link
+                    key={r.id}
+                    to={`/research/${r.id}`}
+                    className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50/60 transition-colors group"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-3.5 h-3.5 text-purple-400" />
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-content-primary truncate">{r.title}</p>
-                      <p className="text-xs text-content-secondary capitalize">{r.category.replace('_', ' ')}</p>
+                      <p className="text-sm font-medium text-[#093344] truncate">{r.title}</p>
+                      <p className="text-xs text-gray-400 capitalize">{r.category.replace('_', ' ')}</p>
                     </div>
                     <span className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full flex-shrink-0 ${STATUS_STYLE[r.status] ?? 'bg-gray-100 text-gray-600'}`}>
                       {STATUS_LABEL[r.status] ?? r.status}
@@ -275,16 +361,20 @@ export default function Dashboard() {
         </div>
 
         {/* Right column — quick actions */}
-        <div className="space-y-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-content-secondary px-1">Quick Actions</h2>
-          <QuickAction to="/research/submit" icon={Send} label="Submit Research" desc="Upload a paper or proposal" colour="bg-purple-500" />
-          <QuickAction to="/events" icon={CalendarDays} label="Browse Events" desc="Register for events" colour="bg-orange-500" />
-          <QuickAction to="/competitions" icon={Trophy} label="Competitions" desc="Enter research competitions" colour="bg-[#df8d31]" />
-          <QuickAction to="/mentors" icon={Users2} label="Find a Mentor" desc="Connect with experts" colour="bg-[#0D9488]" />
-          <QuickAction to="/resources" icon={Library} label="Learning Hub" desc="Guides, templates & webinars" colour="bg-blue-500" />
-          <QuickAction to="/mentorship" icon={Handshake} label="My Mentorship" desc="View mentorship matches" colour="bg-green-600" />
-          <QuickAction to="/messages" icon={MessageSquare} label="Messages" desc="Chat with your network" colour="bg-[#093344]" />
-          <QuickAction to="/notifications" icon={Bell} label="Notifications" desc="Stay informed" colour="bg-pink-500" />
+        <div className="space-y-2.5">
+          <div className="flex items-center gap-2 px-1 mb-1">
+            <Sparkles className="w-3.5 h-3.5 text-[#df8d31]" />
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400">Quick Actions</h2>
+          </div>
+          <QuickAction to="/research/submit" icon={Send} label="Submit Research" desc="Upload a paper or proposal" colour="bg-gradient-to-br from-purple-500 to-purple-600" />
+          <QuickAction to="/events" icon={CalendarDays} label="Browse Events" desc="Register for upcoming events" colour="bg-gradient-to-br from-orange-400 to-orange-500" />
+          <QuickAction to="/competitions" icon={Trophy} label="Competitions" desc="Enter research competitions" colour="bg-gradient-to-br from-[#df8d31] to-amber-500" />
+          <QuickAction to="/mentors" icon={Users2} label="Find a Mentor" desc="Connect with expert mentors" colour="bg-gradient-to-br from-[#0D9488] to-teal-600" />
+          <QuickAction to="/research-assistants" icon={BookOpen} label="Research Assistants" desc="Partner on your study" colour="bg-gradient-to-br from-blue-500 to-blue-600" />
+          <QuickAction to="/resources" icon={Library} label="Learning Hub" desc="Guides, templates & webinars" colour="bg-gradient-to-br from-sky-500 to-sky-600" />
+          <QuickAction to="/mentorship" icon={Handshake} label="My Mentorship" desc="View mentorship matches" colour="bg-gradient-to-br from-emerald-500 to-green-600" />
+          <QuickAction to="/messages" icon={MessageSquare} label="Messages" desc="Chat with your network" colour="bg-gradient-to-br from-[#093344] to-[#0a3d53]" />
+          <QuickAction to="/notifications" icon={Bell} label="Notifications" desc="Stay up to date" colour="bg-gradient-to-br from-pink-500 to-rose-500" />
         </div>
       </div>
     </div>

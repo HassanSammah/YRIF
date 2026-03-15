@@ -8,6 +8,7 @@ import {
 import { adminApi } from '@/api/admin'
 import type { AuditLogEntry } from '@/types/admin'
 import { USER_ROLE_LABELS } from '@/types/user'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 
@@ -165,6 +166,7 @@ function AuditFeed({ entries }: { entries: AuditLogEntry[] }) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
+  usePageTitle('Admin Dashboard')
   const { data, isLoading, isError } = useQuery(
     'dashboard-stats',
     () => adminApi.getDashboardStats().then((r) => r.data),

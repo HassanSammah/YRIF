@@ -9,6 +9,7 @@ import { researchApi } from '@/api/research'
 import { RESEARCH_CATEGORY_LABELS } from '@/types/research'
 import type { ResearchCategory } from '@/types/research'
 import { SkeletonResearchCard } from '@/components/common/Skeleton'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 const CATEGORIES: { value: ResearchCategory | ''; label: string }[] = [
   { value: '', label: 'All Categories' },
@@ -19,6 +20,7 @@ const CATEGORIES: { value: ResearchCategory | ''; label: string }[] = [
 ]
 
 export default function ResearchRepository() {
+  usePageTitle('Research Repository')
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState<ResearchCategory | ''>('')

@@ -8,6 +8,7 @@ import {
 import { authApi } from '@/api/accounts'
 import type { User, UserStatus, UserRole, DeletionRequest } from '@/types/user'
 import { USER_STATUS_LABELS, USER_ROLE_LABELS, EDUCATION_LEVELS } from '@/types/user'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // ── Status badge ──────────────────────────────────────────────────────────────
 
@@ -467,6 +468,7 @@ function DeletionRequestsTab() {
 type Tab = 'users' | 'deletion_requests'
 
 export default function UserManagement() {
+  usePageTitle('User Management')
   const qc = useQueryClient()
   const [tab, setTab] = useState<Tab>('users')
   const [search, setSearch] = useState('')

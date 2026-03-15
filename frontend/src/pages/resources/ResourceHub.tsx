@@ -9,6 +9,7 @@ import { SkeletonCard } from '@/components/common/Skeleton'
 import { resourcesApi } from '@/api/resources'
 import type { Resource, Webinar, ResourceType } from '@/types/resources'
 import { RESOURCE_TYPE_LABELS } from '@/types/resources'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // ── Type icons & colours ──────────────────────────────────────────────────────
 
@@ -186,6 +187,7 @@ function WebinarCard({ webinar }: { webinar: Webinar }) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function ResourceHub() {
+  usePageTitle('Learning Hub')
   const [tab, setTab] = useState<'resources' | 'webinars'>('resources')
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')

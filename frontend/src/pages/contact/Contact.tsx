@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { Mail, Phone, MapPin, CheckCircle, Send } from 'lucide-react'
 import { communicationsApi } from '@/api/communications'
 import { Field, inputCls, PrimaryButton, FormError } from '@/components/ui'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 interface ContactForm {
   name: string
@@ -12,6 +13,7 @@ interface ContactForm {
 }
 
 export default function Contact() {
+  usePageTitle('Contact')
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')

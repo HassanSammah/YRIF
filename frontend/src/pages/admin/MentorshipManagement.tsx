@@ -9,6 +9,7 @@ import {
   MENTORSHIP_REQUEST_STATUS_LABELS,
   MENTORSHIP_MATCH_STATUS_LABELS,
 } from '@/types/mentorship'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // ── Status badges ─────────────────────────────────────────────────────────────
 
@@ -279,6 +280,7 @@ function MatchActions({
 // ── Main Admin Page ───────────────────────────────────────────────────────────
 
 export default function MentorshipManagement() {
+  usePageTitle('Mentorship Management')
   const qc = useQueryClient()
   const [tab, setTab] = useState<'requests' | 'matches'>('requests')
   const [statusFilter, setStatusFilter] = useState('')

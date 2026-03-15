@@ -8,6 +8,7 @@ import {
 import { eventsApi } from '@/api/events'
 import { EVENT_TYPE_LABELS } from '@/types/events'
 import type { Event, EventType, EventRegistration } from '@/types/events'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // ── Create/Edit event modal ───────────────────────────────────────────────────
 
@@ -451,6 +452,7 @@ function EventRow({ event, onRefresh }: { event: Event; onRefresh: () => void })
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function EventManagement() {
+  usePageTitle('Manage Events')
   const qc = useQueryClient()
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')

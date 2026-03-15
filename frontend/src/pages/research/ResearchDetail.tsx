@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Download, Eye, ArrowLeft, Calendar, User, Tag,
   Loader2, CheckCircle, XCircle, FileText, MessageSquare, GitBranch, Users,
@@ -31,6 +31,11 @@ export default function ResearchDetail() {
     () => researchApi.get(id!).then((r) => r.data),
     { enabled: !!id },
   )
+
+  useEffect(() => {
+    document.title = research ? `YRIF – ${research.title}` : 'YRIF – Research'
+    return () => { document.title = 'YRIF – Youth Research & Innovation Foundation' }
+  }, [research])
 
   const downloadMutation = useMutation(
     () => researchApi.getDownloadUrl(id!).then((r) => r.data),

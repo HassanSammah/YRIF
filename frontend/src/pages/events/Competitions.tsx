@@ -6,8 +6,10 @@ import {
   ChevronLeft, ChevronRight, Loader2,
 } from 'lucide-react'
 import { eventsApi } from '@/api/events'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 export default function Competitions() {
+  usePageTitle('Competitions')
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)

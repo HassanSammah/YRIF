@@ -6,6 +6,7 @@ import { Upload, ArrowLeft, CheckCircle } from 'lucide-react'
 import { researchApi } from '@/api/research'
 import { RESEARCH_CATEGORY_LABELS } from '@/types/research'
 import type { ResearchCategory } from '@/types/research'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import {
   Field,
   inputCls,
@@ -24,6 +25,7 @@ interface FormValues {
 }
 
 export default function SubmitResearch() {
+  usePageTitle('Submit Research')
   const navigate = useNavigate()
   const [submitMode, setSubmitMode] = useState<'draft' | 'submit'>('draft')
   const [success, setSuccess] = useState(false)

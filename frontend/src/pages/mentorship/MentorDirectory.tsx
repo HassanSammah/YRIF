@@ -8,6 +8,7 @@ import { SkeletonCard } from '@/components/common/Skeleton'
 import { mentorshipApi } from '@/api/mentorship'
 import { useAuth } from '@/hooks/useAuth'
 import type { MentorListing } from '@/types/mentorship'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // ── Request Mentorship Modal ──────────────────────────────────────────────────
 
@@ -208,6 +209,7 @@ function MentorCard({
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function MentorDirectory() {
+  usePageTitle('Mentor Directory')
   const { isAuthenticated, isApproved, user } = useAuth()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)

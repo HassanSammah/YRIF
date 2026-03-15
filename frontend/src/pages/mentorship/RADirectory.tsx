@@ -9,6 +9,7 @@ import { mentorshipApi } from '@/api/mentorship'
 import { useAuth } from '@/hooks/useAuth'
 import type { RAListing } from '@/types/mentorship'
 import { SkeletonCard } from '@/components/common/Skeleton'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // ── Request Collaboration Modal ───────────────────────────────────────────────
 
@@ -206,6 +207,7 @@ function RACard({
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function RADirectory() {
+  usePageTitle('Research Assistants')
   const { isAuthenticated, isApproved, user } = useAuth()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)

@@ -9,6 +9,7 @@ import { researchApi } from '@/api/research'
 import { authApi } from '@/api/accounts'
 import { RESEARCH_CATEGORY_LABELS, RESEARCH_STATUS_LABELS } from '@/types/research'
 import type { Research, ResearchStatus, ResearchCategory } from '@/types/research'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // ── Status badge ──────────────────────────────────────────────────────────────
 
@@ -226,6 +227,7 @@ function ResearchRow({ research, onRefresh }: { research: Research; onRefresh: (
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function ResearchManagement() {
+  usePageTitle('Review Research')
   const qc = useQueryClient()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')

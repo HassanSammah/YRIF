@@ -3,6 +3,7 @@ import { Bell, CheckCheck, Mail, MessageSquare, Smartphone, Loader2 } from 'luci
 import { SkeletonList } from '@/components/common/Skeleton'
 import { communicationsApi } from '@/api/communications'
 import type { NotificationItem } from '@/types/messaging'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 const CHANNEL_ICONS = {
   email: Mail,
@@ -61,6 +62,7 @@ function NotificationRow({ item }: { item: NotificationItem }) {
 }
 
 export default function Notifications() {
+  usePageTitle('Notifications')
   const qc = useQueryClient()
 
   const { data, isLoading } = useQuery(

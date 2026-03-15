@@ -5,10 +5,12 @@ import { authApi } from '@/api/accounts'
 import { useAuthStore } from '@/store/auth'
 import logoWhite from '@/assets/logos/logo-white.svg'
 import logoDark from '@/assets/logos/logo-dark.svg'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 type Step = 'email' | 'code'
 
 export default function VerifyEmail() {
+  usePageTitle('Verify Email')
   const navigate = useNavigate()
   const location = useLocation()
   const briqLogin = useAuthStore((s) => s.briqLogin)

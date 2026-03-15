@@ -9,6 +9,7 @@ import type { UserRole } from '@/types/user'
 import logoDark from '@/assets/logos/logo-dark.svg'
 import logoWhite from '@/assets/logos/logo-white.svg'
 import briqLogo from '@/assets/logos/briq-logo.png'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 interface RegisterForm {
   first_name: string
@@ -53,6 +54,7 @@ function inputCls(hasError?: boolean) {
 }
 
 export default function Register() {
+  usePageTitle('Sign Up')
   const navigate = useNavigate()
   const googleLogin = useAuthStore((s) => s.googleLogin)
   const [showPassword, setShowPassword] = useState(false)

@@ -9,6 +9,7 @@ import { SkeletonCard } from '@/components/common/Skeleton'
 import { eventsApi } from '@/api/events'
 import { EVENT_TYPE_LABELS } from '@/types/events'
 import type { EventType } from '@/types/events'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 const TYPE_COLORS: Record<EventType, string> = {
   seminar: 'bg-teal-50 text-teal-700',
@@ -28,6 +29,7 @@ const EVENT_TYPES: { value: EventType | ''; label: string }[] = [
 ]
 
 export default function EventsList() {
+  usePageTitle('Events')
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState<EventType | ''>('')

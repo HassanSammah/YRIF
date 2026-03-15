@@ -7,6 +7,7 @@ import { adminApi } from '@/api/admin'
 import type { ReportType, ExportParams, AuditLogEntry } from '@/types/admin'
 import { USER_ROLE_LABELS, USER_STATUS_LABELS } from '@/types/user'
 import type { UserRole, UserStatus } from '@/types/user'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // ── Report type config ────────────────────────────────────────────────────────
 
@@ -221,6 +222,7 @@ function AuditLogTable() {
 // ── Main Reports Page ─────────────────────────────────────────────────────────
 
 export default function Reports() {
+  usePageTitle('Reports')
   const [tab, setTab] = useState<'export' | 'history' | 'audit'>('export')
 
   // Export form state

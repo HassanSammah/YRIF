@@ -19,6 +19,7 @@ import {
   COLLAB_REQUEST_STATUS_LABELS,
   COLLABORATION_STATUS_LABELS,
 } from '@/types/mentorship'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // ── Status badge helpers ──────────────────────────────────────────────────────
 
@@ -1152,6 +1153,7 @@ function PartnerView({ role }: { role: string }) {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function MyMentorship() {
+  usePageTitle('My Mentorship')
   const { user } = useAuth()
 
   if (!user) return null

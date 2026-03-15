@@ -7,6 +7,7 @@ import type { UserRole } from '@/types/user'
 import { Eye, EyeOff, BookOpen, Users, Trophy } from 'lucide-react'
 import logoWhite from '@/assets/logos/logo-white.svg'
 import logoDark from '@/assets/logos/logo-dark.svg'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 type Step = 'phone' | 'otp' | 'register'
 
@@ -30,6 +31,7 @@ function inputCls(hasError?: boolean) {
 }
 
 export default function BriqAuth() {
+  usePageTitle('Authentication')
   const navigate = useNavigate()
   const briqLogin = useAuthStore((s) => s.briqLogin)
 

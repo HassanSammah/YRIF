@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import {
@@ -22,6 +22,11 @@ export default function EventDetail() {
     () => eventsApi.get(id!).then((r) => r.data),
     { enabled: !!id },
   )
+
+  useEffect(() => {
+    document.title = event ? `YRIF – ${event.title}` : 'YRIF – Event'
+    return () => { document.title = 'YRIF – Youth Research & Innovation Foundation' }
+  }, [event])
 
   const { data: winners } = useQuery(
     ['event-winners', id],

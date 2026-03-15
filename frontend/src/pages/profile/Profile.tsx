@@ -10,6 +10,7 @@ import { authApi } from '@/api/accounts'
 import { useAuth } from '@/hooks/useAuth'
 import type { Profile, MentorProfile, PartnerProfile, ResearchAssistantProfile } from '@/types/user'
 import { USER_STATUS_LABELS, USER_ROLE_LABELS, EDUCATION_LEVELS } from '@/types/user'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // ── Phone Verification ────────────────────────────────────────────────────────
 
@@ -603,6 +604,7 @@ function AccountDeletionSection() {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function Profile() {
+  usePageTitle('My Profile')
   const { user, fetchMe } = useAuth()
   const qc = useQueryClient()
 

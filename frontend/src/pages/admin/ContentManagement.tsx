@@ -11,6 +11,7 @@ import type { Resource, Webinar, ResourceType, ResourceWriteData, WebinarWriteDa
 import { RESOURCE_TYPE_LABELS } from '@/types/resources'
 import { adminApi } from '@/api/admin'
 import type { Announcement, NewsPost } from '@/types/admin'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -1334,6 +1335,7 @@ function NewsTab() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function ContentManagement() {
+  usePageTitle('Content & CMS')
   const [tab, setTab] = useState<'resources' | 'webinars' | 'announcements' | 'news'>('resources')
 
   return (

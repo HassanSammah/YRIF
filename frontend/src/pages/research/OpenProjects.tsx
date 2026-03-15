@@ -9,6 +9,7 @@ import { researchApi } from '@/api/research'
 import { useAuth } from '@/hooks/useAuth'
 import { RESEARCH_CATEGORY_LABELS } from '@/types/research'
 import type { Research, ResearchCategory, RAJoinRequestStatus } from '@/types/research'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 const CATEGORIES: { value: ResearchCategory | ''; label: string }[] = [
   { value: '', label: 'All Categories' },
@@ -121,6 +122,7 @@ function JoinRequestButton({ research, myRequests }: {
 }
 
 export default function OpenProjects() {
+  usePageTitle('Open Projects')
   const { user, isApproved } = useAuth()
 
   // Only research assistants can access this page

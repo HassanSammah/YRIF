@@ -2,6 +2,7 @@ import { useQuery, useMutation } from 'react-query'
 import { Loader2, Award, Download, Trophy } from 'lucide-react'
 import { SkeletonList } from '@/components/common/Skeleton'
 import { eventsApi } from '@/api/events'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 function downloadBlob(blob: Blob, filename: string) {
   const url = window.URL.createObjectURL(blob)
@@ -13,6 +14,7 @@ function downloadBlob(blob: Blob, filename: string) {
 }
 
 export default function MyCertificates() {
+  usePageTitle('My Certificates')
   const { data: certificates, isLoading } = useQuery(
     'my-certificates',
     () => eventsApi.myCertificates().then((r) => r.data),

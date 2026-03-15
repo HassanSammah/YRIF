@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth'
 import logoDark from '@/assets/logos/logo-dark.svg'
 import logoWhite from '@/assets/logos/logo-white.svg'
 import briqLogo from '@/assets/logos/briq-logo.png'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 interface LoginForm {
   email: string
@@ -42,6 +43,7 @@ function inputCls(hasError?: boolean) {
 }
 
 export default function Login() {
+  usePageTitle('Login')
   const navigate = useNavigate()
   const location = useLocation()
   const { login, googleLogin } = useAuth()

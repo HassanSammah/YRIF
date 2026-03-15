@@ -5,6 +5,7 @@ import { SkeletonCard } from '@/components/common/Skeleton'
 import { researchApi } from '@/api/research'
 import { RESEARCH_CATEGORY_LABELS, RESEARCH_STATUS_LABELS } from '@/types/research'
 import type { Research, ResearchStatus } from '@/types/research'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 const STATUS_STYLES: Record<ResearchStatus, string> = {
   draft: 'bg-gray-100 text-gray-600',
@@ -91,6 +92,7 @@ function ResearchCard({ research, onSubmit }: { research: Research; onSubmit: (i
 }
 
 export default function MyResearch() {
+  usePageTitle('My Research')
   const navigate = useNavigate()
   const qc = useQueryClient()
 

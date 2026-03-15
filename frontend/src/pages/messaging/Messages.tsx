@@ -9,6 +9,7 @@ import { communicationsApi } from '@/api/communications'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import type { Conversation, Message, ConvType, UserSearchResult } from '@/types/messaging'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -557,6 +558,7 @@ function NewConversationModal({ onClose, onCreate }: {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function Messages() {
+  usePageTitle('Messages')
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null)
   const [showNew, setShowNew] = useState(false)
 

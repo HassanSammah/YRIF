@@ -2,8 +2,10 @@ import { Link } from 'react-router-dom'
 import { Clock, Mail, LogOut } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import logoDark from '@/assets/logos/logo-dark.svg'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 export default function PendingApproval() {
+  usePageTitle('Pending Approval')
   const { user, logout } = useAuth()
 
   return (

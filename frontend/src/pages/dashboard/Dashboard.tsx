@@ -12,6 +12,7 @@ import { adminApi } from '@/api/admin'
 import { researchApi } from '@/api/research'
 import { eventsApi } from '@/api/events'
 import { SkeletonStat, SkeletonCard } from '@/components/common/Skeleton'
+import { usePageTitle } from '@/hooks/usePageTitle'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -126,6 +127,7 @@ function EmptyState({ icon: Icon, message, action }: {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
+  usePageTitle('Dashboard')
   const { user, isAdmin } = useAuth()
   const greeting = useGreeting()
 

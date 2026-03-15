@@ -120,6 +120,10 @@ class LoginSerializer(serializers.Serializer):
         )
         if not user:
             raise serializers.ValidationError("Invalid email or password.")
+        if user.status == UserStatus.PENDING_EMAIL_VERIFICATION:
+            raise serializers.ValidationError(
+                "Please verify your email first. Check your inbox for a 6-digit code."
+            )
         if not user.is_active:
             raise serializers.ValidationError(
                 "Your account has been suspended or rejected. Contact support."
@@ -159,7 +163,7 @@ class PhoneOTPVerifySerializer(serializers.Serializer):
 
 class EmailVerifySerializer(serializers.Serializer):
     email = serializers.EmailField()
-    code = serializers.CharField(min_length=4, max_length=8)
+    code = serializers.CharField(min_length=6, max_length=6)
 
 
 # ─── Briq Auth (phone-first login/signup) ────────────────────────────────────

@@ -43,6 +43,7 @@ class UserManager(BaseUserManager):
                 extra_fields["status"] = UserStatus.ACTIVE
             else:
                 extra_fields["status"] = UserStatus.PENDING_EMAIL_VERIFICATION
+                extra_fields.setdefault("is_active", False)  # cannot log in until email verified
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)

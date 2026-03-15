@@ -283,7 +283,7 @@ class SendEmailOTPView(APIView):
 
 
 class VerifyEmailView(APIView):
-    """POST /auth/verify-email/ — verify the 6-digit code and move user to PENDING_APPROVAL."""
+    """POST /auth/verify-email/ — verify the 6-digit code and move user to ACTIVE."""
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -301,14 +301,14 @@ class VerifyEmailView(APIView):
         except User.DoesNotExist:
             return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
+        # Delete OTP first to prevent double-use via race condition
+        cache.delete(f"email_otp:{email}")
+
         was_pending = user.status == UserStatus.PENDING_EMAIL_VERIFICATION
         if was_pending:
             user.status = UserStatus.ACTIVE
             user.is_active = True
             user.save(update_fields=["status", "is_active", "updated_at"])
-
-        cache.delete(f"email_otp:{email}")
-        if was_pending:
             account_emails.send_post_verification_welcome_email(user)
         tokens = _get_tokens(user)
         return Response({

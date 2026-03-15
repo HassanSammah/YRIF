@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Mail, ShieldCheck, Loader2, BookOpen, Users, Trophy } from 'lucide-react'
+import { Mail, ShieldCheck, Loader2, BookOpen, Users, Trophy, ArrowRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { authApi } from '@/api/accounts'
 import { useAuthStore } from '@/store/auth'
 import logoWhite from '@/assets/logos/logo-white.svg'
@@ -22,6 +23,7 @@ export default function VerifyEmail() {
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [alreadyVerified, setAlreadyVerified] = useState(false)
   const [resendCountdown, setResendCountdown] = useState(0)
 
   // Auto-send OTP when arriving with email pre-filled
@@ -50,7 +52,12 @@ export default function VerifyEmail() {
       const msg =
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
         'Failed to send verification code. Please try again.'
-      setError(msg)
+      if (msg === 'This email has already been verified.') {
+        setAlreadyVerified(true)
+        setError('Your email is already verified. You can log in now.')
+      } else {
+        setError(msg)
+      }
     } finally {
       setLoading(false)
     }
@@ -141,6 +148,14 @@ export default function VerifyEmail() {
           {error && (
             <div className="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
               {error}
+              {alreadyVerified && (
+                <Link
+                  to="/login"
+                  className="mt-2 flex items-center gap-1 font-medium text-[#0D9488] hover:text-[#093344] transition-colors"
+                >
+                  Go to Login <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              )}
             </div>
           )}
 

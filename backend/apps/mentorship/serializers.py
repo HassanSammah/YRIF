@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import MentorProfile, MentorshipRequest, MentorshipMatch, MentorFeedback
+from .models import MentorProfile, MentorshipRequest, MentorshipMatch, MentorFeedback, ResearchCollabRequest, ResearchCollaboration
 
 User = get_user_model()
 
@@ -123,6 +123,92 @@ class MentorshipMatchSerializer(serializers.ModelSerializer):
 
     def get_matched_by_name(self, obj):
         return obj.matched_by.get_full_name() if obj.matched_by else None
+
+    def get_topic(self, obj):
+        return obj.request.topic if obj.request else None
+
+
+class RADirectorySerializer(serializers.ModelSerializer):
+    """Research assistant user + ResearchAssistantProfile for the public directory."""
+    full_name = serializers.SerializerMethodField()
+    skills = serializers.CharField(source="ra_profile.skills", default="")
+    availability = serializers.CharField(source="ra_profile.availability", default="")
+    portfolio = serializers.CharField(source="ra_profile.portfolio", default="")
+    bio = serializers.CharField(source="profile.bio", default="")
+
+    class Meta:
+        model = User
+        fields = ["id", "full_name", "email", "skills", "availability", "portfolio", "bio"]
+
+    def get_full_name(self, obj):
+        return obj.get_full_name()
+
+
+class ResearchCollabRequestSerializer(serializers.ModelSerializer):
+    requester_name = serializers.CharField(source="requester.get_full_name", read_only=True)
+    requester_email = serializers.EmailField(source="requester.email", read_only=True)
+    ra_name = serializers.SerializerMethodField()
+    requester_bio = serializers.SerializerMethodField()
+    requester_institution = serializers.SerializerMethodField()
+    requester_skills = serializers.SerializerMethodField()
+    requester_research_interests = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ResearchCollabRequest
+        fields = [
+            "id", "requester", "requester_name", "requester_email",
+            "requester_bio", "requester_institution", "requester_skills", "requester_research_interests",
+            "research_assistant", "ra_name",
+            "topic", "description", "status", "created_at",
+        ]
+        read_only_fields = [
+            "id", "requester", "requester_name", "requester_email",
+            "requester_bio", "requester_institution", "requester_skills", "requester_research_interests",
+            "ra_name", "status", "created_at",
+        ]
+
+    def get_ra_name(self, obj):
+        return obj.research_assistant.get_full_name() if obj.research_assistant else None
+
+    def _profile(self, obj):
+        return getattr(obj.requester, "profile", None)
+
+    def get_requester_bio(self, obj):
+        p = self._profile(obj)
+        return p.bio if p else ""
+
+    def get_requester_institution(self, obj):
+        p = self._profile(obj)
+        return p.institution if p else ""
+
+    def get_requester_skills(self, obj):
+        p = self._profile(obj)
+        return p.skills if p else ""
+
+    def get_requester_research_interests(self, obj):
+        p = self._profile(obj)
+        return p.research_interests if p else ""
+
+
+class ResearchCollaborationSerializer(serializers.ModelSerializer):
+    requester_name = serializers.CharField(source="requester.get_full_name", read_only=True)
+    requester_email = serializers.EmailField(source="requester.email", read_only=True)
+    ra_name = serializers.CharField(source="research_assistant.get_full_name", read_only=True)
+    ra_email = serializers.EmailField(source="research_assistant.email", read_only=True)
+    topic = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ResearchCollaboration
+        fields = [
+            "id", "request", "topic",
+            "requester", "requester_name", "requester_email",
+            "research_assistant", "ra_name", "ra_email",
+            "status", "notes", "created_at",
+        ]
+        read_only_fields = [
+            "id", "request", "topic",
+            "requester_name", "requester_email", "ra_name", "ra_email", "created_at",
+        ]
 
     def get_topic(self, obj):
         return obj.request.topic if obj.request else None

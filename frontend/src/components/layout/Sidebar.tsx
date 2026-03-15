@@ -3,7 +3,7 @@ import {
   LayoutDashboard, BookOpen, Send, FolderOpen, CalendarDays, Trophy,
   Award, Users2, Heart, Library, MessageSquare, Bell, LogOut,
   ChevronRight, Settings, BarChart3, FileText, Handshake, Megaphone,
-  X, Shield,
+  X, Shield, GraduationCap,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { USER_ROLE_LABELS } from '@/types/user'
@@ -60,6 +60,7 @@ export default function Sidebar({ open, onClose, notifCount = 0 }: SidebarProps)
       title: 'Mentorship',
       items: [
         { to: '/mentors', icon: Users2, label: 'Mentor Directory' },
+        { to: '/research-assistants', icon: GraduationCap, label: 'Research Assistants' },
         { to: '/mentorship', icon: Heart, label: 'My Mentorship' },
       ],
     },

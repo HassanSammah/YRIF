@@ -92,7 +92,7 @@ function PhoneVerificationSection({ phone, verified, onVerified }: {
           <button
             onClick={verifyOTP}
             disabled={sending || !otp}
-            className="rounded-xl bg-[#0D9488] hover:bg-[#0D9488]/90 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+            className="rounded-xl bg-[#0D9488] hover:bg-[#0D9488]/90 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
           >
             {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify'}
           </button>

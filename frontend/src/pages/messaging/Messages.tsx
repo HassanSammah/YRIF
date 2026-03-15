@@ -405,7 +405,7 @@ function UserPicker({ roleHint, onPick }: { roleHint?: string; onPick: (u: UserS
       <div className="relative">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
         <input value={q} onChange={e => setQ(e.target.value)} placeholder="Name or email…"
-          className="w-full rounded-xl border border-gray-200 pl-8 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488]"
+          className="w-full rounded-xl border border-gray-200 bg-white pl-8 pr-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] transition-all duration-150"
         />
         {busy && <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 animate-spin text-gray-400" />}
       </div>
@@ -525,7 +525,7 @@ function NewConversationModal({ onClose, onCreate }: {
               mode === 'user_admin'      ? 'e.g. Question about my application'  :
               "e.g. Let's connect!"
             }
-            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488]"
+            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] transition-all duration-150"
           />
         </div>
 
@@ -539,7 +539,7 @@ function NewConversationModal({ onClose, onCreate }: {
         {mutation.isError && <p className="text-xs text-red-600 mb-3">Something went wrong. Please try again.</p>}
 
         <div className="flex gap-2">
-          <button onClick={onClose} className="flex-1 rounded-xl border border-gray-200 bg-white text-gray-700 hover:border-[#0D9488] hover:text-[#0D9488] py-2 text-sm font-semibold transition-colors">
+          <button onClick={onClose} className="flex-1 rounded-xl border border-gray-200 bg-white text-gray-700 hover:border-[#0D9488] hover:text-[#0D9488] px-4 py-2.5 text-sm font-semibold transition-colors">
             Cancel
           </button>
           <button onClick={() => mutation.mutate()} disabled={!canSubmit || mutation.isLoading}

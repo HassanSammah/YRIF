@@ -21,4 +21,17 @@ urlpatterns = [
     # ── Feedback ──────────────────────────────────────────────────────────────
     path("matches/<uuid:pk>/feedback/", views.MatchFeedbackCreateView.as_view(), name="match-feedback-create"),
     path("matches/<uuid:pk>/feedback/list/", views.MatchFeedbackListView.as_view(), name="match-feedback-list"),
+
+    # ── Research assistant directory ──────────────────────────────────────────
+    path("research-assistants/", views.RAListView.as_view(), name="ra-list"),
+    path("research-assistants/<uuid:pk>/", views.RADetailView.as_view(), name="ra-detail"),
+
+    # ── Collaboration requests ────────────────────────────────────────────────
+    path("collab-requests/", views.CollabRequestListCreateView.as_view(), name="collab-request-list"),
+    path("collab-requests/<uuid:pk>/accept/", views.RAAcceptCollabView.as_view(), name="collab-request-accept"),
+    path("collab-requests/<uuid:pk>/decline/", views.RADeclineCollabView.as_view(), name="collab-request-decline"),
+
+    # ── Collaborations ────────────────────────────────────────────────────────
+    path("collaborations/", views.CollaborationListView.as_view(), name="collaboration-list"),
+    path("collaborations/<uuid:pk>/", views.CollaborationDetailView.as_view(), name="collaboration-detail"),
 ]

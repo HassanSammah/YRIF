@@ -1,7 +1,7 @@
 from django.db import models as django_models
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, filters, status
+from rest_framework import generics, filters, status, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -9,13 +9,16 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from apps.core.permissions import IsAdmin, IsApproved
 from apps.accounts.models import UserRole, UserStatus
-from .models import MentorshipRequest, MentorshipMatch, MentorFeedback
+from .models import MentorshipRequest, MentorshipMatch, MentorFeedback, ResearchCollabRequest, ResearchCollaboration
 from .serializers import (
     MentorDirectorySerializer,
     PartnerDirectorySerializer,
     MentorshipRequestSerializer,
     MentorshipMatchSerializer,
     MentorFeedbackSerializer,
+    RADirectorySerializer,
+    ResearchCollabRequestSerializer,
+    ResearchCollaborationSerializer,
 )
 from .emails import (
     notify_mentorship_matched,
@@ -95,7 +98,13 @@ class MentorshipRequestListCreateView(generics.ListCreateAPIView):
         if user.role in (UserRole.ADMIN, UserRole.STAFF, UserRole.PROGRAM_MANAGER):
             return qs.order_by("-created_at")
         if user.role == UserRole.MENTOR:
-            return qs.filter(preferred_mentor=user).order_by("-created_at")
+            return qs.filter(
+                django_models.Q(preferred_mentor=user) |
+                django_models.Q(
+                    preferred_mentor__isnull=True,
+                    status__in=[MentorshipRequest.Status.PENDING, MentorshipRequest.Status.APPROVED],
+                )
+            ).order_by("-created_at")
         return qs.filter(mentee=user).order_by("-created_at")
 
     def perform_create(self, serializer):
@@ -322,3 +331,193 @@ class MatchFeedbackListView(generics.ListAPIView):
     def get_queryset(self):
         match = get_object_or_404(MentorshipMatch, pk=self.kwargs["pk"])
         return MentorFeedback.objects.filter(match=match).select_related("given_by")
+
+
+# ── Research Assistant Directory ──────────────────────────────────────────────
+
+class RAListView(generics.ListAPIView):
+    """Public research assistant directory – all active, approved RAs."""
+    serializer_class = RADirectorySerializer
+    permission_classes = [AllowAny]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["first_name", "last_name", "ra_profile__skills"]
+
+    def get_queryset(self):
+        from apps.accounts.models import UserRole as AR, UserStatus as AS
+        return (
+            User.objects
+            .filter(role=AR.RESEARCH_ASSISTANT, status=AS.ACTIVE)
+            .select_related("ra_profile", "profile")
+            .order_by("first_name")
+        )
+
+
+class RADetailView(generics.RetrieveAPIView):
+    """Public single research assistant profile."""
+    serializer_class = RADirectorySerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        from apps.accounts.models import UserRole as AR, UserStatus as AS
+        return (
+            User.objects
+            .filter(role=AR.RESEARCH_ASSISTANT, status=AS.ACTIVE)
+            .select_related("ra_profile", "profile")
+        )
+
+
+# ── Research Collaboration Requests ──────────────────────────────────────────
+
+class CollabRequestListCreateView(generics.ListCreateAPIView):
+    """
+    GET: List collab requests.
+      - Requesters see their own.
+      - RAs see requests directed to them.
+      - Admins see all.
+    POST: Create a collab request (any approved user except RAs and admins).
+    """
+    serializer_class = ResearchCollabRequestSerializer
+    permission_classes = [IsAuthenticated, IsApproved]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = ResearchCollabRequest.objects.select_related(
+            "requester", "requester__profile", "research_assistant"
+        )
+        if user.role in (UserRole.ADMIN, UserRole.STAFF, UserRole.PROGRAM_MANAGER):
+            return qs.order_by("-created_at")
+        if user.role == UserRole.RESEARCH_ASSISTANT:
+            return qs.filter(research_assistant=user).order_by("-created_at")
+        return qs.filter(requester=user).order_by("-created_at")
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        if user.role == UserRole.RESEARCH_ASSISTANT:
+            raise serializers.ValidationError("Research assistants cannot create collaboration requests.")
+        serializer.save(requester=user)
+
+
+class RAAcceptCollabView(APIView):
+    """RA accepts a collaboration request, auto-creating an active collaboration."""
+    permission_classes = [IsAuthenticated, IsApproved]
+
+    def post(self, request, pk):
+        user = request.user
+        if user.role != UserRole.RESEARCH_ASSISTANT:
+            return Response(
+                {"detail": "Only research assistants can accept collaboration requests."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        cr = get_object_or_404(
+            ResearchCollabRequest.objects.select_related("requester", "requester__profile"),
+            pk=pk,
+        )
+
+        if cr.research_assistant and cr.research_assistant != user:
+            return Response(
+                {"detail": "This request is directed to a different research assistant."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if cr.status not in (ResearchCollabRequest.Status.PENDING,):
+            return Response(
+                {"detail": "Request cannot be accepted in its current state."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        collab = ResearchCollaboration.objects.create(
+            request=cr,
+            requester=cr.requester,
+            research_assistant=user,
+        )
+        cr.status = ResearchCollabRequest.Status.ACCEPTED
+        cr.research_assistant = user
+        cr.save(update_fields=["status", "research_assistant", "updated_at"])
+        return Response(ResearchCollaborationSerializer(collab).data, status=status.HTTP_201_CREATED)
+
+
+class RADeclineCollabView(APIView):
+    """RA declines a collaboration request."""
+    permission_classes = [IsAuthenticated, IsApproved]
+
+    def post(self, request, pk):
+        user = request.user
+        if user.role != UserRole.RESEARCH_ASSISTANT:
+            return Response(
+                {"detail": "Only research assistants can decline collaboration requests."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        cr = get_object_or_404(ResearchCollabRequest, pk=pk)
+
+        if cr.research_assistant and cr.research_assistant != user:
+            return Response(
+                {"detail": "This request is directed to a different research assistant."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if cr.status != ResearchCollabRequest.Status.PENDING:
+            return Response(
+                {"detail": "Request cannot be declined in its current state."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        cr.status = ResearchCollabRequest.Status.DECLINED
+        cr.save(update_fields=["status", "updated_at"])
+        return Response({"detail": "Request declined."})
+
+
+# ── Research Collaborations ───────────────────────────────────────────────────
+
+class CollaborationListView(generics.ListAPIView):
+    """List collaborations for the current user or all for admin."""
+    serializer_class = ResearchCollaborationSerializer
+    permission_classes = [IsAuthenticated, IsApproved]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["status"]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = ResearchCollaboration.objects.select_related(
+            "requester", "research_assistant", "request"
+        ).order_by("-created_at")
+        if user.role in (UserRole.ADMIN, UserRole.STAFF, UserRole.PROGRAM_MANAGER):
+            return qs
+        if user.role == UserRole.RESEARCH_ASSISTANT:
+            return qs.filter(research_assistant=user)
+        return qs.filter(requester=user)
+
+
+class CollaborationDetailView(generics.RetrieveUpdateAPIView):
+    """Retrieve or update a collaboration (participants or admin)."""
+    serializer_class = ResearchCollaborationSerializer
+    permission_classes = [IsAuthenticated, IsApproved]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = ResearchCollaboration.objects.select_related("requester", "research_assistant", "request")
+        if user.role in (UserRole.ADMIN, UserRole.STAFF, UserRole.PROGRAM_MANAGER):
+            return qs
+        return qs.filter(
+            django_models.Q(requester=user) | django_models.Q(research_assistant=user)
+        )
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        new_status = request.data.get("status")
+        notes = request.data.get("notes", instance.notes)
+
+        if new_status and new_status not in ResearchCollaboration.Status.values:
+            return Response({"detail": "Invalid status."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if new_status:
+            instance.status = new_status
+        instance.notes = notes
+        instance.save(update_fields=["status", "notes", "updated_at"])
+
+        if new_status == ResearchCollaboration.Status.COMPLETED and instance.request:
+            instance.request.status = ResearchCollabRequest.Status.CLOSED
+            instance.request.save(update_fields=["status", "updated_at"])
+
+        return Response(ResearchCollaborationSerializer(instance).data)

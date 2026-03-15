@@ -75,6 +75,64 @@ export interface MentorshipMatch {
   created_at: string
 }
 
+export interface RAListing {
+  id: string
+  full_name: string
+  email: string
+  skills: string
+  availability: string
+  portfolio: string
+  bio: string
+}
+
+export type CollabRequestStatus = 'pending' | 'accepted' | 'declined' | 'closed'
+export type CollaborationStatus = 'active' | 'completed' | 'cancelled'
+
+export const COLLAB_REQUEST_STATUS_LABELS: Record<CollabRequestStatus, string> = {
+  pending: 'Pending',
+  accepted: 'Accepted',
+  declined: 'Declined',
+  closed: 'Closed',
+}
+
+export const COLLABORATION_STATUS_LABELS: Record<CollaborationStatus, string> = {
+  active: 'Active',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+}
+
+export interface ResearchCollabRequest {
+  id: string
+  requester: string
+  requester_name: string
+  requester_email: string
+  requester_bio: string
+  requester_institution: string
+  requester_skills: string
+  requester_research_interests: string
+  research_assistant: string | null
+  ra_name: string | null
+  topic: string
+  description: string
+  status: CollabRequestStatus
+  created_at: string
+}
+
+export interface ResearchCollaboration {
+  id: string
+  request: string | null
+  topic: string | null
+  requester: string
+  requester_name: string
+  requester_email: string
+  research_assistant: string
+  ra_name: string
+  ra_email: string
+  status: CollaborationStatus
+  notes: string
+  created_at: string
+}
+
 export interface MentorFeedback {
   id: string
   match: string | null

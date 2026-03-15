@@ -24,6 +24,7 @@ const Competitions       = lazy(() => import('@/pages/events/Competitions'))
 const MyCertificates     = lazy(() => import('@/pages/events/MyCertificates'))
 const MentorDirectory    = lazy(() => import('@/pages/mentorship/MentorDirectory'))
 const MyMentorship       = lazy(() => import('@/pages/mentorship/MyMentorship'))
+const RADirectory        = lazy(() => import('@/pages/mentorship/RADirectory'))
 const ResourceHub        = lazy(() => import('@/pages/resources/ResourceHub'))
 const Messages           = lazy(() => import('@/pages/messaging/Messages'))
 const Contact            = lazy(() => import('@/pages/contact/Contact'))
@@ -103,8 +104,9 @@ export const router = createBrowserRouter([
       { path: '/events/:id',      element: wrap(EventDetail) },
       { path: '/competitions',    element: wrap(Competitions) },
       { path: '/certificates',    element: wrap(MyCertificates) },
-      { path: '/mentors',         element: wrap(MentorDirectory) },
-      { path: '/mentorship',      element: wrap(MyMentorship) },
+      { path: '/mentors',                element: wrap(MentorDirectory) },
+      { path: '/mentorship',             element: wrap(MyMentorship) },
+      { path: '/research-assistants',    element: wrap(RADirectory) },
       { path: '/resources',       element: wrap(ResourceHub) },
       { path: '/messages',        element: wrap(Messages) },
       { path: '/notifications',   element: wrap(Notifications) },

@@ -16,6 +16,7 @@ const ROUTE_TITLES: Record<string, string> = {
   '/certificates': 'My Certificates',
   '/mentors': 'Mentor Directory',
   '/mentorship': 'My Mentorship',
+  '/research-assistants': 'Research Assistant Directory',
   '/resources': 'Learning Hub',
   '/messages': 'Messages',
   '/notifications': 'Notifications',

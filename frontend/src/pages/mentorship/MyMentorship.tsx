@@ -4,14 +4,20 @@ import { useForm } from 'react-hook-form'
 import {
   Users, Star, CheckCircle, Clock, MessageSquare,
   Loader2, X, ChevronDown, ChevronUp, Phone, BookOpen, GraduationCap, Briefcase,
+  FlaskConical,
 } from 'lucide-react'
 import { mentorshipApi } from '@/api/mentorship'
 import { authApi } from '@/api/accounts'
 import { useAuth } from '@/hooks/useAuth'
-import type { MentorshipMatch, MentorshipMatchStatus, MentorshipRequest as MentorshipRequestType } from '@/types/mentorship'
+import type {
+  MentorshipMatch, MentorshipMatchStatus, MentorshipRequest as MentorshipRequestType,
+  ResearchCollabRequest as CollabRequestType, ResearchCollaboration, CollaborationStatus,
+} from '@/types/mentorship'
 import {
   MENTORSHIP_REQUEST_STATUS_LABELS,
   MENTORSHIP_MATCH_STATUS_LABELS,
+  COLLAB_REQUEST_STATUS_LABELS,
+  COLLABORATION_STATUS_LABELS,
 } from '@/types/mentorship'
 
 // ── Status badge helpers ──────────────────────────────────────────────────────
@@ -326,7 +332,8 @@ function MatchCard({
 // ── Youth / Researcher View ───────────────────────────────────────────────────
 
 function MenteeView() {
-  const [tab, setTab] = useState<'requests' | 'matches'>('requests')
+  const qc = useQueryClient()
+  const [tab, setTab] = useState<'requests' | 'matches' | 'collaborations'>('requests')
   const [showNewRequest, setShowNewRequest] = useState(false)
   const [feedbackMatch, setFeedbackMatch] = useState<MentorshipMatch | null>(null)
 
@@ -340,12 +347,27 @@ function MenteeView() {
     () => mentorshipApi.listMatches().then((r) => r.data),
   )
 
+  const { data: collabRequestsData, isLoading: loadingCollabReqs } = useQuery(
+    'my-collab-requests',
+    () => mentorshipApi.listCollabRequests().then((r) => r.data),
+  )
+
+  const { data: collabsData, isLoading: loadingCollabs } = useQuery(
+    'my-collaborations',
+    () => mentorshipApi.listCollaborations().then((r) => r.data),
+  )
+
+  const completeMutation = useMutation(
+    (id: string) => mentorshipApi.updateCollaboration(id, { status: 'completed' }),
+    { onSuccess: () => qc.invalidateQueries('my-collaborations') },
+  )
+
   return (
     <div className="space-y-6">
       {/* Tabs + action */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
-          {(['requests', 'matches'] as const).map((t) => (
+          {(['requests', 'matches', 'collaborations'] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -353,16 +375,25 @@ function MenteeView() {
                 tab === t ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              {t === 'requests' ? 'My Requests' : 'My Matches'}
+              {t === 'requests' ? 'My Requests' : t === 'matches' ? 'My Matches' : 'Collaborations'}
             </button>
           ))}
         </div>
-        <button
-          onClick={() => setShowNewRequest(true)}
-          className="rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
-        >
-          + New Request
-        </button>
+        {tab !== 'collaborations' ? (
+          <button
+            onClick={() => setShowNewRequest(true)}
+            className="rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 disabled:opacity-50"
+          >
+            + New Request
+          </button>
+        ) : (
+          <a
+            href="/research-assistants"
+            className="rounded-xl bg-[#093344] hover:bg-[#0D9488] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200"
+          >
+            + Find Research Assistant
+          </a>
+        )}
       </div>
 
       {/* Content */}
@@ -424,6 +455,76 @@ function MenteeView() {
               />
             ))
           )}
+        </div>
+      )}
+
+      {tab === 'collaborations' && (
+        <div className="space-y-6">
+          {/* Collab Requests */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <FlaskConical className="w-4 h-4 text-blue-500" /> My Collaboration Requests
+            </h3>
+            {loadingCollabReqs ? (
+              <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-gray-300" /></div>
+            ) : !collabRequestsData?.results.length ? (
+              <div className="py-6 text-center text-sm text-gray-400 bg-white rounded-2xl border border-gray-100">
+                No requests yet. Browse the{' '}
+                <a href="/research-assistants" className="text-[#0D9488] underline font-medium">RA directory</a>{' '}
+                to get started.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {collabRequestsData.results.map((req) => (
+                  <div key={req.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">{req.topic}</p>
+                        {req.ra_name && (
+                          <p className="text-xs text-gray-500 mt-0.5">Research Assistant: {req.ra_name}</p>
+                        )}
+                        {req.description && (
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">{req.description}</p>
+                        )}
+                      </div>
+                      <StatusBadge
+                        label={COLLAB_REQUEST_STATUS_LABELS[req.status]}
+                        style={COLLAB_REQUEST_STATUS_STYLES[req.status]}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-400 mt-3">
+                      Submitted {new Date(req.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Active Collaborations */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-500" /> Active Collaborations
+            </h3>
+            {loadingCollabs ? (
+              <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-gray-300" /></div>
+            ) : !collabsData?.results.length ? (
+              <div className="py-6 text-center text-sm text-gray-400 bg-white rounded-2xl border border-gray-100">
+                No collaborations yet.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {collabsData.results.map((collab) => (
+                  <CollaborationCard
+                    key={collab.id}
+                    collab={collab}
+                    role="requester"
+                    onComplete={(id) => completeMutation.mutate(id)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -678,6 +779,291 @@ function MentorView() {
   )
 }
 
+const COLLAB_REQUEST_STATUS_STYLES: Record<string, string> = {
+  pending: 'bg-amber-100 text-amber-800',
+  accepted: 'bg-green-100 text-green-800',
+  declined: 'bg-red-100 text-red-700',
+  closed: 'bg-gray-100 text-gray-600',
+}
+
+const COLLABORATION_STATUS_STYLES: Record<CollaborationStatus, string> = {
+  active: 'bg-green-100 text-green-800',
+  completed: 'bg-blue-100 text-blue-700',
+  cancelled: 'bg-red-100 text-red-700',
+}
+
+// ── Incoming Collab Request Card (RA) ─────────────────────────────────────────
+
+function IncomingCollabRequestCard({
+  req,
+  onResponded,
+}: {
+  req: CollabRequestType
+  onResponded: () => void
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const [actionError, setActionError] = useState('')
+
+  const acceptMutation = useMutation(
+    () => mentorshipApi.acceptCollabRequest(req.id),
+    {
+      onSuccess: onResponded,
+      onError: () => setActionError('Failed to accept. Please try again.'),
+    },
+  )
+
+  const declineMutation = useMutation(
+    () => mentorshipApi.declineCollabRequest(req.id),
+    {
+      onSuccess: onResponded,
+      onError: () => setActionError('Failed to decline. Please try again.'),
+    },
+  )
+
+  const isPending = req.status === 'pending'
+  const isLoading = acceptMutation.isLoading || declineMutation.isLoading
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-gray-900">{req.topic}</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              From: <span className="text-gray-700 font-medium">{req.requester_name}</span>
+              {req.requester_email && <span className="text-gray-400"> · {req.requester_email}</span>}
+            </p>
+            {req.description && (
+              <p className="text-xs text-gray-500 mt-1.5 italic line-clamp-2">{req.description}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <StatusBadge
+              label={COLLAB_REQUEST_STATUS_LABELS[req.status]}
+              style={COLLAB_REQUEST_STATUS_STYLES[req.status]}
+            />
+            <button
+              onClick={() => setExpanded((e) => !e)}
+              className="p-1 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        {isPending && (
+          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-50">
+            <button
+              onClick={() => { setActionError(''); acceptMutation.mutate() }}
+              disabled={isLoading}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50 transition-colors"
+            >
+              {acceptMutation.isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle className="w-3 h-3" />}
+              Accept
+            </button>
+            <button
+              onClick={() => { setActionError(''); declineMutation.mutate() }}
+              disabled={isLoading}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white text-red-600 hover:border-red-300 hover:bg-red-50 px-3 py-1.5 text-xs font-semibold disabled:opacity-50 transition-colors"
+            >
+              {declineMutation.isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <X className="w-3 h-3" />}
+              Decline
+            </button>
+            {actionError && <p className="text-xs text-red-600">{actionError}</p>}
+          </div>
+        )}
+
+        <p className="text-xs text-gray-400 mt-3">
+          Received {new Date(req.created_at).toLocaleDateString()}
+        </p>
+      </div>
+
+      {expanded && (
+        <div className="border-t border-gray-100 bg-gray-50 p-5 space-y-3">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Requester Profile</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            {req.requester_institution && (
+              <div className="flex items-start gap-2">
+                <GraduationCap className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-gray-400">Institution</p>
+                  <p className="text-gray-700 font-medium">{req.requester_institution}</p>
+                </div>
+              </div>
+            )}
+            {req.requester_skills && (
+              <div className="flex items-start gap-2">
+                <Briefcase className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-gray-400">Skills</p>
+                  <p className="text-gray-700 font-medium">{req.requester_skills}</p>
+                </div>
+              </div>
+            )}
+          </div>
+          {req.requester_bio && (
+            <div>
+              <p className="text-xs text-gray-400 mb-1">Bio</p>
+              <p className="text-xs text-gray-700 leading-relaxed">{req.requester_bio}</p>
+            </div>
+          )}
+          {req.requester_research_interests && (
+            <div>
+              <p className="text-xs text-gray-400 mb-1">Research Interests</p>
+              <p className="text-xs text-gray-700 leading-relaxed">{req.requester_research_interests}</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Collaboration Card ────────────────────────────────────────────────────────
+
+function CollaborationCard({
+  collab,
+  role,
+  onComplete,
+}: {
+  collab: ResearchCollaboration
+  role: string
+  onComplete: (id: string) => void
+}) {
+  const otherParty = role === 'research_assistant' ? collab.requester_name : collab.ra_name
+  const otherEmail = role === 'research_assistant' ? collab.requester_email : collab.ra_email
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="text-sm font-semibold text-gray-900">{collab.topic ?? 'Research Collaboration'}</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {role === 'research_assistant' ? 'Requester: ' : 'Research Assistant: '}
+            <span className="text-gray-700">{otherParty}</span>
+            <span className="text-gray-400"> · {otherEmail}</span>
+          </p>
+        </div>
+        <StatusBadge
+          label={COLLABORATION_STATUS_LABELS[collab.status]}
+          style={COLLABORATION_STATUS_STYLES[collab.status]}
+        />
+      </div>
+
+      {collab.notes && (
+        <p className="text-xs text-gray-500 italic">{collab.notes}</p>
+      )}
+
+      <div className="flex items-center gap-4 text-xs text-gray-400">
+        <span className="flex items-center gap-1">
+          <Clock className="w-3 h-3" /> Started {new Date(collab.created_at).toLocaleDateString()}
+        </span>
+      </div>
+
+      {collab.status === 'active' && (
+        <button
+          onClick={() => onComplete(collab.id)}
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:underline"
+        >
+          <CheckCircle className="w-3.5 h-3.5" /> Mark as Completed
+        </button>
+      )}
+    </div>
+  )
+}
+
+// ── RA View ───────────────────────────────────────────────────────────────────
+
+function RAView() {
+  const qc = useQueryClient()
+  const [tab, setTab] = useState<'requests' | 'collaborations'>('collaborations')
+
+  const { data: requestsData, isLoading: loadingReqs } = useQuery(
+    'ra-incoming-collab-requests',
+    () => mentorshipApi.listCollabRequests().then((r) => r.data),
+  )
+
+  const { data: collabsData, isLoading: loadingCollabs } = useQuery(
+    'ra-collaborations',
+    () => mentorshipApi.listCollaborations().then((r) => r.data),
+  )
+
+  const handleResponded = () => {
+    qc.invalidateQueries('ra-incoming-collab-requests')
+    qc.invalidateQueries('ra-collaborations')
+    setTab('collaborations')
+  }
+
+  const completeMutation = useMutation(
+    (id: string) => mentorshipApi.updateCollaboration(id, { status: 'completed' }),
+    { onSuccess: () => qc.invalidateQueries('ra-collaborations') },
+  )
+
+  const pendingCount = requestsData?.results.filter((r) => r.status === 'pending').length ?? 0
+
+  return (
+    <div className="space-y-6">
+      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
+        {(['collaborations', 'requests'] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`relative rounded-lg px-4 py-1.5 text-sm font-medium transition-colors ${
+              tab === t ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            {t === 'collaborations' ? 'My Collaborations' : 'Incoming Requests'}
+            {t === 'requests' && pendingCount > 0 && (
+              <span className="ml-1.5 inline-flex items-center justify-center rounded-full bg-amber-500 text-white text-[10px] font-bold w-4 h-4">
+                {pendingCount}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'collaborations' && (
+        <div className="space-y-3">
+          {loadingCollabs ? (
+            <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-gray-300" /></div>
+          ) : !collabsData?.results.length ? (
+            <div className="py-12 text-center text-sm text-gray-400">No active collaborations yet.</div>
+          ) : (
+            collabsData.results.map((collab) => (
+              <CollaborationCard
+                key={collab.id}
+                collab={collab}
+                role="research_assistant"
+                onComplete={(id) => completeMutation.mutate(id)}
+              />
+            ))
+          )}
+        </div>
+      )}
+
+      {tab === 'requests' && (
+        <div className="space-y-3">
+          {loadingReqs ? (
+            <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-gray-300" /></div>
+          ) : !requestsData?.results.length ? (
+            <div className="py-12 text-center text-sm text-gray-400">
+              No incoming collaboration requests.
+            </div>
+          ) : (
+            requestsData.results.map((req) => (
+              <IncomingCollabRequestCard
+                key={req.id}
+                req={req}
+                onResponded={handleResponded}
+              />
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Partner / RA View ─────────────────────────────────────────────────────────
 
 function PartnerView({ role }: { role: string }) {
@@ -771,27 +1157,36 @@ export default function MyMentorship() {
   if (!user) return null
 
   const isMentor = user.role === 'mentor'
-  const isPartnerOrRA = user.role === 'industry_partner' || user.role === 'research_assistant'
+  const isRA = user.role === 'research_assistant'
+  const isPartner = user.role === 'industry_partner'
+
+  const pageTitle = isMentor
+    ? 'Mentor Dashboard'
+    : isRA
+    ? 'Research Assistant Dashboard'
+    : isPartner
+    ? 'Partner Network'
+    : 'My Mentorship'
+
+  const pageDesc = isMentor
+    ? 'Manage your mentee matches and incoming requests.'
+    : isRA
+    ? 'Manage incoming collaboration requests and active partnerships.'
+    : isPartner
+    ? 'View your partner profile and explore collaboration opportunities.'
+    : 'Track your mentorship requests, matches, and research collaborations.'
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
-          {isMentor ? 'Mentor Dashboard' : isPartnerOrRA ? 'Partner Network' : 'My Mentorship'}
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          {isMentor
-            ? 'Manage your mentee matches and incoming requests.'
-            : isPartnerOrRA
-            ? 'View your partner/RA profile and explore collaboration opportunities.'
-            : 'Track your mentorship requests and active matches.'}
-        </p>
+        <h1 className="text-2xl font-bold text-gray-900">{pageTitle}</h1>
+        <p className="text-sm text-gray-500 mt-1">{pageDesc}</p>
       </div>
 
       {isMentor && <MentorView />}
-      {isPartnerOrRA && <PartnerView role={user.role} />}
-      {!isMentor && !isPartnerOrRA && <MenteeView />}
+      {isRA && <RAView />}
+      {isPartner && <PartnerView role={user.role} />}
+      {!isMentor && !isRA && !isPartner && <MenteeView />}
     </div>
   )
 }

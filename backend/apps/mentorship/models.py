@@ -95,6 +95,75 @@ class MentorshipMatch(BaseModel):
         return f"{self.mentor} ↔ {self.mentee}"
 
 
+class ResearchCollabRequest(BaseModel):
+    """A request from a youth/researcher to partner with a research assistant."""
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        ACCEPTED = "accepted", "Accepted"
+        DECLINED = "declined", "Declined"
+        CLOSED = "closed", "Closed"
+
+    requester = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="collab_requests_as_requester",
+    )
+    research_assistant = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="collab_requests_as_ra",
+    )
+    topic = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+        db_index=True,
+    )
+
+    def __str__(self):
+        return f"{self.requester} → {self.research_assistant or 'Any RA'} ({self.topic})"
+
+
+class ResearchCollaboration(BaseModel):
+    """An active research collaboration between a requester and a research assistant."""
+    class Status(models.TextChoices):
+        ACTIVE = "active", "Active"
+        COMPLETED = "completed", "Completed"
+        CANCELLED = "cancelled", "Cancelled"
+
+    request = models.OneToOneField(
+        ResearchCollabRequest,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="collaboration",
+    )
+    requester = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="collaborations_as_requester",
+    )
+    research_assistant = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="collaborations_as_ra",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.ACTIVE,
+        db_index=True,
+    )
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.requester} ↔ {self.research_assistant}"
+
+
 class MentorFeedback(BaseModel):
     match = models.ForeignKey(
         MentorshipMatch,

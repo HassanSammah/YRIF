@@ -172,8 +172,9 @@ SUPABASE_URL = config("SUPABASE_URL", default="")
 SUPABASE_KEY = config("SUPABASE_KEY", default="")
 
 # Sarufi AI — YRIF Chat
-SARUFI_API_KEY = config("SARUFI_API_KEY", default="a81ef596bb5373986c9b85731e65ef8b7028432311f502f7ef413f2c54897bbf")
-SARUFI_BOT_ID = config("SARUFI_BOT_ID", default="")  # set to your bot ID from Sarufi dashboard
+SARUFI_API_KEY = config("SARUFI_API_KEY", default="")
+SARUFI_BOT_ID = config("SARUFI_BOT_ID", default="")
+NGROK_BACKEND_URL = config("NGROK_BACKEND_URL", default="")
 
 # Email
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

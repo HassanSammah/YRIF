@@ -10,6 +10,9 @@ urlpatterns = [
     # BRIQ inbound SMS webhook
     path("briq/webhook/", views.BriqWebhookView.as_view(), name="briq-webhook"),
 
+    # Sarufi fulfillment webhook (escalation)
+    path("sarufi/webhook/", views.SarufiWebhookView.as_view(), name="sarufi-webhook"),
+
     # Authenticated: notifications
     path("notifications/", views.NotificationListView.as_view(), name="notifications"),
     path("notifications/read/", views.NotificationMarkReadView.as_view(), name="notifications-read-all"),

@@ -96,6 +96,53 @@ class ChatbotView(APIView):
         return Response(reply)
 
 
+# ── Sarufi Webhook (escalation fulfillment) ────────────────────────────────────
+
+class SarufiWebhookView(APIView):
+    """
+    Fulfillment webhook called by Sarufi when 'escalate' intent is triggered.
+    Creates an admin-support notification so staff can follow up with the user.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        intent = request.data.get("intent", "")
+        chat_id = request.data.get("chat_id", "")
+        message = request.data.get("message", "")
+
+        logger.info("Sarufi webhook — intent=%s chat_id=%s message=%s", intent, chat_id, message)
+
+        if intent == "escalate":
+            # Notify all admins about the escalation request
+            admin_users = User.objects.filter(role="admin", status="active")
+            notifications = [
+                Notification(
+                    recipient=admin,
+                    channel=Notification.Channel.IN_APP,
+                    subject="YRIF Chat: Escalation Request",
+                    body=(
+                        f"A user (chat_id: {chat_id}) requested human support via YRIF Chat.\n"
+                        f"Last message: {message[:300]}"
+                    ),
+                    status=Notification.Status.SENT,
+                )
+                for admin in admin_users
+            ]
+            if notifications:
+                Notification.objects.bulk_create(notifications, batch_size=100)
+                logger.info("Escalation notifications sent to %d admins.", len(notifications))
+
+        # Return Sarufi-compatible fulfillment response
+        return Response({
+            "message": [
+                "Ujumbe wako umetumwa kwa timu yetu. 👨‍💼\n"
+                "Tutawasiliana nawe ndani ya masaa 24 kwa barua pepe.\n"
+                "📧 Au wasiliana moja kwa moja: info@yriftz.org"
+            ]
+        })
+
+
 # ── BRIQ Incoming SMS Webhook ─────────────────────────────────────────────────
 
 class BriqWebhookView(APIView):

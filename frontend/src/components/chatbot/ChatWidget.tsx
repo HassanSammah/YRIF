@@ -1,42 +1,63 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { MessageCircle, X, Send, Loader2, Bot } from 'lucide-react'
 import { communicationsApi } from '@/api/communications'
+import { useAuth } from '@/hooks/useAuth'
 import type { ChatMessage } from '@/types/messaging'
-
-const WELCOME: ChatMessage = {
-  id: 'welcome',
-  role: 'bot',
-  text: "Hi! 👋 I'm YRIF Chat, your virtual assistant. Ask me anything about the platform, programmes, or how to get started!",
-  timestamp: new Date(),
-}
 
 function generateId() {
   return Math.random().toString(36).slice(2, 10)
 }
 
-// Stable chat_id for the browser session
-const SESSION_ID = (() => {
-  const key = 'yrif_chat_session'
-  const existing = sessionStorage.getItem(key)
-  if (existing) return existing
-  const id = generateId()
-  sessionStorage.setItem(key, id)
+// Stable chat_id persists for the browser session
+const SESSION_KEY = 'yrif_chat_session'
+function getSessionId(userId?: string): string {
+  const stored = sessionStorage.getItem(SESSION_KEY)
+  if (stored) return stored
+  const id = userId ? `user_${userId}_${generateId()}` : `anon_${generateId()}`
+  sessionStorage.setItem(SESSION_KEY, id)
   return id
-})()
+}
 
 export default function ChatWidget() {
+  const { user } = useAuth()
+  const firstName = user?.first_name || user?.email?.split('@')[0] || null
+
+  // Personalised welcome message
+  const welcomeMessage = useMemo<ChatMessage>(() => ({
+    id: 'welcome',
+    role: 'bot',
+    text: firstName
+      ? `${firstName}, Naomba Tubonge! 👋\n\nMimi ni YRIF Chat, msaidizi wako wa kidijitali. Ninaweza kukusaidia kuhusu utafiti, matukio, ushauri, vyeti, na zaidi. Ungehitaji msaada gani leo?`
+      : `Karibu YRIF! 👋 Naomba Tubonge!\n\nMimi ni YRIF Chat, msaidizi wako wa kidijitali. Ninaweza kukusaidia kuhusu utafiti, matukio, ushauri, vyeti, na zaidi. Ungehitaji msaada gani leo?`,
+    timestamp: new Date(),
+  }), [firstName])
+
   const [open, setOpen] = useState(false)
-  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME])
+  const [messages, setMessages] = useState<ChatMessage[]>([welcomeMessage])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  // Update welcome message if user logs in mid-session
+  useEffect(() => {
+    setMessages((prev) => {
+      if (prev.length === 1 && prev[0].id === 'welcome') return [welcomeMessage]
+      return prev
+    })
+  }, [welcomeMessage])
 
   useEffect(() => {
     if (open) bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, open])
 
-  const send = async () => {
-    const trimmed = input.trim()
+  const sessionId = useMemo(
+    () => getSessionId(user?.id?.toString()),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
+
+  const send = async (overrideText?: string) => {
+    const trimmed = (overrideText ?? input).trim()
     if (!trimmed || loading) return
 
     const userMsg: ChatMessage = { id: generateId(), role: 'user', text: trimmed, timestamp: new Date() }
@@ -45,15 +66,15 @@ export default function ChatWidget() {
     setLoading(true)
 
     try {
-      const res = await communicationsApi.sendChatMessage(trimmed, SESSION_ID)
-      const reply = res.data?.reply ?? "Sorry, I didn't understand that."
+      const res = await communicationsApi.sendChatMessage(trimmed, sessionId)
+      const reply = res.data?.reply ?? "Samahani, sikuelewa. Jaribu tena au wasiliana: info@yriftz.org"
       const botMsg: ChatMessage = { id: generateId(), role: 'bot', text: reply, timestamp: new Date() }
       setMessages((prev) => [...prev, botMsg])
     } catch {
       const errMsg: ChatMessage = {
         id: generateId(),
         role: 'bot',
-        text: 'Sorry, I\'m having trouble connecting. Please try again or contact us at info@yriftz.org.',
+        text: 'Samahani, YRIF Chat haiwezi kuunganika sasa hivi. Tafadhali jaribu tena au wasiliana nasi: info@yriftz.org',
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, errMsg])
@@ -64,7 +85,7 @@ export default function ChatWidget() {
 
   return (
     <>
-      {/* Floating toggle button */}
+      {/* Floating toggle */}
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label="Open YRIF Chat"
@@ -85,10 +106,7 @@ export default function ChatWidget() {
               <p className="text-sm font-bold">YRIF Chat</p>
               <p className="text-xs text-blue-100">Powered by Sarufi AI</p>
             </div>
-            <button
-              onClick={() => setOpen(false)}
-              className="ml-auto p-1 rounded-lg hover:bg-white/20"
-            >
+            <button onClick={() => setOpen(false)} className="ml-auto p-1 rounded-lg hover:bg-white/20">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -103,7 +121,7 @@ export default function ChatWidget() {
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
+                  className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
                     msg.role === 'user'
                       ? 'bg-[#093344] text-white rounded-br-md'
                       : 'bg-white text-gray-800 border border-gray-100 shadow-sm rounded-bl-md'
@@ -126,21 +144,19 @@ export default function ChatWidget() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Quick prompts */}
+          {/* Quick prompts — show on first message only */}
           {messages.length === 1 && (
             <div className="px-3 pb-2 flex flex-wrap gap-1.5">
               {[
-                'How do I register?',
-                'What is YRIF?',
-                'How to submit research?',
-                'Contact support',
+                'Jinsi ya kusajili?',
+                'YRIF ni nini?',
+                'Wasilisha utafiti',
+                'Pata mshauri',
+                'Mawasiliano',
               ].map((prompt) => (
                 <button
                   key={prompt}
-                  onClick={() => {
-                    setInput(prompt)
-                    setTimeout(send, 0)
-                  }}
+                  onClick={() => send(prompt)}
                   className="rounded-full border border-[#0D9488]/30 bg-teal-50 px-3 py-1 text-xs text-[#093344] hover:bg-teal-100 transition-colors"
                 >
                   {prompt}
@@ -156,11 +172,11 @@ export default function ChatWidget() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') send() }}
-                placeholder="Ask YRIF Chat…"
-                className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] transition-all duration-150"
+                placeholder="Niulize chochote…"
+                className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40 focus:border-[#0D9488] transition-all duration-150"
               />
               <button
-                onClick={send}
+                onClick={() => send()}
                 disabled={!input.trim() || loading}
                 className="rounded-xl bg-[#093344] hover:bg-[#0D9488] p-2.5 text-white transition-colors disabled:opacity-50"
               >

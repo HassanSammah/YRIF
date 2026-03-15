@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { useQuery } from 'react-query'
 import {
   BookOpen, Send, CalendarDays, Trophy, Users2, Library, Bell,
@@ -14,11 +15,21 @@ import { SkeletonStat, SkeletonCard } from '@/components/common/Skeleton'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function getGreeting() {
+function computeGreeting() {
   const h = new Date().getHours()
+  if (h < 4) return 'Good evening'
   if (h < 12) return 'Good morning'
   if (h < 17) return 'Good afternoon'
   return 'Good evening'
+}
+
+function useGreeting() {
+  const [greeting, setGreeting] = useState(computeGreeting)
+  useEffect(() => {
+    const id = setInterval(() => setGreeting(computeGreeting()), 60_000)
+    return () => clearInterval(id)
+  }, [])
+  return greeting
 }
 
 const STATUS_STYLE: Record<string, string> = {
@@ -79,6 +90,7 @@ function QuickAction({ to, icon: Icon, label, desc, colour }: {
 
 export default function Dashboard() {
   const { user, isAdmin } = useAuth()
+  const greeting = useGreeting()
 
   const { data: myResearch, isLoading: loadingResearch } = useQuery(
     'dash-research',
@@ -122,7 +134,7 @@ export default function Dashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#093344] font-display">
-            {getGreeting()}, {name}! 👋
+            {greeting}, {name}! 👋
           </h1>
           <p className="text-sm text-content-secondary mt-1">
             {format(new Date(), "EEEE, MMMM d, yyyy")} — Welcome to your YRIF portal.

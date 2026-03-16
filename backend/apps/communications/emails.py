@@ -4,7 +4,7 @@ Email notifications for the communications module — sent via Brevo Transaction
 from django.conf import settings
 
 from apps.core.brevo import (
-    send_email, _wrap, _cta, _info_card, _h2, _p, _small, _divider,
+    send_email, _wrap, _cta, _info_card, _h2, _p, _small,
 )
 
 CONTACT_EMAIL = getattr(settings, "CONTACT_EMAIL", "info@yriftz.org")

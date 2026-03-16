@@ -5,7 +5,7 @@ from django.conf import settings
 
 from apps.core.brevo import (
     send_email, _wrap, _cta, _otp_box, _info_card,
-    _h2, _p, _small, _alert_block, _feature_list, _divider,
+    _h2, _p, _small, _alert_block, _feature_list,
 )
 
 _FROM_NAME = "YRIF Mails"

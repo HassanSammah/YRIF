@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import MentorProfile, MentorshipRequest, MentorshipMatch, MentorFeedback, ResearchCollabRequest, ResearchCollaboration
+from .models import MentorshipRequest, MentorshipMatch, MentorFeedback, ResearchCollabRequest, ResearchCollaboration
 
 User = get_user_model()
 

@@ -80,6 +80,10 @@ class ConversationSerializer(serializers.ModelSerializer):
             return obj.messages.filter(is_read=False).exclude(sender=request.user).count()
         return 0
 
+    def create(self, validated_data):
+        validated_data.pop("participant_ids", None)
+        return super().create(validated_data)
+
 
 class MessageSerializer(serializers.ModelSerializer):
     sender_name = serializers.SerializerMethodField()

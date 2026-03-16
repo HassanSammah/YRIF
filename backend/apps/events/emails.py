@@ -2,7 +2,7 @@
 Email notifications for the events module — sent via Brevo Transactional API.
 """
 from apps.core.brevo import (
-    send_email, _wrap, _cta, _info_card, _h2, _p, _small, _divider,
+    send_email, _wrap, _cta, _info_card, _h2, _p,
 )
 
 

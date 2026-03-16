@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from apps.accounts.models import User
 from apps.core.permissions import IsAdmin
-from .models import FAQ, Notification, Conversation, Message
+from .models import FAQ, Notification, Conversation
 from .serializers import (
     ContactInquirySerializer, FAQSerializer, NotificationSerializer,
     ConversationSerializer, MessageSerializer,

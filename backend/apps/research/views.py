@@ -8,7 +8,7 @@ from rest_framework.exceptions import PermissionDenied
 
 from apps.core.permissions import IsAdmin, IsApproved
 from apps.core.pagination import StandardPagination
-from .models import Research, ResearchStatus, ResearchReview, ReviewAssignment, RAJoinRequest, RAJoinRequestStatus
+from .models import Research, ResearchStatus, ReviewAssignment, RAJoinRequest, RAJoinRequestStatus
 from .serializers import (
     ResearchSerializer,
     ResearchAdminSerializer,

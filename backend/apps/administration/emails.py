@@ -29,13 +29,13 @@ def _news_blast_html(user, news_post) -> str:
 
     return _wrap(
         # Gold accent banner
-        f'<table width="100%" cellpadding="0" cellspacing="0" border="0"'
-        f' style="background-color:#fffbeb;border-left:4px solid #df8d31;'
-        f'border-radius:6px;margin:0 0 24px;">'
-        f'<tr><td style="padding:10px 16px;">'
-        f'<span style="color:#92400e;font-size:12px;font-weight:600;'
-        f'text-transform:uppercase;letter-spacing:0.08em;">YRIF News &amp; Updates</span>'
-        f'</td></tr></table>'
+        '<table width="100%" cellpadding="0" cellspacing="0" border="0"'
+        ' style="background-color:#fffbeb;border-left:4px solid #df8d31;'
+        'border-radius:6px;margin:0 0 24px;">'
+        '<tr><td style="padding:10px 16px;">'
+        '<span style="color:#92400e;font-size:12px;font-weight:600;'
+        'text-transform:uppercase;letter-spacing:0.08em;">YRIF News &amp; Updates</span>'
+        '</td></tr></table>'
         + cover_block
         + _h2(news_post.title)
         + _p(f"Hi {user.first_name},")
@@ -76,13 +76,13 @@ def _announcement_blast_html(user, announcement) -> str:
     """Full HTML email for a published announcement."""
     return _wrap(
         # Navy header with teal left border accent
-        f'<table width="100%" cellpadding="0" cellspacing="0" border="0"'
-        f' style="background-color:#f0fdfa;border-left:4px solid #0D9488;'
-        f'border-radius:6px;margin:0 0 24px;">'
-        f'<tr><td style="padding:10px 16px;">'
-        f'<span style="color:#0D9488;font-size:12px;font-weight:600;'
-        f'text-transform:uppercase;letter-spacing:0.08em;">Platform Announcement</span>'
-        f'</td></tr></table>'
+        '<table width="100%" cellpadding="0" cellspacing="0" border="0"'
+        ' style="background-color:#f0fdfa;border-left:4px solid #0D9488;'
+        'border-radius:6px;margin:0 0 24px;">'
+        '<tr><td style="padding:10px 16px;">'
+        '<span style="color:#0D9488;font-size:12px;font-weight:600;'
+        'text-transform:uppercase;letter-spacing:0.08em;">Platform Announcement</span>'
+        '</td></tr></table>'
         + _h2(announcement.title)
         + _p(f"Hi {user.first_name},")
         + _p(announcement.content)

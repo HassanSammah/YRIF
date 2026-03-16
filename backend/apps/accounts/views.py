@@ -71,6 +71,7 @@ def _get_tokens(user):
 class RegisterView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -93,6 +94,7 @@ class RegisterView(generics.CreateAPIView):
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data, context={"request": request})
@@ -123,6 +125,7 @@ class LogoutView(APIView):
 
 class GoogleAuthView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         serializer = GoogleAuthSerializer(data=request.data)
@@ -141,8 +144,6 @@ class GoogleAuthView(APIView):
                     settings.GOOGLE_CLIENT_ID,
                 )
             else:
-                import requests as http_requests
-
                 resp = http_requests.get(
                     "https://www.googleapis.com/oauth2/v3/userinfo",
                     headers={"Authorization": f"Bearer {access_token}"},
@@ -274,6 +275,7 @@ class PhoneOTPVerifyView(APIView):
 class SendEmailOTPView(APIView):
     """POST /auth/verify-email/send/ — (re)send a 6-digit email verification OTP."""
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         email = request.data.get("email", "").strip().lower()
@@ -298,6 +300,7 @@ class SendEmailOTPView(APIView):
 class VerifyEmailView(APIView):
     """POST /auth/verify-email/ — verify the 6-digit code and move user to ACTIVE."""
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         serializer = EmailVerifySerializer(data=request.data)
@@ -336,6 +339,7 @@ class VerifyEmailView(APIView):
 class BriqAuthRequestView(APIView):
     """POST /auth/briq/request/ — send OTP to phone for login or new account signup."""
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         serializer = BriqAuthRequestSerializer(data=request.data)
@@ -373,6 +377,7 @@ class BriqAuthRequestView(APIView):
 class BriqAuthVerifyView(APIView):
     """POST /auth/briq/verify/ — verify OTP; log in existing user or prompt new user to register."""
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         serializer = BriqAuthVerifySerializer(data=request.data)
@@ -434,6 +439,7 @@ class BriqAuthVerifyView(APIView):
 class BriqAuthCompleteView(APIView):
     """POST /auth/briq/complete/ — finish signup for new users after phone verification."""
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         serializer = BriqAuthCompleteSerializer(data=request.data)

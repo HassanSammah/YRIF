@@ -1,10 +1,10 @@
 import csv
 from datetime import datetime, date
 
-from django.db.models import Count, Sum, Q
+from django.db.models import Count, Sum
 from django.http import HttpResponse
 from django.utils import timezone
-from rest_framework import generics, filters, status
+from rest_framework import generics, filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -418,7 +418,6 @@ class AdminContactListView(generics.ListAPIView):
 
     def get_queryset(self):
         from apps.communications.models import ContactInquiry
-        from apps.communications.serializers import ContactInquirySerializer
         return ContactInquiry.objects.all().order_by("-created_at")
 
     def get_serializer_class(self):

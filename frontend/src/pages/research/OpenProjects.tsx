@@ -125,11 +125,6 @@ export default function OpenProjects() {
   usePageTitle('Open Projects')
   const { user, isApproved } = useAuth()
 
-  // Only research assistants can access this page
-  if (user && user.role !== 'research_assistant') {
-    return <Navigate to="/research" replace />
-  }
-
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState<ResearchCategory | ''>('')
@@ -147,6 +142,11 @@ export default function OpenProjects() {
     () => researchApi.myJoinRequests().then(r => r.data),
     { enabled: isApproved },
   )
+
+  // Only research assistants can access this page
+  if (user && user.role !== 'research_assistant') {
+    return <Navigate to="/research" replace />
+  }
 
   // Map researchId → status for quick lookup
   const myRequests: Record<string, import('@/types/research').RAJoinRequestStatus> = {}

@@ -8,7 +8,7 @@ from rest_framework.exceptions import ValidationError
 
 from apps.core.permissions import IsAdmin, IsApproved
 from apps.core.pagination import StandardPagination
-from .models import Event, EventRegistration, JudgeScore, Winner, Certificate
+from .models import Event, EventRegistration, Winner, Certificate
 from .serializers import (
     EventSerializer,
     EventRegistrationSerializer,
@@ -69,6 +69,12 @@ class EventRegisterView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         event = generics.get_object_or_404(Event, pk=self.kwargs["pk"], is_published=True)
+
+        # Duplicate registration check
+        if EventRegistration.objects.filter(
+            event=event, participant=self.request.user
+        ).exclude(status=EventRegistration.Status.CANCELLED).exists():
+            raise ValidationError("You are already registered for this event.")
 
         # Capacity check
         if event.max_participants:

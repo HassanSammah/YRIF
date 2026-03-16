@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate
 from .models import (
     User, UserStatus, UserRole,
     Profile, MentorProfile, PartnerProfile, ResearchAssistantProfile,
-    AuthProviderAccount, DeletionRequest,
+    DeletionRequest,
 )
 
 

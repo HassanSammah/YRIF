@@ -4,8 +4,7 @@ Email notifications for the research module — sent via Brevo Transactional API
 from django.conf import settings
 
 from apps.core.brevo import (
-    send_email, _wrap, _cta, _info_card, _h2, _p, _small,
-    _alert_block, _status_badge, _divider,
+    send_email, _wrap, _cta, _info_card, _h2, _p, _alert_block, _status_badge,
 )
 
 

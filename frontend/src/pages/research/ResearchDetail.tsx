@@ -68,29 +68,9 @@ export default function ResearchDetail() {
     { onSuccess: () => qc.invalidateQueries(['research', id]) },
   )
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-      </div>
-    )
-  }
-
-  if (error || !research) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-20 text-center text-gray-400">
-        Research not found.
-      </div>
-    )
-  }
-
-  const isAuthor = user?.id === research.author
-  const isAssignedReviewer = research.assignments?.some((a) => a.reviewer === user?.id)
-  const canComment = isAssignedReviewer || isAdmin
-
-  // Collaboration settings state
-  const [collabOpen, setCollabOpen] = useState(research.open_for_collaboration ?? false)
-  const [collabDesc, setCollabDesc] = useState(research.collaboration_description ?? '')
+  // Collaboration settings state — initialized after data loads via effect
+  const [collabOpen, setCollabOpen] = useState(false)
+  const [collabDesc, setCollabDesc] = useState('')
   const [collabSaved, setCollabSaved] = useState(false)
 
   const collabSettingsMutation = useMutation(
@@ -112,6 +92,33 @@ export default function ResearchDetail() {
       researchApi.decideJoinRequest(requestId, status),
     { onSuccess: () => qc.invalidateQueries(['research', id]) },
   )
+
+  useEffect(() => {
+    if (research) {
+      setCollabOpen(research.open_for_collaboration ?? false)
+      setCollabDesc(research.collaboration_description ?? '')
+    }
+  }, [research?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-20">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+      </div>
+    )
+  }
+
+  if (error || !research) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-20 text-center text-gray-400">
+        Research not found.
+      </div>
+    )
+  }
+
+  const isAuthor = user?.id === research.author
+  const isAssignedReviewer = research.assignments?.some((a) => a.reviewer === user?.id)
+  const canComment = isAssignedReviewer || isAdmin
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">

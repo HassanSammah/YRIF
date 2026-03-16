@@ -176,13 +176,8 @@ SARUFI_API_KEY = config("SARUFI_API_KEY", default="")
 SARUFI_BOT_ID = config("SARUFI_BOT_ID", default="")
 NGROK_BACKEND_URL = config("NGROK_BACKEND_URL", default="")
 
-# Email
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = config("EMAIL_HOST", default="smtp.gmail.com")
-EMAIL_PORT = config("EMAIL_PORT", default=587, cast=int)
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
+# Email — Brevo Transactional API
+BREVO_API_KEY = config("BREVO_API_KEY", default="")
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@yriftz.org")
 CONTACT_EMAIL = config("CONTACT_EMAIL", default="info@yriftz.org")
 ADMIN_EMAIL_LIST = [CONTACT_EMAIL]

@@ -20,6 +20,11 @@ urlpatterns = [
     # ── Admin: news/blog CRUD ─────────────────────────────────────────────────
     path("news/", views.NewsListView.as_view(), name="news-list"),
     path("news/<slug:slug>/", views.NewsDetailView.as_view(), name="news-detail"),
+    path("news/<uuid:pk>/send-blast/", views.NewsBlastView.as_view(), name="news-blast"),
+
+    # ── Admin: announcement blast ─────────────────────────────────────────────
+    path("announcements/<uuid:pk>/send-blast/",
+         views.AnnouncementBlastView.as_view(), name="announcement-blast"),
 
     # ── Admin: contact inquiries ──────────────────────────────────────────────
     path("contacts/", views.AdminContactListView.as_view(), name="admin-contacts"),

@@ -18,3 +18,4 @@ supabase>=2.3
 google-auth>=2.29
 sarufi>=0.1.9
 argon2-cffi>=23.1  # NFR 6.2 — Argon2 password hashing
+brevo-python>=0.0.5  # Transactional email via Brevo API

@@ -26,6 +26,7 @@ from .serializers import (
     ReportExportSerializer,
 )
 from .utils import log_action
+from . import emails as administration_emails
 
 
 # ── Dashboard Stats ───────────────────────────────────────────────────────────
@@ -377,6 +378,33 @@ class NewsDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance):
         log_action(self.request.user, "news.deleted", "news", instance.id, instance.title)
         instance.delete()
+
+
+# ── Admin: Email Blasts ───────────────────────────────────────────────────────
+
+class NewsBlastView(APIView):
+    """Send a published NewsPost as an email blast to all active users."""
+    permission_classes = [IsAdmin]
+
+    def post(self, request, pk):
+        from django.shortcuts import get_object_or_404
+        news_post = get_object_or_404(NewsPost, pk=pk)
+        sent = administration_emails.send_news_blast(news_post)
+        log_action(request.user, "news.blasted", "news_post", news_post.id, news_post.title)
+        return Response({"sent": sent, "detail": f"News blast sent to {sent} users."})
+
+
+class AnnouncementBlastView(APIView):
+    """Send a published Announcement as an email blast to all active users."""
+    permission_classes = [IsAdmin]
+
+    def post(self, request, pk):
+        from django.shortcuts import get_object_or_404
+        announcement = get_object_or_404(Announcement, pk=pk)
+        sent = administration_emails.send_announcement_blast(announcement)
+        log_action(request.user, "announcement.blasted", "announcement",
+                   announcement.id, announcement.title)
+        return Response({"sent": sent, "detail": f"Announcement blast sent to {sent} users."})
 
 
 # ── Admin: Contact Inquiries ──────────────────────────────────────────────────

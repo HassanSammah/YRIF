@@ -1,13 +1,12 @@
 """
-Email notification triggers for the communications module.
-These complement accounts/emails.py by covering events, research,
-mentorship, and contact form routing.
+Email notifications for the communications module — sent via Brevo Transactional API.
 """
-from django.core.mail import send_mail
 from django.conf import settings
 
+from apps.core.brevo import (
+    send_email, _wrap, _cta, _info_card, _h2, _p, _small, _divider,
+)
 
-_FROM = settings.DEFAULT_FROM_EMAIL
 CONTACT_EMAIL = getattr(settings, "CONTACT_EMAIL", "info@yriftz.org")
 
 
@@ -15,57 +14,90 @@ CONTACT_EMAIL = getattr(settings, "CONTACT_EMAIL", "info@yriftz.org")
 
 def notify_contact_received(name: str, email: str, subject: str, message: str) -> None:
     """Forward a contact form submission to the YRIF info mailbox."""
-    send_mail(
+    content = (
+        _h2("New Contact Form Submission")
+        + _p("A new message has been received via the YRIF contact form.")
+        + _info_card(
+            ("From", f"{name} &lt;{email}&gt;"),
+            ("Subject", subject),
+        )
+        + f"""
+<table width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="background-color:#f8fafc;border-radius:10px;margin:16px 0 24px;">
+  <tr>
+    <td style="padding:16px 24px;">
+      <p style="font-size:13px;color:#6B7280;text-transform:uppercase;
+                letter-spacing:0.08em;margin:0 0 10px;">Message</p>
+      <p style="font-size:14px;color:#374151;line-height:1.7;margin:0;
+                white-space:pre-wrap;">{message}</p>
+    </td>
+  </tr>
+</table>"""
+        + _p(
+            f"Reply directly to: "
+            f"<a href='mailto:{email}' style='color:#0D9488;'>{email}</a>",
+            color="#6B7280",
+            size="14px",
+        )
+    )
+    send_email(
+        to_email=CONTACT_EMAIL,
+        to_name="YRIF Team",
         subject=f"[YRIF Contact] {subject}",
-        message=(
-            f"New contact form submission received on the YRIF platform.\n\n"
-            f"From: {name} <{email}>\n"
-            f"Subject: {subject}\n\n"
-            f"Message:\n{message}\n\n"
-            f"---\n"
-            f"Please reply directly to: {email}\n"
-            f"Or log in to the admin panel to manage this inquiry."
-        ),
-        from_email=_FROM,
-        recipient_list=[CONTACT_EMAIL],
-        fail_silently=False,
+        html_content=_wrap(content),
+        reply_to_email=email,
     )
 
 
 def notify_contact_auto_reply(name: str, email: str, subject: str) -> None:
     """Send an auto-reply to the person who submitted the contact form."""
-    send_mail(
+    content = (
+        _h2("We Received Your Message!", color="#0D9488")
+        + _p(
+            f"Dear {name}, thank you for reaching out to the Youth Research &amp; "
+            f"Innovation Foundation."
+        )
+        + _info_card(("Your subject", subject))
+        + _p(
+            "Our team will review your message and get back to you within "
+            "<strong>2–3 business days</strong>. If your matter is urgent, you can "
+            "also reach us directly at "
+            f"<a href='mailto:{CONTACT_EMAIL}' style='color:#0D9488;'>{CONTACT_EMAIL}</a>."
+        )
+        + _small(
+            "Please do not reply to this email — it is sent from an unmonitored address. "
+            f"Use <a href='mailto:{CONTACT_EMAIL}' style='color:#0D9488;'>{CONTACT_EMAIL}</a> "
+            "for direct communication."
+        )
+    )
+    send_email(
+        to_email=email,
+        to_name=name,
         subject="[YRIF] We received your message",
-        message=(
-            f"Dear {name},\n\n"
-            f"Thank you for contacting the Youth Research & Innovation Foundation.\n\n"
-            f"We have received your message regarding \"{subject}\" and our team "
-            f"will get back to you within 2–3 business days.\n\n"
-            f"If your matter is urgent, you can also reach us at {CONTACT_EMAIL}.\n\n"
-            f"Best regards,\n"
-            f"The YRIF Team\n"
-            f"https://yriftz.org"
-        ),
-        from_email=_FROM,
-        recipient_list=[email],
-        fail_silently=False,
+        html_content=_wrap(content),
     )
 
 
 # ── Research notifications ────────────────────────────────────────────────────
 
 def notify_research_submitted(user, title: str) -> None:
-    send_mail(
+    content = (
+        _h2("Research Submission Received", color="#0D9488")
+        + _p(f"Hi {user.first_name}, your research has been received and is now under review.")
+        + _info_card(("Title", title))
+        + _p(
+            "You will be notified as soon as a decision is made. "
+            "You can track the status of your submission in your dashboard.",
+            color="#6B7280",
+            size="14px",
+        )
+        + _cta("https://app.yriftz.org/research/my", "Track Submission")
+    )
+    send_email(
+        to_email=user.email,
+        to_name=user.get_full_name(),
         subject="[YRIF] Research submission received",
-        message=(
-            f"Hi {user.first_name},\n\n"
-            f"Your research submission \"{title}\" has been received and is now under review.\n\n"
-            f"You will be notified once a decision is made. You can track the status in your dashboard.\n\n"
-            f"The YRIF Team"
-        ),
-        from_email=_FROM,
-        recipient_list=[user.email],
-        fail_silently=False,
+        html_content=_wrap(content),
     )
 
 
@@ -73,81 +105,80 @@ def notify_research_status_changed(user, title: str, new_status: str) -> None:
     status_labels = {
         "under_review": "Under Review",
         "approved": "Approved",
-        "rejected": "Rejected — Not Accepted",
+        "rejected": "Not Accepted",
         "published": "Published",
     }
     label = status_labels.get(new_status, new_status.replace("_", " ").title())
-    send_mail(
+    content = (
+        _h2(f"Research Status Update: {label}")
+        + _p(f"Hi {user.first_name}, the status of your research submission has been updated.")
+        + _info_card(("Title", title), ("New Status", label))
+        + _cta("https://app.yriftz.org/research/my", "View Details")
+    )
+    send_email(
+        to_email=user.email,
+        to_name=user.get_full_name(),
         subject=f"[YRIF] Research status update: {label}",
-        message=(
-            f"Hi {user.first_name},\n\n"
-            f"The status of your research submission \"{title}\" has been updated to: {label}.\n\n"
-            f"Log in to your dashboard to view details: https://app.yriftz.org/research/my\n\n"
-            f"The YRIF Team"
-        ),
-        from_email=_FROM,
-        recipient_list=[user.email],
-        fail_silently=False,
+        html_content=_wrap(content),
     )
 
 
 # ── Event notifications ───────────────────────────────────────────────────────
 
 def notify_event_registration_confirmed(user, event_title: str, event_date: str) -> None:
-    send_mail(
+    content = (
+        _h2("Registration Confirmed!", color="#0D9488")
+        + _p(f"Hi {user.first_name}, your event registration has been confirmed.")
+        + _info_card(("Event", event_title), ("Date", event_date))
+        + _cta("https://app.yriftz.org/events", "View Event")
+    )
+    send_email(
+        to_email=user.email,
+        to_name=user.get_full_name(),
         subject=f"[YRIF] Registration confirmed: {event_title}",
-        message=(
-            f"Hi {user.first_name},\n\n"
-            f"Your registration for \"{event_title}\" has been confirmed!\n\n"
-            f"Date: {event_date}\n\n"
-            f"View event details: https://app.yriftz.org/events\n\n"
-            f"We look forward to seeing you there!\n\n"
-            f"The YRIF Team"
-        ),
-        from_email=_FROM,
-        recipient_list=[user.email],
-        fail_silently=False,
+        html_content=_wrap(content),
     )
 
 
 def notify_competition_results(user, competition_title: str, result: str) -> None:
-    send_mail(
+    content = (
+        _h2("Competition Results Published", color="#0D9488")
+        + _p(f"Hi {user.first_name}, the results for <strong>{competition_title}</strong> are in.")
+        + _info_card(("Your result", result))
+        + _cta("https://app.yriftz.org/competitions", "View Full Results")
+    )
+    send_email(
+        to_email=user.email,
+        to_name=user.get_full_name(),
         subject=f"[YRIF] Competition results: {competition_title}",
-        message=(
-            f"Hi {user.first_name},\n\n"
-            f"The results for \"{competition_title}\" have been published.\n\n"
-            f"Your result: {result}\n\n"
-            f"View full results: https://app.yriftz.org/competitions\n\n"
-            f"Thank you for participating!\n\n"
-            f"The YRIF Team"
-        ),
-        from_email=_FROM,
-        recipient_list=[user.email],
-        fail_silently=False,
+        html_content=_wrap(content),
     )
 
 
 # ── Mentorship notifications ──────────────────────────────────────────────────
 
 def notify_mentorship_request_received(mentor, mentee_name: str, topic: str) -> None:
-    send_mail(
-        subject="[YRIF] New mentorship request",
-        message=(
-            f"Hi {mentor.first_name},\n\n"
-            f"{mentee_name} has submitted a mentorship request with topic: \"{topic}\".\n\n"
-            f"Log in to review and respond: https://app.yriftz.org/mentorship\n\n"
-            f"The YRIF Team"
-        ),
-        from_email=_FROM,
-        recipient_list=[mentor.email],
-        fail_silently=False,
+    content = (
+        _h2("New Mentorship Request")
+        + _p(
+            f"Hi {mentor.first_name}, you have received a new mentorship request "
+            f"on the YRIF platform."
+        )
+        + _info_card(("From", mentee_name), ("Topic", topic))
+        + _cta("https://app.yriftz.org/mentorship", "Review Request")
+    )
+    send_email(
+        to_email=mentor.email,
+        to_name=mentor.get_full_name(),
+        subject="[YRIF] New mentorship request received",
+        html_content=_wrap(content),
     )
 
 
 # ── In-app notification helper ────────────────────────────────────────────────
 
 def create_in_app_notification(recipient, subject: str, body: str) -> None:
-    """Create an in-app Notification record."""
+    """Create an in-app Notification record (not an email)."""
     from apps.communications.models import Notification
     Notification.objects.create(
         recipient=recipient,

@@ -4,13 +4,14 @@ import { useQuery } from 'react-query'
 import {
   BookOpen, Send, CalendarDays, Trophy, Users2, Library, Bell,
   ArrowRight, Clock, CheckCircle2, FileText, Award, TrendingUp,
-  Handshake, MessageSquare, Megaphone, Sparkles,
+  Handshake, MessageSquare, Megaphone, Sparkles, ShieldCheck,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { useAuth } from '@/hooks/useAuth'
 import { adminApi } from '@/api/admin'
 import { researchApi } from '@/api/research'
 import { eventsApi } from '@/api/events'
+import { mentorshipApi } from '@/api/mentorship'
 import { SkeletonStat, SkeletonCard } from '@/components/common/Skeleton'
 import { usePageTitle } from '@/hooks/usePageTitle'
 
@@ -128,9 +129,16 @@ function EmptyState({ icon: Icon, message, action }: {
 
 export default function Dashboard() {
   usePageTitle('Dashboard')
-  const { user, isAdmin } = useAuth()
+  const { user, isAdmin, isContentManager } = useAuth()
   const greeting = useGreeting()
 
+  // ── Role flags ───────────────────────────────────────────────────────────
+  const isMentor  = user?.role === 'mentor'
+  const isRA      = user?.role === 'research_assistant'
+  const isPartner = user?.role === 'industry_partner'
+  const isJudge   = user?.role === 'judge'
+
+  // ── Data fetches ─────────────────────────────────────────────────────────
   const { data: myResearch, isLoading: loadingResearch } = useQuery(
     'dash-research',
     () => researchApi.myResearch().then((r) => r.data),
@@ -157,6 +165,25 @@ export default function Dashboard() {
     { retry: 1, staleTime: 120_000 },
   )
 
+  // Admin-only: platform stats
+  const { data: dashStats, isLoading: loadingDashStats } = useQuery(
+    'dash-admin-stats',
+    () => adminApi.getDashboardStats().then((r) => r.data),
+    { enabled: isAdmin, retry: 1, staleTime: 60_000 },
+  )
+
+  // Mentor-only: pending requests + active matches
+  const { data: mentorReqs, isLoading: loadingMentorReqs } = useQuery(
+    'dash-mentor-reqs',
+    () => mentorshipApi.listRequests().then((r) => r.data),
+    { enabled: isMentor, retry: 1, staleTime: 30_000 },
+  )
+  const { data: activeMatches } = useQuery(
+    'dash-active-matches',
+    () => mentorshipApi.listMatches({ status: 'active' }).then((r) => r.data),
+    { enabled: isMentor, retry: 1, staleTime: 60_000 },
+  )
+
   const researchList = myResearch?.results ?? []
   const regsList = myRegs?.results ?? []
   const certsList = Array.isArray(myCertsData) ? myCertsData : []
@@ -164,8 +191,27 @@ export default function Dashboard() {
   const eventsList = events?.results ?? []
   const publishedCount = researchList.filter((r) => r.status === 'published').length
   const upcomingRegs = regsList.filter((r) => new Date(r.event_start_date) >= new Date()).length
+  const pendingMentorReqs = mentorReqs?.results?.filter((r) => r.status === 'pending') ?? []
 
   const name = user ? (user.first_name || user.email.split('@')[0]) : ''
+
+  // ── Quick actions list ────────────────────────────────────────────────────
+  const allQuickActions = [
+    { id: 'submit',  show: !isPartner && !isJudge,                          to: '/research/submit',     icon: Send,          label: 'Submit Research',     desc: 'Upload a paper or proposal',     colour: 'bg-gradient-to-br from-purple-500 to-purple-600' },
+    { id: 'events',  show: true,                                             to: '/events',              icon: CalendarDays,  label: 'Browse Events',       desc: 'Register for upcoming events',   colour: 'bg-gradient-to-br from-orange-400 to-orange-500' },
+    { id: 'comp',    show: true,                                             to: '/competitions',        icon: Trophy,        label: 'Competitions',        desc: 'Enter research competitions',    colour: 'bg-gradient-to-br from-[#df8d31] to-amber-500' },
+    { id: 'mentor',  show: !isMentor && !isPartner && !isAdmin && !isJudge, to: '/mentors',             icon: Users2,        label: 'Find a Mentor',       desc: 'Connect with expert mentors',    colour: 'bg-gradient-to-br from-[#0D9488] to-teal-600' },
+    { id: 'ra',      show: !isRA && !isPartner && !isAdmin && !isJudge,     to: '/research-assistants', icon: BookOpen,      label: 'Research Assistants', desc: 'Partner on your study',          colour: 'bg-gradient-to-br from-blue-500 to-blue-600' },
+    { id: 'hub',     show: true,                                             to: '/resources',           icon: Library,       label: 'Learning Hub',        desc: 'Guides, templates & webinars',   colour: 'bg-gradient-to-br from-sky-500 to-sky-600' },
+    { id: 'myment',  show: !isAdmin,                                         to: '/mentorship',          icon: Handshake,     label: 'My Mentorship',       desc: 'View mentorship matches',        colour: 'bg-gradient-to-br from-emerald-500 to-green-600' },
+    { id: 'msgs',    show: true,                                             to: '/messages',            icon: MessageSquare, label: 'Messages',            desc: 'Chat with your network',         colour: 'bg-gradient-to-br from-[#093344] to-[#0a3d53]' },
+    { id: 'notif',   show: true,                                             to: '/notifications',       icon: Bell,          label: 'Notifications',       desc: 'Stay up to date',                colour: 'bg-gradient-to-br from-pink-500 to-rose-500' },
+    // Role-specific additions
+    { id: 'rev-res', show: isAdmin,                                          to: '/admin/research',      icon: FileText,      label: 'Review Research',     desc: 'Manage submissions',             colour: 'bg-gradient-to-br from-purple-500 to-purple-600' },
+    { id: 'mgmt',    show: isAdmin,                                          to: '/admin/users',         icon: ShieldCheck,   label: 'Manage Users',        desc: 'Approvals & roles',              colour: 'bg-gradient-to-br from-[#093344] to-slate-700' },
+    { id: 'cms',     show: isContentManager,                                 to: '/admin/content',       icon: Megaphone,     label: 'Manage Content',      desc: 'News & announcements',           colour: 'bg-gradient-to-br from-[#df8d31] to-amber-500' },
+    { id: 'judge-c', show: isJudge,                                          to: '/competitions',        icon: Trophy,        label: 'Judge Competitions',  desc: 'Score & evaluate entries',       colour: 'bg-gradient-to-br from-[#df8d31] to-amber-500' },
+  ] as const
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-7 fade-in-up">
@@ -190,50 +236,177 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Stats */}
+      {/* Stats — role-specific */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {loadingResearch ? (
-          <><SkeletonStat /><SkeletonStat /></>
-        ) : (
+        {isAdmin ? (
+          // ── Admin: platform-wide stats ──────────────────────────────────
+          loadingDashStats ? (
+            <><SkeletonStat /><SkeletonStat /><SkeletonStat /><SkeletonStat /></>
+          ) : (
+            <>
+              <StatCard
+                label="Pending Approvals"
+                value={dashStats?.users?.by_status?.pending_approval ?? '–'}
+                sub="Awaiting review"
+                icon={ShieldCheck}
+                gradient="bg-gradient-to-br from-amber-400 to-orange-500"
+                href="/admin/users?status=pending_approval"
+              />
+              <StatCard
+                label="Total Members"
+                value={dashStats?.users?.total ?? '–'}
+                sub={`${dashStats?.users?.new_last_7d ?? 0} new this week`}
+                icon={Users2}
+                gradient="bg-gradient-to-br from-[#0D9488] to-teal-600"
+                href="/admin/users"
+              />
+              <StatCard
+                label="Pending Research"
+                value={dashStats?.research?.by_status?.submitted ?? '–'}
+                sub="Awaiting review"
+                icon={FileText}
+                gradient="bg-gradient-to-br from-purple-500 to-purple-600"
+                href="/admin/research"
+              />
+              <StatCard
+                label="Upcoming Events"
+                value={dashStats?.events?.upcoming ?? '–'}
+                sub={`${dashStats?.events?.total ?? 0} total`}
+                icon={CalendarDays}
+                gradient="bg-gradient-to-br from-blue-500 to-blue-600"
+                href="/admin/events"
+              />
+            </>
+          )
+        ) : isMentor ? (
+          // ── Mentor: mentee + request stats ──────────────────────────────
           <>
             <StatCard
-              label="My Research"
-              value={researchList.length}
-              sub={`${publishedCount} published`}
-              icon={BookOpen}
-              gradient="bg-gradient-to-br from-purple-500 to-purple-600"
-              href="/research/my"
+              label="Active Mentees"
+              value={activeMatches?.count ?? 0}
+              sub="Current matches"
+              icon={Users2}
+              gradient="bg-gradient-to-br from-[#0D9488] to-teal-600"
+              href="/mentorship"
             />
             <StatCard
-              label="Published"
-              value={publishedCount}
-              sub="In repository"
-              icon={CheckCircle2}
-              gradient="bg-gradient-to-br from-emerald-500 to-teal-600"
-              href="/research"
+              label="Pending Requests"
+              value={pendingMentorReqs.length}
+              sub="Awaiting response"
+              icon={Handshake}
+              gradient="bg-gradient-to-br from-amber-400 to-orange-500"
+              href="/mentorship"
             />
+            {loadingRegs ? (
+              <><SkeletonStat /><SkeletonStat /></>
+            ) : (
+              <>
+                <StatCard
+                  label="Events Joined"
+                  value={regsList.length}
+                  sub={`${upcomingRegs} upcoming`}
+                  icon={CalendarDays}
+                  gradient="bg-gradient-to-br from-orange-400 to-orange-500"
+                  href="/events"
+                />
+                <StatCard
+                  label="Certificates"
+                  value={certsList.length}
+                  sub="Earned"
+                  icon={Award}
+                  gradient="bg-gradient-to-br from-[#df8d31] to-amber-500"
+                  href="/certificates"
+                />
+              </>
+            )}
           </>
-        )}
-        {loadingRegs ? (
-          <><SkeletonStat /><SkeletonStat /></>
+        ) : isPartner ? (
+          // ── Industry Partner: events + certs (no research stats) ─────────
+          loadingRegs ? (
+            <><SkeletonStat /><SkeletonStat /><SkeletonStat /><SkeletonStat /></>
+          ) : (
+            <>
+              <StatCard
+                label="Events Joined"
+                value={regsList.length}
+                sub={`${upcomingRegs} upcoming`}
+                icon={CalendarDays}
+                gradient="bg-gradient-to-br from-orange-400 to-orange-500"
+                href="/events"
+              />
+              <StatCard
+                label="Certificates"
+                value={certsList.length}
+                sub="Earned"
+                icon={Award}
+                gradient="bg-gradient-to-br from-[#df8d31] to-amber-500"
+                href="/certificates"
+              />
+              <StatCard
+                label="Partner Network"
+                value="—"
+                sub="View mentors & partners"
+                icon={Handshake}
+                gradient="bg-gradient-to-br from-[#0D9488] to-teal-600"
+                href="/mentors"
+              />
+              <StatCard
+                label="Research Repo"
+                value="—"
+                sub="Browse publications"
+                icon={BookOpen}
+                gradient="bg-gradient-to-br from-blue-500 to-blue-600"
+                href="/research"
+              />
+            </>
+          )
         ) : (
+          // ── Default: youth, researcher, RA, content_manager, judge ────────
           <>
-            <StatCard
-              label="Events Joined"
-              value={regsList.length}
-              sub={`${upcomingRegs} upcoming`}
-              icon={CalendarDays}
-              gradient="bg-gradient-to-br from-orange-400 to-orange-500"
-              href="/events"
-            />
-            <StatCard
-              label="Certificates"
-              value={certsList.length}
-              sub="Earned"
-              icon={Award}
-              gradient="bg-gradient-to-br from-[#df8d31] to-amber-500"
-              href="/certificates"
-            />
+            {loadingResearch ? (
+              <><SkeletonStat /><SkeletonStat /></>
+            ) : (
+              <>
+                <StatCard
+                  label="My Research"
+                  value={researchList.length}
+                  sub={`${publishedCount} published`}
+                  icon={BookOpen}
+                  gradient="bg-gradient-to-br from-purple-500 to-purple-600"
+                  href="/research/my"
+                />
+                <StatCard
+                  label="Published"
+                  value={publishedCount}
+                  sub="In repository"
+                  icon={CheckCircle2}
+                  gradient="bg-gradient-to-br from-emerald-500 to-teal-600"
+                  href="/research"
+                />
+              </>
+            )}
+            {loadingRegs ? (
+              <><SkeletonStat /><SkeletonStat /></>
+            ) : (
+              <>
+                <StatCard
+                  label="Events Joined"
+                  value={regsList.length}
+                  sub={`${upcomingRegs} upcoming`}
+                  icon={CalendarDays}
+                  gradient="bg-gradient-to-br from-orange-400 to-orange-500"
+                  href="/events"
+                />
+                <StatCard
+                  label="Certificates"
+                  value={certsList.length}
+                  sub="Earned"
+                  icon={Award}
+                  gradient="bg-gradient-to-br from-[#df8d31] to-amber-500"
+                  href="/certificates"
+                />
+              </>
+            )}
           </>
         )}
       </div>
@@ -242,6 +415,66 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Left column */}
         <div className="lg:col-span-2 space-y-5">
+
+          {/* Admin: Pending Approvals callout */}
+          {isAdmin && (
+            <section className="bg-amber-50 rounded-2xl border border-amber-100 shadow-sm overflow-hidden">
+              <SectionHeader
+                icon={ShieldCheck}
+                title="Pending Approvals"
+                iconColor="text-amber-600"
+                action={
+                  <Link to="/admin/users?status=pending_approval" className="text-xs text-amber-700 hover:text-amber-900 flex items-center gap-1 font-medium transition-colors">
+                    Review all <ArrowRight className="w-3 h-3" />
+                  </Link>
+                }
+              />
+              <div className="px-5 py-4">
+                {loadingDashStats ? (
+                  <SkeletonCard rows={1} />
+                ) : (
+                  <p className="text-sm text-gray-600">
+                    <span className="text-2xl font-bold text-amber-600 mr-1.5">
+                      {dashStats?.users?.by_status?.pending_approval ?? 0}
+                    </span>
+                    {(dashStats?.users?.by_status?.pending_approval ?? 0) === 1 ? 'user' : 'users'} awaiting approval
+                  </p>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Mentor: Pending mentorship requests */}
+          {isMentor && (
+            <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <SectionHeader
+                icon={Handshake}
+                title="Mentorship Requests"
+                iconColor="text-[#0D9488]"
+                action={
+                  <Link to="/mentorship" className="text-xs text-[#0D9488] hover:text-[#093344] flex items-center gap-1 font-medium transition-colors">
+                    View all <ArrowRight className="w-3 h-3" />
+                  </Link>
+                }
+              />
+              <div className="divide-y divide-gray-50">
+                {loadingMentorReqs ? (
+                  <div className="p-5"><SkeletonCard rows={2} /></div>
+                ) : pendingMentorReqs.length === 0 ? (
+                  <EmptyState icon={Handshake} message="No pending mentorship requests." />
+                ) : (
+                  pendingMentorReqs.slice(0, 3).map((req) => (
+                    <div key={req.id} className="px-5 py-3.5 hover:bg-gray-50/60 transition-colors">
+                      <p className="text-sm font-medium text-[#093344]">{req.topic}</p>
+                      {req.message && (
+                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-1 leading-relaxed">{req.message}</p>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+          )}
 
           {/* Announcements */}
           <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -325,8 +558,8 @@ export default function Dashboard() {
             </div>
           </section>
 
-          {/* My research (if any) */}
-          {!loadingResearch && researchList.length > 0 && (
+          {/* My research (if any) — hidden for partners and judges */}
+          {!loadingResearch && researchList.length > 0 && !isPartner && !isJudge && (
             <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <SectionHeader
                 icon={BookOpen}
@@ -368,15 +601,11 @@ export default function Dashboard() {
             <Sparkles className="w-3.5 h-3.5 text-[#df8d31]" />
             <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400">Quick Actions</h2>
           </div>
-          <QuickAction to="/research/submit" icon={Send} label="Submit Research" desc="Upload a paper or proposal" colour="bg-gradient-to-br from-purple-500 to-purple-600" />
-          <QuickAction to="/events" icon={CalendarDays} label="Browse Events" desc="Register for upcoming events" colour="bg-gradient-to-br from-orange-400 to-orange-500" />
-          <QuickAction to="/competitions" icon={Trophy} label="Competitions" desc="Enter research competitions" colour="bg-gradient-to-br from-[#df8d31] to-amber-500" />
-          <QuickAction to="/mentors" icon={Users2} label="Find a Mentor" desc="Connect with expert mentors" colour="bg-gradient-to-br from-[#0D9488] to-teal-600" />
-          <QuickAction to="/research-assistants" icon={BookOpen} label="Research Assistants" desc="Partner on your study" colour="bg-gradient-to-br from-blue-500 to-blue-600" />
-          <QuickAction to="/resources" icon={Library} label="Learning Hub" desc="Guides, templates & webinars" colour="bg-gradient-to-br from-sky-500 to-sky-600" />
-          <QuickAction to="/mentorship" icon={Handshake} label="My Mentorship" desc="View mentorship matches" colour="bg-gradient-to-br from-emerald-500 to-green-600" />
-          <QuickAction to="/messages" icon={MessageSquare} label="Messages" desc="Chat with your network" colour="bg-gradient-to-br from-[#093344] to-[#0a3d53]" />
-          <QuickAction to="/notifications" icon={Bell} label="Notifications" desc="Stay up to date" colour="bg-gradient-to-br from-pink-500 to-rose-500" />
+          {allQuickActions
+            .filter((a) => a.show)
+            .map(({ id, show: _show, ...props }) => (
+              <QuickAction key={id} {...props} />
+            ))}
         </div>
       </div>
     </div>

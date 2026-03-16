@@ -25,9 +25,10 @@ interface SidebarProps {
   open: boolean
   onClose: () => void
   notifCount?: number
+  msgCount?: number
 }
 
-export default function Sidebar({ open, onClose, notifCount = 0 }: SidebarProps) {
+export default function Sidebar({ open, onClose, notifCount = 0, msgCount = 0 }: SidebarProps) {
   const { user, isAdmin, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -76,7 +77,7 @@ export default function Sidebar({ open, onClose, notifCount = 0 }: SidebarProps)
     {
       title: 'Communication',
       items: [
-        { to: '/messages', icon: MessageSquare, label: 'Messages' },
+        { to: '/messages', icon: MessageSquare, label: 'Messages', badge: msgCount > 0 ? msgCount : undefined },
         {
           to: '/notifications',
           icon: Bell,

@@ -127,17 +127,30 @@ class GoogleAuthView(APIView):
     def post(self, request):
         serializer = GoogleAuthSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        credential = serializer.validated_data["credential"]
+        credential = serializer.validated_data.get("credential")
+        access_token = serializer.validated_data.get("access_token")
 
         try:
-            from google.oauth2 import id_token
-            from google.auth.transport import requests as google_requests
+            if credential:
+                from google.oauth2 import id_token
+                from google.auth.transport import requests as google_requests
 
-            idinfo = id_token.verify_oauth2_token(
-                credential,
-                google_requests.Request(),
-                settings.GOOGLE_CLIENT_ID,
-            )
+                idinfo = id_token.verify_oauth2_token(
+                    credential,
+                    google_requests.Request(),
+                    settings.GOOGLE_CLIENT_ID,
+                )
+            else:
+                import requests as http_requests
+
+                resp = http_requests.get(
+                    "https://www.googleapis.com/oauth2/v3/userinfo",
+                    headers={"Authorization": f"Bearer {access_token}"},
+                    timeout=5,
+                )
+                if resp.status_code != 200:
+                    return Response({"detail": "Invalid Google access token."}, status=status.HTTP_400_BAD_REQUEST)
+                idinfo = resp.json()
         except ValueError as exc:
             return Response({"detail": f"Invalid Google credential: {exc}"}, status=status.HTTP_400_BAD_REQUEST)
 

@@ -133,7 +133,13 @@ class LoginSerializer(serializers.Serializer):
 
 
 class GoogleAuthSerializer(serializers.Serializer):
-    credential = serializers.CharField()
+    credential = serializers.CharField(required=False)
+    access_token = serializers.CharField(required=False)
+
+    def validate(self, data):
+        if not data.get("credential") and not data.get("access_token"):
+            raise serializers.ValidationError("Either 'credential' or 'access_token' is required.")
+        return data
 
 
 class PhoneOTPRequestSerializer(serializers.Serializer):

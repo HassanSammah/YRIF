@@ -5,7 +5,7 @@
 **UI/Branding:** Edson (Public Website Module / UI assets)
 **QA/Analysis:** Joleen
 **Date:** 24/02/2026
-**Last Updated:** 03/03/2026
+**Last Updated:** 16/03/2026
 
 ---
 
@@ -95,6 +95,7 @@ Every user account has a `status` field:
 - `ACTIVE` — approved, full platform access
 - `SUSPENDED` — temporarily blocked by admin, cannot log in
 - `REJECTED` — declined by admin, cannot log in
+- `PENDING_EMAIL` — registered but email not yet verified (pre-approval state)
 
 ### Roles (MVP)
 | Role | Type | Notes |
@@ -111,7 +112,7 @@ Every user account has a `status` field:
 | `judge` | Internal/Assigned | Assigned from Mentor or Staff for competitions |
 
 ### Base User Profile Fields
-`institution`, `education_level`, `region`, `bio`, `skills`, `research_interests`, `achievements`, `phone`, `avatar`
+`institution`, `education_level`, `region`, `bio`, `skills`, `research_interests`, `achievements`, `phone`, `phone_verified`, `avatar`
 
 ### Role-Specific Extended Profiles
 - **MentorProfile:** `expertise_areas`, `availability`, `is_verified`
@@ -129,8 +130,8 @@ Track OAuth connections per user (`AuthProviderAccount`):
 - **Briq Auth OTP** (via `https://karibu.briq.tz`) — phone number verification via SMS OTP
   - App Key: configured in `BRIQ_APP_KEY` env var
   - Account API Key: `BRIQ_API_KEY` env var (X-API-Key header)
-- **Google OAuth** (social login) — frontend uses `@react-oauth/google`; backend verifies ID token via `google-auth`
-- **JWT** via `djangorestframework-simplejwt` — 30-min access / 7-day refresh, with refresh token blacklist on logout
+- **Google OAuth** (social login) — frontend renders a custom Google-branded button via `useGoogleLogin` hook (implicit `access_token` flow); backend verifies by calling Google's `/oauth2/v3/userinfo` API; legacy `credential` (ID token) path retained for backwards compatibility
+- **JWT** via `djangorestframework-simplejwt` — 30-min access / 7-day refresh, rotate + blacklist on refresh; logout blacklists refresh token
 - **Admin approval workflow** — all external roles require admin approval; internal roles are auto-approved
 
 ### Admin Actions
@@ -239,14 +240,24 @@ Track OAuth connections per user (`AuthProviderAccount`):
 - SMS notifications (critical alerts only)
 - FAQs and documentation pages
 
+### Email (Technology)
+- **Brevo** transactional email API via `brevo-python v4` SDK
+- Current verified sender: `hassansammah64@gmail.com`; target sender: `noreply@yriftz.org` (pending DNS — CNAME `brevo2._domainkey` → `b2.yriftz-org.dkim.brevo.com`)
+- Contact email: `info@yriftz.org`
+- Triggers: registration (admin notify), account approved/rejected/suspended, research status changes, mentorship match notifications, contact form auto-replies, news/announcement blasts
+
 ### Messaging (Technology)
 - **Supabase Realtime** for in-app chat (presence + realtime events)
+- Backend: `Conversation` + `Message` models; 16 REST endpoints at `/api/v1/communications/`
+- Frontend: 3-second polling chat in `Messages.tsx`; floating `ChatWidget.tsx` (visible on all pages)
 
-### SMS + Notifications (Technology)
-- **BRIQ (Briq.tz)** for SMS delivery (notifications & alerts)
+### SMS (Technology)
+- **BRIQ (Briq.tz)** for SMS delivery — `X-API-Key` header + `app_key` field in request body
+- Inbound webhook: `POST /api/v1/communications/briq/webhook/`
 
 ### Chatbot (Technology)
-- **Sarufi AI** for chatbot/FAQ support (MVP: guided FAQ + escalation to admin)
+- **Sarufi AI** via Sarufi Python SDK — bot name "YRIF Chat"; lazy singleton initialization
+- Configured via `SARUFI_API_KEY` + `SARUFI_BOT_ID` env vars; escalation to admin on failure
 
 ---
 
@@ -256,6 +267,7 @@ Track OAuth connections per user (`AuthProviderAccount`):
 - Support at least 2,000–5,000 concurrent users
 - Scalable to 10,000+ users
 - Page load time under 3 seconds on good networks
+- **Implemented:** API throttling middleware (anonymous: 60 req/min; authenticated: 300 req/min); `X-Response-Time` response header; react-query `staleTime` caching on all dashboard and list queries
 
 ### 6.2 Security
 - Secure authentication and authorization
@@ -265,17 +277,20 @@ Track OAuth connections per user (`AuthProviderAccount`):
 - Secure file upload and storage
 - HTTPS enabled
 - JWT refresh token blacklist (logout invalidates tokens)
+- **Implemented:** Argon2 password hasher (`argon2-cffi`); `SecurityHeadersMiddleware` — sets `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, and CSP (production only); JWT blacklist on logout and refresh rotation
 
 ### 6.3 Usability & Accessibility
 - Mobile-first and responsive design
 - Optimized for smartphones (common in Tanzania)
 - Simple and intuitive user interface
 - Minimal data usage and lightweight pages
+- **Implemented:** Custom `custom_exception_handler` in `apps/core/exceptions.py` (consistent error shapes); skeleton loaders (`SkeletonStat`, `SkeletonCard`) in `src/components/common/Skeleton.tsx`; `ErrorBoundary` component at `src/components/common/ErrorBoundary.tsx`
 
 ### 6.4 Reliability & Availability
 - Daily automated backups
 - High availability (target 90% uptime)
 - Disaster recovery readiness
+- **Implemented:** `/health/` endpoint — checks DB connectivity + Redis cache; returns `200 OK` (healthy) or `503 Service Unavailable`
 
 ### 6.5 Maintainability & Scalability
 - Modular system architecture
@@ -286,6 +301,7 @@ Track OAuth connections per user (`AuthProviderAccount`):
 ### 6.6 Localization
 - Primary language: English
 - Architecture prepared for future Swahili support
+- **Implemented:** `TIME_ZONE = Africa/Dar_es_Salaam` on backend; `date-fns` for all frontend date formatting
 
 ---
 
@@ -294,17 +310,22 @@ Track OAuth connections per user (`AuthProviderAccount`):
 ### 7.1 Frontend
 - React + TypeScript (Vite)
 - Tailwind CSS
-- `@react-oauth/google` — Google Sign-In
+- `@react-oauth/google` — Google Sign-In (`useGoogleLogin` hook, custom button)
 - `zustand` — client state management
 - `react-query` — server state (caching/sync)
 - `react-hook-form` — form handling
+- `date-fns` — date formatting
+- `lucide-react` — icon library
 - Supabase Realtime client for chat
 
 ### 7.2 Backend
 - Django 4.2 + Django REST Framework (DRF)
 - OpenAPI schema + Swagger UI (`drf-spectacular`)
 - `djangorestframework-simplejwt` — JWT auth + token blacklist
-- `google-auth` — server-side Google token verification
+- `google-auth` — server-side Google ID token verification (legacy path)
+- `requests` — HTTP client for Google `/oauth2/v3/userinfo` access token verification
+- `argon2-cffi` — Argon2 password hasher
+- `brevo-python v4` — Brevo transactional email SDK
 
 ### 7.3 Database
 - PostgreSQL (primary)
@@ -317,15 +338,18 @@ Track OAuth connections per user (`AuthProviderAccount`):
 
 ### 7.6 Authentication
 - Briq OTP API (`https://karibu.briq.tz`) for phone verification
-- Google OAuth (frontend `@react-oauth/google` + backend `google-auth`)
-- JWT with blacklist (`djangorestframework-simplejwt`)
-- Admin approval workflow on top of auth
+- Google OAuth — frontend: custom button via `useGoogleLogin` hook (implicit `access_token` flow); backend: verifies via Google's `/oauth2/v3/userinfo` API; legacy ID token (`credential`) path also supported
+- JWT with blacklist (`djangorestframework-simplejwt`) — 30-min access / 7-day refresh, rotate + blacklist on refresh
+- Admin approval workflow on top of auth; internal roles (admin, staff, program_manager, content_manager) are auto-approved
 
 ### 7.7 SMS
-- Briq.tz SMS integration for notifications (`https://karibu.briq.tz`)
+- Briq.tz SMS integration for notifications (`https://karibu.briq.tz`) — `X-API-Key` header + `app_key` in request body
 
 ### 7.8 Chatbot
-- Sarufi AI integration for FAQ and guided support
+- Sarufi AI integration for FAQ and guided support — Sarufi Python SDK (`sarufi`), lazy singleton initialization; configured via `SARUFI_API_KEY` + `SARUFI_BOT_ID` env vars
+
+### 7.9 Email
+- **Brevo** transactional email API (`brevo-python v4`); triggered for all key user lifecycle and content events; contact form auto-replies
 
 ### 7.9 Containers & Local Dev
 - Docker + Docker Compose for local infra (Postgres, Redis)
@@ -346,20 +370,37 @@ Track OAuth connections per user (`AuthProviderAccount`):
 
 ## 9. IMPLEMENTATION PRIORITY (MVP ORDER)
 1. ✅ Accounts + RBAC + Admin approval (Module 5.2)
-2. Research submissions + repository + review workflow (Module 5.3)
-3. Events/competitions + registration + certificate generation (Module 5.4)
-4. Mentorship matching + feedback forms (Module 5.5)
-5. Admin reporting + exports (Module 5.7)
-6. Messaging (Supabase Realtime) + Notifications (email + Briq SMS) + Sarufi chatbot (Module 5.8)
-7. Learning Resources Hub (Module 5.6)
-8. Hardening: security/performance/backups/monitoring (Section 6)
+2. ✅ Research submissions + repository + review workflow (Module 5.3)
+3. ✅ Events/competitions + registration + certificate generation (Module 5.4)
+4. ✅ Mentorship matching + feedback forms (Module 5.5)
+5. ✅ Admin reporting + exports (Module 5.7)
+6. ✅ Messaging (Supabase Realtime) + Notifications (Brevo email + Briq SMS) + Sarufi chatbot (Module 5.8)
+7. ⬜ Learning Resources Hub (Module 5.6) — pending
+8. ⬜ Hardening: automated backups, HTTPS, Sentry, uptime monitoring, Prometheus/Grafana (Section 6 full) — pending
 
 ---
 
 ## 10. API CONVENTIONS
+
 - Base URL: `/api/v1/`
 - Auth routes: `/api/v1/auth/`
 - All protected endpoints require `Authorization: Bearer <access_token>`
 - Pagination: 20 per page (max 100), standard `count/next/previous/results` format
 - Error format: `{ "detail": "..." }` or `{ "field": ["error"] }`
 - File uploads: `multipart/form-data`
+
+---
+
+## 11. IMPLEMENTATION NOTES (KEY DECISIONS)
+
+| Decision | Detail |
+|----------|--------|
+| Google OAuth button | Switched from `GoogleLogin` component to custom-styled button via `useGoogleLogin` hook so button text can be branded ("Your Google Account"); backend accepts both `access_token` and legacy `credential` (ID token) |
+| BRIQ button text | "Your Phone Number" — custom `Link` component with BRIQ logo |
+| Email provider | Brevo (`brevo-python v4`) replaces SMTP; current verified sender `hassansammah64@gmail.com`; `noreply@yriftz.org` blocked pending CNAME `brevo2._domainkey` DNS record on `yriftz.org` |
+| Frontend layout | `AppLayout` (Sidebar + TopBar) wraps all protected routes via React Router `Outlet` pattern in `RequireAuth` guard |
+| Route guards | `RequireAuth` — checks `isAuthenticated` + `user.status`; `RequireAdmin` — checks `isAdmin` (admin \| staff \| program_manager) |
+| Dashboard | Role-gated: stats, quick actions, and work-queue sections vary by role (see Part 2 of implementation) |
+| `is_approved` | Backwards-compatible `@property` on `User` model — returns `status == ACTIVE`; route guards use `user.status` directly |
+| CI/CD | GitHub Actions: `ci.yml` (lint + test, triggers on main + staging); `cd-staging.yml` + `cd-production.yml` (auto-deploy) |
+| Branch strategy | `feature/*` / `fix/*` / `hotfix/*` → PR to `staging` → PR to `main` (production) |

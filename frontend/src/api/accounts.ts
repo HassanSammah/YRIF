@@ -20,8 +20,8 @@ export const authApi = {
   login: (email: string, password: string) =>
     apiClient.post<AuthResponse>('/auth/login/', { email, password }),
 
-  googleAuth: (credential: string) =>
-    apiClient.post<AuthResponse & { is_new: boolean }>('/auth/google/', { credential }),
+  googleAuth: (access_token: string) =>
+    apiClient.post<AuthResponse & { is_new: boolean }>('/auth/google/', { access_token }),
 
   logout: (refresh: string) => apiClient.post('/auth/logout/', { refresh }),
 

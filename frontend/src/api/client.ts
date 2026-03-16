@@ -2,7 +2,10 @@ import axios from 'axios'
 
 const apiClient = axios.create({
   baseURL: '/api/v1',
-  headers: { 'Content-Type': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
+  },
 })
 
 apiClient.interceptors.request.use((config) => {
@@ -22,7 +25,7 @@ apiClient.interceptors.response.use(
       const refresh = localStorage.getItem('refresh_token')
       if (refresh) {
         try {
-          const { data } = await axios.post('/api/v1/auth/token/refresh/', { refresh })
+          const { data } = await axios.post('/api/v1/auth/token/refresh/', { refresh }, { headers: { 'ngrok-skip-browser-warning': 'true' } })
           localStorage.setItem('access_token', data.access)
           original.headers.Authorization = `Bearer ${data.access}`
           return apiClient(original)

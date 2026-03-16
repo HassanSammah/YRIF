@@ -49,6 +49,14 @@ export default function AppLayout() {
     ? notifs.filter((n) => !n.is_read).length
     : 0
 
+  // Unread messages count (sum of unread_count across all conversations)
+  const { data: convs } = useQuery(
+    'messages-count',
+    () => communicationsApi.listConversations().then((r) => r.data),
+    { refetchInterval: 30_000, retry: 1 },
+  )
+  const unreadMsgCount = convs?.results?.reduce((sum, c) => sum + (c.unread_count ?? 0), 0) ?? 0
+
   const title = ROUTE_TITLES[location.pathname]
 
   return (
@@ -57,6 +65,7 @@ export default function AppLayout() {
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         notifCount={unreadCount}
+        msgCount={unreadMsgCount}
       />
 
       {/* Main content area */}
@@ -64,6 +73,7 @@ export default function AppLayout() {
         <TopBar
           onMenuClick={() => setSidebarOpen(true)}
           notifCount={unreadCount}
+          msgCount={unreadMsgCount}
           title={title}
         />
 

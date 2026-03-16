@@ -1,16 +1,17 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Menu, Bell, Search, LogOut, User, Settings, X } from 'lucide-react'
+import { Menu, Bell, MessageSquare, Search, LogOut, User, Settings, X } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { USER_ROLE_LABELS } from '@/types/user'
 
 interface TopBarProps {
   onMenuClick: () => void
   notifCount?: number
+  msgCount?: number
   title?: string
 }
 
-export default function TopBar({ onMenuClick, notifCount = 0, title }: TopBarProps) {
+export default function TopBar({ onMenuClick, notifCount = 0, msgCount = 0, title }: TopBarProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -81,6 +82,18 @@ export default function TopBar({ onMenuClick, notifCount = 0, title }: TopBarPro
           <Search className="w-4 h-4" />
         </button>
       )}
+
+      {/* Messages */}
+      <Link
+        to="/messages"
+        className="relative p-2 rounded-lg text-gray-400 hover:text-[#093344] hover:bg-gray-100 transition-colors"
+        aria-label={`Messages${msgCount > 0 ? ` (${msgCount} unread)` : ''}`}
+      >
+        <MessageSquare className="w-4 h-4" />
+        {msgCount > 0 && (
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white animate-pulse-dot" />
+        )}
+      </Link>
 
       {/* Notifications */}
       <Link

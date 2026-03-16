@@ -13,7 +13,7 @@ from django.conf import settings
 def send_email(to_email: str, to_name: str, subject: str, html_content: str,
                reply_to_email: str = None) -> None:
     """
-    Send a transactional email via Brevo API.
+    Send a transactional email via Brevo API (brevo-python v4 SDK).
     Falls back to console print when BREVO_API_KEY is not set (dev/test).
     Raises on API errors.
     """
@@ -28,23 +28,25 @@ def send_email(to_email: str, to_name: str, subject: str, html_content: str,
         )
         return
 
-    import brevo_python
-    configuration = brevo_python.Configuration()
-    configuration.api_key["api-key"] = api_key
+    import brevo
 
-    api_instance = brevo_python.TransactionalEmailsApi(
-        brevo_python.ApiClient(configuration)
-    )
-    params = dict(
-        to=[{"email": to_email, "name": to_name}],
-        sender={"name": "YRIF Mails", "email": settings.DEFAULT_FROM_EMAIL},
+    client = brevo.Brevo(api_key=api_key)
+
+    kwargs = dict(
+        to=[brevo.SendTransacEmailRequestToItem(email=to_email, name=to_name)],
+        sender=brevo.SendTransacEmailRequestSender(
+            name="YRIF Mails",
+            email=settings.DEFAULT_FROM_EMAIL,
+        ),
         subject=subject,
         html_content=html_content,
     )
     if reply_to_email:
-        params["reply_to"] = {"email": reply_to_email}
+        kwargs["reply_to"] = brevo.SendTransacEmailRequestReplyTo(
+            email=reply_to_email
+        )
 
-    api_instance.send_transac_email(brevo_python.SendSmtpEmail(**params))
+    client.transactional_emails.send_transac_email(**kwargs)
 
 
 # ── HTML Template Helpers ─────────────────────────────────────────────────────

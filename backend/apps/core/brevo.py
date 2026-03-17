@@ -102,8 +102,8 @@ def _wrap(content: str) -> str:
                   <td align="center"
                       style="border-bottom:3px solid #0D9488;padding-bottom:10px;">
                     <img src="cid:{_LOGO_CID}"
-                         alt="YRIF" width="96" height="96"
-                         style="display:block;border:0;outline:none;text-decoration:none;" />
+                         alt="YRIF" width="200" height="123"
+                         style="display:block;border:0;outline:none;text-decoration:none;max-width:200px;height:auto;" />
                   </td>
                 </tr>
                 <tr>

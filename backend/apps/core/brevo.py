@@ -97,26 +97,12 @@ def _wrap(content: str) -> str:
           <tr>
             <td bgcolor="#093344" align="center"
                 style="padding:36px 40px 32px;border-radius:14px 14px 0 0;">
-              <!-- Profile icon -->
-              <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 16px;">
-                <tr>
-                  <td align="center"
-                      style="width:52px;height:52px;border-radius:50%;
-                             background-color:#ffffff;overflow:hidden;
-                             border:2px solid rgba(255,255,255,0.25);">
-                    <img src="cid:{_LOGO_CID}"
-                         alt="" width="48" height="48"
-                         style="display:block;border:0;border-radius:50%;object-fit:contain;" />
-                  </td>
-                </tr>
-              </table>
-              <!-- Main logo -->
               <table cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center"
                       style="border-bottom:3px solid #0D9488;padding-bottom:10px;">
                     <img src="cid:{_LOGO_CID}"
-                         alt="YRIF" width="120" height="120"
+                         alt="YRIF" width="96" height="96"
                          style="display:block;border:0;outline:none;text-decoration:none;" />
                   </td>
                 </tr>

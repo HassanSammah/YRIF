@@ -2,10 +2,29 @@
 Brevo Transactional Email client and shared HTML template helpers.
 All email modules import send_email + helpers from here.
 """
+import base64
 import sys
 from datetime import datetime
+from pathlib import Path
 
 from django.conf import settings
+
+# ── Inline logo (CID attachment — works in all email clients) ─────────────────
+
+_LOGO_PATH = Path(__file__).parent / "logo-email.png"
+_LOGO_CID = "yrif-logo.png"
+
+
+def _logo_attachment():
+    """Return a Brevo inline attachment list for the YRIF logo, or []."""
+    if not _LOGO_PATH.exists():
+        return []
+    try:
+        import brevo
+        data = base64.b64encode(_LOGO_PATH.read_bytes()).decode()
+        return [brevo.SendTransacEmailRequestAttachmentItem(content=data, name=_LOGO_CID)]
+    except Exception:
+        return []
 
 
 # ── Brevo API sender ──────────────────────────────────────────────────────────
@@ -40,6 +59,7 @@ def send_email(to_email: str, to_name: str, subject: str, html_content: str,
         ),
         subject=subject,
         html_content=html_content,
+        attachment=_logo_attachment(),
     )
     if reply_to_email:
         kwargs["reply_to"] = brevo.SendTransacEmailRequestReplyTo(
@@ -52,15 +72,6 @@ def send_email(to_email: str, to_name: str, subject: str, html_content: str,
 # ── HTML Template Helpers ─────────────────────────────────────────────────────
 
 _YEAR = datetime.now().year
-
-# CDN URL for the logo used in email headers.
-# Override EMAIL_LOGO_URL in settings to point to a self-hosted copy.
-_LOGO_CDN = getattr(
-    settings,
-    "EMAIL_LOGO_URL",
-    "https://raw.githubusercontent.com/HassanSammah/YRIF/main"
-    "/frontend/src/assets/logos/YRIF_Logo_Any_Backgound.png",
-)
 
 
 def _wrap(content: str) -> str:
@@ -93,7 +104,7 @@ def _wrap(content: str) -> str:
                       style="width:52px;height:52px;border-radius:50%;
                              background-color:#ffffff;overflow:hidden;
                              border:2px solid rgba(255,255,255,0.25);">
-                    <img src="{_LOGO_CDN}"
+                    <img src="cid:{_LOGO_CID}"
                          alt="" width="48" height="48"
                          style="display:block;border:0;border-radius:50%;object-fit:contain;" />
                   </td>
@@ -104,7 +115,7 @@ def _wrap(content: str) -> str:
                 <tr>
                   <td align="center"
                       style="border-bottom:3px solid #0D9488;padding-bottom:10px;">
-                    <img src="{_LOGO_CDN}"
+                    <img src="cid:{_LOGO_CID}"
                          alt="YRIF" width="120" height="120"
                          style="display:block;border:0;outline:none;text-decoration:none;" />
                   </td>

@@ -53,6 +53,15 @@ def send_email(to_email: str, to_name: str, subject: str, html_content: str,
 
 _YEAR = datetime.now().year
 
+# CDN URL for the logo used in email headers.
+# Override EMAIL_LOGO_URL in settings to point to a self-hosted copy.
+_LOGO_CDN = getattr(
+    settings,
+    "EMAIL_LOGO_URL",
+    "https://cdn.jsdelivr.net/gh/HassanSammah/YRIF@main"
+    "/backend/apps/core/static/core/logo-white-email.png",
+)
+
 
 def _wrap(content: str) -> str:
     """Full YRIF-branded email shell. Table-based, email-client safe."""
@@ -81,10 +90,9 @@ def _wrap(content: str) -> str:
                 <tr>
                   <td align="center"
                       style="border-bottom:3px solid #0D9488;padding-bottom:10px;">
-                    <span style="color:#ffffff;font-size:30px;font-weight:800;
-                                 letter-spacing:-0.5px;font-family:'Inter',Arial,sans-serif;">
-                      YRIF
-                    </span>
+                    <img src="{_LOGO_CDN}"
+                         alt="YRIF" width="150" height="93"
+                         style="display:block;border:0;outline:none;text-decoration:none;" />
                   </td>
                 </tr>
                 <tr>

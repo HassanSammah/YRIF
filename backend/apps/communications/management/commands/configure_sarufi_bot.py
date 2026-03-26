@@ -677,7 +677,10 @@ class Command(BaseCommand):
             ))
             return
 
-        self.stdout.write(f"\nConnecting to Sarufi (api_key=...{api_key[-6:]})...")
+        base_url = getattr(settings, "SARUFI_BASE_URL", "")
+        if base_url:
+            Sarufi._BASE_URL = base_url
+        self.stdout.write(f"\nConnecting to Sarufi (api_key=...{api_key[-6:]}, base={Sarufi._BASE_URL})...")
         try:
             sarufi_client = Sarufi(api_key=api_key)
         except Exception as exc:

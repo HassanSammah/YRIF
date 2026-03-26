@@ -13,6 +13,9 @@ def _get_sarufi():
     if _sarufi_instance is None:
         try:
             from sarufi import Sarufi  # type: ignore[import]
+            base_url = getattr(settings, "SARUFI_BASE_URL", "")
+            if base_url:
+                Sarufi._BASE_URL = base_url
             _sarufi_instance = Sarufi(api_key=settings.SARUFI_API_KEY)
         except Exception as exc:
             logger.warning("Sarufi SDK init failed: %s", exc)

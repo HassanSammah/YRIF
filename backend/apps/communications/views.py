@@ -1,3 +1,5 @@
+import hashlib
+import hmac
 import logging
 from django.utils import timezone
 from django.db.models import Q
@@ -156,11 +158,20 @@ class BriqWebhookView(APIView):
     authentication_classes = []  # BRIQ sends unauthenticated POST
 
     def post(self, request):
-        # Validate shared secret if configured
-        shared_secret = getattr(settings, "BRIQ_WEBHOOK_SECRET", "")
-        if shared_secret:
-            incoming_secret = request.headers.get("X-Webhook-Secret", "")
-            if incoming_secret != shared_secret:
+        # Verify HMAC-SHA256 signature if signing key is configured.
+        # BRIQ signs the raw request body with the webhook signing key and
+        # sends the hex digest in the X-Briq-Signature header.
+        signing_key = getattr(settings, "BRIQ_WEBHOOK_SECRET", "")
+        if signing_key:
+            raw_body = request.body
+            expected = hmac.new(
+                signing_key.encode(),
+                raw_body,
+                hashlib.sha256,
+            ).hexdigest()
+            received = request.headers.get("X-Briq-Signature", "")
+            if not hmac.compare_digest(expected, received):
+                logger.warning("BRIQ webhook signature mismatch — rejecting request.")
                 return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
 
         from_number = request.data.get("from") or request.data.get("sender", "")

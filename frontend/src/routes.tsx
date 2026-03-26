@@ -2,11 +2,13 @@ import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
 import { lazy, Suspense, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import AppLayout from '@/components/layout/AppLayout'
+import PublicLayout from '@/components/layout/PublicLayout'
 import { SkeletonPage } from '@/components/common/Skeleton'
 import ErrorBoundary from '@/components/common/ErrorBoundary'
 
 // ── Lazy page imports ─────────────────────────────────────────────────────────
 
+const LandingPage        = lazy(() => import('@/pages/landing/LandingPage'))
 const Login              = lazy(() => import('@/pages/auth/Login'))
 const Register           = lazy(() => import('@/pages/auth/Register'))
 const PendingApproval    = lazy(() => import('@/pages/auth/PendingApproval'))
@@ -82,9 +84,16 @@ function wrap(Component: React.ComponentType) {
 // ── Router ────────────────────────────────────────────────────────────────────
 
 export const router = createBrowserRouter([
-  { path: '/', element: <Navigate to="/dashboard" replace /> },
+  // Public — landing page + contact (with PublicLayout: header + footer)
+  {
+    element: <PublicLayout />,
+    children: [
+      { path: '/',        element: wrap(LandingPage) },
+      { path: '/contact', element: wrap(Contact) },
+    ],
+  },
 
-  // Public (no layout shell)
+  // Public auth (no layout shell)
   { path: '/login',              element: wrap(Login) },
   { path: '/register',           element: wrap(Register) },
   { path: '/pending-approval',   element: wrap(PendingApproval) },
@@ -112,7 +121,6 @@ export const router = createBrowserRouter([
       { path: '/resources',       element: wrap(ResourceHub) },
       { path: '/messages',        element: wrap(Messages) },
       { path: '/notifications',   element: wrap(Notifications) },
-      { path: '/contact',         element: wrap(Contact) },
 
       // Admin-only (still inside AppLayout shell)
       {

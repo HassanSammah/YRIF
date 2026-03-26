@@ -14,6 +14,7 @@ const ABOUT_LINKS = [
   { label: 'Our Partners', href: '/#partners' },
   { label: 'News & Updates', href: '/#news' },
   { label: 'Contact Us', to: '/contact' },
+  { label: 'Staff Mail', href: 'https://r3.netpoa.com:2083/', external: true },
 ]
 
 const SOCIAL = [
@@ -76,14 +77,18 @@ export default function PublicFooter() {
               Organization
             </h3>
             <ul className="space-y-2.5">
-              {ABOUT_LINKS.map(({ label, href, to }) => (
+              {ABOUT_LINKS.map(({ label, href, to, external }) => (
                 <li key={label}>
                   {to ? (
                     <Link to={to} className="text-sm text-white/70 hover:text-white transition-colors">
                       {label}
                     </Link>
                   ) : (
-                    <a href={href} className="text-sm text-white/70 hover:text-white transition-colors">
+                    <a
+                      href={href}
+                      className="text-sm text-white/70 hover:text-white transition-colors"
+                      {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                    >
                       {label}
                     </a>
                   )}

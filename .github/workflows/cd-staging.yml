@@ -8,6 +8,9 @@ concurrency:
   group: deploy-staging
   cancel-in-progress: true   # cancel any in-flight staging deploy when a new one starts
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # ── CI gate ────────────────────────────────────────────────────────────────
   ci:

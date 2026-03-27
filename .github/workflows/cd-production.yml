@@ -8,6 +8,9 @@ concurrency:
   group: deploy-production
   cancel-in-progress: false   # NEVER cancel an in-flight production deploy
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # ── CI gate ────────────────────────────────────────────────────────────────
   ci:

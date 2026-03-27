@@ -74,8 +74,12 @@ export default function Login() {
     onSuccess: async (tokenResponse) => {
       setServerError('')
       try {
-        await googleLogin(tokenResponse.access_token)
-        navigate(from, { replace: true })
+        const { is_new } = await googleLogin(tokenResponse.access_token)
+        if (is_new) {
+          navigate('/auth/complete-profile', { replace: true, state: { mode: 'google', from } })
+        } else {
+          navigate(from, { replace: true })
+        }
       } catch {
         setServerError('Google sign-in failed. Please try again.')
       }

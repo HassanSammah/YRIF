@@ -89,8 +89,12 @@ export default function Register() {
     onSuccess: async (tokenResponse) => {
       setServerError('')
       try {
-        await googleLogin(tokenResponse.access_token)
-        navigate('/dashboard', { replace: true })
+        const { is_new } = await googleLogin(tokenResponse.access_token)
+        if (is_new) {
+          navigate('/auth/complete-profile', { replace: true, state: { mode: 'google' } })
+        } else {
+          navigate('/dashboard', { replace: true })
+        }
       } catch {
         setServerError('Google sign-up failed. Please try again.')
       }

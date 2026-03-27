@@ -50,7 +50,18 @@ def send_chatbot_message(chat_id: str, message: str) -> dict:
         # Response is a dict: {"message": [...], "memory": {...}, ...}
         # or {"message": "reply text"} depending on version
         if isinstance(response, dict):
-            msg = response.get("message", "")
+            logger.debug("Sarufi raw response: %s", response)
+            # Detect API error responses — error dicts have "error"/"detail", not "message"
+            if "message" not in response:
+                error_detail = response.get("error") or response.get("detail") or str(response)
+                logger.error("Sarufi API returned error response: %s", error_detail)
+                return {
+                    "reply": (
+                        "Sorry, YRIF Chat is unavailable right now. "
+                        "Please contact us at info@yriftz.org or submit a contact form."
+                    )
+                }
+            msg = response["message"]
             if isinstance(msg, list):
                 parts = []
                 for m in msg:
@@ -64,6 +75,7 @@ def send_chatbot_message(chat_id: str, message: str) -> dict:
             else:
                 reply = str(msg) if msg else "I didn't understand that."
         else:
+            logger.debug("Sarufi non-dict response: %s", response)
             reply = str(response)
 
         return {"reply": reply}

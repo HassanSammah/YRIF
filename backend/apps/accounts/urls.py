@@ -20,6 +20,7 @@ urlpatterns = [
     path("briq/request/", views.BriqAuthRequestView.as_view(), name="briq-auth-request"),
     path("briq/verify/", views.BriqAuthVerifyView.as_view(), name="briq-auth-verify"),
     path("briq/complete/", views.BriqAuthCompleteView.as_view(), name="briq-auth-complete"),
+    path("complete-profile/", views.CompleteProfileView.as_view(), name="complete-profile"),
     # ── Phone OTP (Briq) — authenticated profile verification ─────────────────
     path("phone/request-otp/", views.PhoneOTPRequestView.as_view(), name="phone-otp-request"),
     path("phone/verify-otp/", views.PhoneOTPVerifyView.as_view(), name="phone-otp-verify"),

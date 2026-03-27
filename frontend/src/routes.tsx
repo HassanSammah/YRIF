@@ -14,6 +14,7 @@ const Register           = lazy(() => import('@/pages/auth/Register'))
 const PendingApproval    = lazy(() => import('@/pages/auth/PendingApproval'))
 const VerifyEmail        = lazy(() => import('@/pages/auth/VerifyEmail'))
 const BriqAuth           = lazy(() => import('@/pages/auth/BriqAuth'))
+const CompleteProfile    = lazy(() => import('@/pages/auth/CompleteProfile'))
 const Dashboard          = lazy(() => import('@/pages/dashboard/Dashboard'))
 const Profile            = lazy(() => import('@/pages/profile/Profile'))
 const ResearchRepository = lazy(() => import('@/pages/research/ResearchRepository'))
@@ -98,7 +99,8 @@ export const router = createBrowserRouter([
   { path: '/register',           element: wrap(Register) },
   { path: '/pending-approval',   element: wrap(PendingApproval) },
   { path: '/auth/verify-email',  element: wrap(VerifyEmail) },
-  { path: '/auth/briq',          element: wrap(BriqAuth) },
+  { path: '/auth/briq',              element: wrap(BriqAuth) },
+  { path: '/auth/complete-profile', element: wrap(CompleteProfile) },
 
   // Protected — AppLayout shell
   {

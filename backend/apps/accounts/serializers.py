@@ -205,6 +205,13 @@ class BriqAuthCompleteSerializer(serializers.Serializer):
         return value
 
 
+class CompleteProfileSerializer(serializers.Serializer):
+    """POST /auth/complete-profile/ — authenticated Google new users set their role."""
+    first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name  = serializers.CharField(required=False, allow_blank=True)
+    role = serializers.ChoiceField(choices=[(r.value, r.label) for r in _EXTERNAL_ROLES])
+
+
 # ─── Admin Serializers ────────────────────────────────────────────────────────
 
 class UpdateUserStatusSerializer(serializers.Serializer):

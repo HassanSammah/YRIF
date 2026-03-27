@@ -32,6 +32,7 @@ from .serializers import (
     BriqAuthRequestSerializer,
     BriqAuthVerifySerializer,
     BriqAuthCompleteSerializer,
+    CompleteProfileSerializer,
     UpdateUserStatusSerializer,
     RoleAssignmentSerializer,
     DeletionRequestSerializer,
@@ -491,6 +492,39 @@ class BriqAuthCompleteView(APIView):
             {**tokens, "user": UserSerializer(user).data},
             status=status.HTTP_201_CREATED,
         )
+
+
+class CompleteProfileView(APIView):
+    """POST /auth/complete-profile/ — Google new users set their role after sign-in."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = CompleteProfileSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = request.user
+        role = serializer.validated_data["role"]
+        first_name = serializer.validated_data.get("first_name", "").strip()
+        last_name  = serializer.validated_data.get("last_name", "").strip()
+
+        update_fields = ["role", "updated_at"]
+        user.role = role
+        if first_name:
+            user.first_name = first_name
+            update_fields.append("first_name")
+        if last_name:
+            user.last_name = last_name
+            update_fields.append("last_name")
+        user.save(update_fields=update_fields)
+
+        if role == UserRole.MENTOR:
+            MentorProfile.objects.get_or_create(user=user)
+        elif role == UserRole.INDUSTRY_PARTNER:
+            PartnerProfile.objects.get_or_create(user=user)
+        elif role == UserRole.RESEARCH_ASSISTANT:
+            ResearchAssistantProfile.objects.get_or_create(user=user)
+
+        return Response({"user": UserSerializer(user).data})
 
 
 # ─── User Profile ─────────────────────────────────────────────────────────────

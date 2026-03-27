@@ -23,6 +23,9 @@ export const authApi = {
   googleAuth: (access_token: string) =>
     apiClient.post<AuthResponse & { is_new: boolean }>('/auth/google/', { access_token }),
 
+  completeProfile: (data: { role: string; first_name?: string; last_name?: string }) =>
+    apiClient.post<{ user: User }>('/auth/complete-profile/', data),
+
   logout: (refresh: string) => apiClient.post('/auth/logout/', { refresh }),
 
   // ── Email verification ────────────────────────────────────────────────────

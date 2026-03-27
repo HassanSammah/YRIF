@@ -96,9 +96,23 @@ jobs:
     environment: staging
 
     steps:
+      - name: Check staging SSH config
+        id: check
+        env:
+          SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+          SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+          API_URL: ${{ secrets.STAGING_API_BASE_URL }}
+        run: |
+          if [[ -n "$SSH_HOST" && -n "$SSH_KEY" ]]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::STAGING_SSH_HOST or STAGING_SSH_KEY not set — skipping deploy. Images were pushed to GHCR."
+          fi
+          echo "healthcheck=$([[ -n "$SSH_HOST" && -n "$API_URL" ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
       - name: Deploy via SSH
-        # Only deploy if staging SSH secrets are configured
-        if: ${{ secrets.STAGING_SSH_HOST != '' && secrets.STAGING_SSH_KEY != '' }}
+        if: steps.check.outputs.deploy == 'true'
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.STAGING_SSH_HOST }}
@@ -118,12 +132,8 @@ jobs:
             done
             docker exec yrif-backend-1 python manage.py migrate --no-input
 
-      - name: Skip deploy (no staging server configured)
-        if: ${{ secrets.STAGING_SSH_HOST == '' || secrets.STAGING_SSH_KEY == '' }}
-        run: echo "::notice::STAGING_SSH_HOST or STAGING_SSH_KEY not set — skipping deploy. Images were built and pushed to GHCR."
-
       - name: Health check (staging)
-        if: ${{ secrets.STAGING_SSH_HOST != '' && secrets.STAGING_API_BASE_URL != '' }}
+        if: steps.check.outputs.healthcheck == 'true'
         run: |
           sleep 30
           for i in 1 2 3 4 5; do

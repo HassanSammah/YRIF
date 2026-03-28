@@ -105,35 +105,38 @@ jobs:
     steps:
       - name: Write SSH key to file
         run: |
-          echo "${{ secrets.PROD_SSH_KEY }}" > /tmp/prod_deploy_key
+          printf '%s\n' "${{ secrets.PROD_SSH_KEY }}" | tr -d '\r' > /tmp/prod_deploy_key
           chmod 600 /tmp/prod_deploy_key
+          # Verify key is parseable
+          ssh-keygen -l -f /tmp/prod_deploy_key
 
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.PROD_SSH_HOST }}
-          username: root
-          key_path: /tmp/prod_deploy_key
-          script: |
-            set -e
-            cd /var/www/yrif
-            echo "--- Pulling latest code ---"
-            git pull origin main
-            echo "--- Pulling new Docker images ---"
-            docker compose -f docker-compose.prod.yml pull
-            echo "--- Restarting containers ---"
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
-            echo "--- Running migrations ---"
-            # Wait for backend to be ready
-            for i in $(seq 1 12); do
-              if docker exec yrif-backend-1 python manage.py check --deploy 2>/dev/null; then
-                break
-              fi
-              echo "Waiting for backend ($i/12)..."
-              sleep 5
-            done
-            docker exec yrif-backend-1 python manage.py migrate --no-input
-            echo "--- Deploy complete ---"
+        env:
+          SSH_HOST: ${{ secrets.PROD_SSH_HOST }}
+        run: |
+          ssh -i /tmp/prod_deploy_key \
+              -o StrictHostKeyChecking=no \
+              -o ConnectTimeout=30 \
+              root@"$SSH_HOST" bash -s << 'ENDSSH'
+          set -e
+          cd /var/www/yrif
+          echo "--- Pulling latest code ---"
+          git pull origin main
+          echo "--- Pulling new Docker images ---"
+          docker compose -f docker-compose.prod.yml pull
+          echo "--- Restarting containers ---"
+          docker compose -f docker-compose.prod.yml up -d --remove-orphans
+          echo "--- Running migrations ---"
+          for i in $(seq 1 12); do
+            if docker exec yrif-backend-1 python manage.py check --deploy 2>/dev/null; then
+              break
+            fi
+            echo "Waiting for backend ($i/12)..."
+            sleep 5
+          done
+          docker exec yrif-backend-1 python manage.py migrate --no-input
+          echo "--- Deploy complete ---"
+          ENDSSH
 
       - name: Health check (production)
         run: |

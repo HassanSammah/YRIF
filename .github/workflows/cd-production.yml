@@ -104,11 +104,11 @@ jobs:
 
     steps:
       - name: Write SSH key to file
+        env:
+          SSH_KEY: ${{ secrets.PROD_SSH_KEY }}
         run: |
-          printf '%s\n' "${{ secrets.PROD_SSH_KEY }}" | tr -d '\r' > /tmp/prod_deploy_key
+          printf '%s\n' "$SSH_KEY" | tr -d '\r' > /tmp/prod_deploy_key
           chmod 600 /tmp/prod_deploy_key
-          # Verify key is parseable
-          ssh-keygen -l -f /tmp/prod_deploy_key
 
       - name: Deploy via SSH
         env:

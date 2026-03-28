@@ -107,10 +107,10 @@ jobs:
         env:
           SSH_KEY_B64: ${{ secrets.PROD_SSH_KEY }}
         run: |
+          echo "Secret length: ${#SSH_KEY_B64}"
           printf '%s' "$SSH_KEY_B64" | tr -d ' \n\r' | base64 -d > /tmp/prod_deploy_key
           chmod 600 /tmp/prod_deploy_key
           echo "Key file size: $(wc -c < /tmp/prod_deploy_key) bytes"
-          file /tmp/prod_deploy_key
 
       - name: Deploy via SSH
         env:

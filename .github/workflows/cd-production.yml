@@ -103,12 +103,17 @@ jobs:
     environment: production
 
     steps:
+      - name: Write SSH key to file
+        run: |
+          echo "${{ secrets.PROD_SSH_KEY }}" > /tmp/prod_deploy_key
+          chmod 600 /tmp/prod_deploy_key
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.PROD_SSH_HOST }}
           username: root
-          key: ${{ secrets.PROD_SSH_KEY }}
+          key_path: /tmp/prod_deploy_key
           script: |
             set -e
             cd /var/www/yrif

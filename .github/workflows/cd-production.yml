@@ -105,9 +105,9 @@ jobs:
     steps:
       - name: Write SSH key to file
         env:
-          SSH_KEY: ${{ secrets.PROD_SSH_KEY }}
+          SSH_KEY_B64: ${{ secrets.PROD_SSH_KEY }}
         run: |
-          printf '%s\n' "$SSH_KEY" | tr -d '\r' > /tmp/prod_deploy_key
+          echo "$SSH_KEY_B64" | base64 -d > /tmp/prod_deploy_key
           chmod 600 /tmp/prod_deploy_key
 
       - name: Deploy via SSH

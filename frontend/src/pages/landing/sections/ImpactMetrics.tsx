@@ -1,15 +1,22 @@
+import { useQuery } from 'react-query'
 import { Users, FileText, Calendar, Handshake } from 'lucide-react'
+import { publicApi } from '@/api/public'
 
-const METRICS = [
-  { icon: Users,     value: '5,000+',  label: 'Youth Members' },
-  { icon: FileText,  value: '120+',    label: 'Research Projects' },
-  { icon: Calendar,  value: '50+',     label: 'Events Hosted' },
-  { icon: Handshake, value: '30+',     label: 'Partner Organizations' },
+const FALLBACK = [
+  { icon: Users,     value: '5,000+',  label: 'Youth Members',         key: 'total_members' },
+  { icon: FileText,  value: '120+',    label: 'Research Projects',      key: 'research_projects' },
+  { icon: Calendar,  value: '50+',     label: 'Events Hosted',          key: 'events_hosted' },
+  { icon: Handshake, value: '30+',     label: 'Partner Organizations',  key: 'partner_organizations' },
 ]
 
 export default function ImpactMetrics() {
+  const { data } = useQuery('landing:stats', () =>
+    publicApi.getStats().then((r) => r.data),
+    { staleTime: 10 * 60_000, retry: false }
+  )
+
   return (
-    <section className="py-16 bg-brand-navy relative overflow-hidden">
+    <section id="impact" className="py-16 bg-brand-navy relative overflow-hidden">
       {/* Decorative blobs */}
       <div className="absolute top-0 left-0 w-64 h-64 bg-brand-teal/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-64 h-64 bg-brand-gold/10 rounded-full blur-3xl pointer-events-none" />
@@ -23,18 +30,22 @@ export default function ImpactMetrics() {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {METRICS.map(({ icon: Icon, value, label }) => (
-            <div
-              key={label}
-              className="group flex flex-col items-center text-center p-6 rounded-2xl border border-white/10 hover:bg-brand-teal/20 transition-colors cursor-default"
-            >
-              <div className="w-12 h-12 rounded-xl bg-brand-gold/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Icon size={22} className="text-brand-gold" />
+          {FALLBACK.map(({ icon: Icon, value: fallback, label, key }) => {
+            const live = data?.[key as keyof typeof data]
+            const display = live !== undefined ? `${live}+` : fallback
+            return (
+              <div
+                key={label}
+                className="group flex flex-col items-center text-center p-6 rounded-2xl border border-white/10 hover:bg-brand-teal/20 transition-colors cursor-default"
+              >
+                <div className="w-12 h-12 rounded-xl bg-brand-gold/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Icon size={22} className="text-brand-gold" />
+                </div>
+                <p className="font-display text-3xl font-bold text-white mb-1">{display}</p>
+                <p className="text-sm text-white/60">{label}</p>
               </div>
-              <p className="font-display text-3xl font-bold text-white mb-1">{value}</p>
-              <p className="text-sm text-white/60">{label}</p>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>

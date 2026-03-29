@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "apps.resources",
     "apps.administration",
     "apps.communications",
+    "apps.outreach",
 ]
 
 MIDDLEWARE = [

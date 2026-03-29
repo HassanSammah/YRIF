@@ -54,6 +54,7 @@ urlpatterns = [
     path("api/v1/resources/", include("apps.resources.urls")),
     path("api/v1/admin/", include("apps.administration.urls")),
     path("api/v1/communications/", include("apps.communications.urls")),
+    path("api/v1/public/", include("apps.outreach.urls")),
 ]
 
 if settings.DEBUG:

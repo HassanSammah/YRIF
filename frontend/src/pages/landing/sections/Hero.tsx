@@ -1,113 +1,62 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, TrendingUp, Users, BookOpen } from 'lucide-react'
+import { ArrowRight, TrendingUp } from 'lucide-react'
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen bg-gradient-cream flex items-center overflow-hidden pt-16">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-cream pt-16">
       {/* Decorative blobs */}
-      <div className="absolute top-20 right-0 w-96 h-96 bg-brand-teal/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 left-0 w-80 h-80 bg-brand-gold/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-20 left-10 w-72 h-72 bg-brand-teal/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-brand-navy/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-gold/5 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Text */}
-          <div className="space-y-6 fade-in-up">
-            <div className="inline-flex items-center gap-2 bg-brand-teal/10 text-brand-teal text-xs font-semibold px-3 py-1.5 rounded-full border border-brand-teal/20">
-              <TrendingUp size={13} />
-              Tanzania's #1 Youth Research Platform
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 glass px-4 py-2 rounded-full mb-8 fade-in-up">
+          <TrendingUp size={14} className="text-brand-teal" />
+          <span className="text-sm font-medium text-brand-navy">85% Growth in Youth Research</span>
+        </div>
+
+        {/* Headline */}
+        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-brand-navy leading-tight mb-6 fade-in-up">
+          Empowering Youth Through{' '}
+          <span className="text-gradient">Research & Innovation</span>
+        </h1>
+
+        {/* Subheadline */}
+        <p className="max-w-2xl mx-auto text-lg sm:text-xl text-content-secondary leading-relaxed mb-10 fade-in-up">
+          Tanzania's national digital platform connecting young researchers with mentors,
+          opportunities, and resources to drive national development.
+        </p>
+
+        {/* CTAs */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 fade-in-up">
+          <Link
+            to="/register"
+            className="inline-flex items-center gap-2 bg-brand-navy text-white px-8 py-3.5 rounded-xl font-semibold hover:bg-brand-teal transition-colors shadow-lg shadow-brand-navy/20"
+          >
+            Join YRIF <ArrowRight size={18} />
+          </Link>
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center gap-2 bg-white text-brand-navy px-8 py-3.5 rounded-xl font-semibold border border-brand-navy/20 hover:border-brand-teal hover:text-brand-teal transition-colors"
+          >
+            Explore Research
+          </Link>
+        </div>
+
+        {/* Stats row */}
+        <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto fade-in-up">
+          {[
+            { value: '5,000+', label: 'Youth Members' },
+            { value: '120+', label: 'Research Papers' },
+            { value: '50+', label: 'Events Hosted' },
+            { value: '30+', label: 'Partner Orgs' },
+          ].map(({ value, label }) => (
+            <div key={label} className="glass rounded-2xl p-4">
+              <p className="font-display text-2xl font-bold text-brand-navy">{value}</p>
+              <p className="text-xs text-content-secondary mt-1">{label}</p>
             </div>
-
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-brand-navy leading-tight">
-              Empowering Youth Through{' '}
-              <span className="bg-gradient-to-r from-brand-teal to-brand-gold bg-clip-text text-transparent">
-                Research & Innovation
-              </span>
-            </h1>
-
-            <p className="text-lg text-content-secondary leading-relaxed max-w-xl">
-              Join thousands of young Tanzanian researchers and innovators. Submit research, connect with
-              mentors, compete in events, and grow your professional network.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link
-                to="/register"
-                className="inline-flex items-center justify-center gap-2 bg-brand-navy text-white font-semibold px-6 py-3 rounded-xl hover:bg-brand-teal transition-colors"
-              >
-                Join YRIF <ArrowRight size={16} />
-              </Link>
-              <Link
-                to="/dashboard"
-                className="inline-flex items-center justify-center gap-2 border border-brand-navy text-brand-navy font-semibold px-6 py-3 rounded-xl hover:bg-brand-navy hover:text-white transition-colors"
-              >
-                <BookOpen size={16} /> Explore Research
-              </Link>
-            </div>
-
-            {/* Quick stats */}
-            <div className="flex flex-wrap gap-6 pt-2">
-              {[
-                { icon: Users, label: '5,000+ Members' },
-                { icon: BookOpen, label: '120+ Research Papers' },
-                { icon: TrendingUp, label: '50+ Events Hosted' },
-              ].map(({ icon: Icon, label }) => (
-                <div key={label} className="flex items-center gap-2 text-sm text-content-secondary">
-                  <Icon size={15} className="text-brand-teal" />
-                  <span className="font-medium">{label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Glass card */}
-          <div className="relative lg:flex justify-end hidden">
-            <div className="relative w-full max-w-md">
-              {/* Main card */}
-              <div className="glass-card bg-white/80 rounded-3xl p-8 space-y-5 shadow-2xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-brand-teal flex items-center justify-center">
-                    <TrendingUp size={20} className="text-white" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-brand-navy text-sm">Platform Growth</p>
-                    <p className="text-xs text-content-secondary">Since YRIF Inception</p>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  {[
-                    { label: 'Youth Researchers', pct: '85%', color: 'bg-brand-teal' },
-                    { label: 'Research Publications', pct: '72%', color: 'bg-brand-gold' },
-                    { label: 'Partner Organizations', pct: '60%', color: 'bg-brand-navy' },
-                  ].map(({ label, pct, color }) => (
-                    <div key={label} className="space-y-1">
-                      <div className="flex justify-between text-xs font-medium text-brand-navy">
-                        <span>{label}</span><span>{pct}</span>
-                      </div>
-                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className={`h-full ${color} rounded-full`} style={{ width: pct }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <p className="text-xs text-content-secondary italic">
-                  "85% Growth in Youth Research Since YRIF Inception"
-                </p>
-              </div>
-
-              {/* Floating badge */}
-              <div className="absolute -bottom-4 -left-6 glass bg-white rounded-2xl px-4 py-3 shadow-lg flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-brand-gold/20 flex items-center justify-center">
-                  <Users size={14} className="text-brand-gold" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-brand-navy">30+ Partners</p>
-                  <p className="text-[10px] text-content-secondary">Nationwide network</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>

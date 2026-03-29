@@ -8,3 +8,7 @@ MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]  # noqa: F405
 INTERNAL_IPS = ["127.0.0.1"]
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+
+# Disable throttling in development
+REST_FRAMEWORK["DEFAULT_THROTTLE_CLASSES"] = []  # noqa: F405

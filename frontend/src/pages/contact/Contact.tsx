@@ -15,6 +15,7 @@ interface ContactForm {
 export default function Contact() {
   usePageTitle('Contact')
   const [submitted, setSubmitted] = useState(false)
+  const [submittedEmail, setSubmittedEmail] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
@@ -25,6 +26,7 @@ export default function Contact() {
     setError('')
     try {
       await communicationsApi.submitContact(data)
+      setSubmittedEmail(data.email)
       setSubmitted(true)
     } catch {
       setError('Something went wrong. Please try again or email us directly at info@yriftz.org.')
@@ -88,7 +90,7 @@ export default function Contact() {
               <h3 className="text-lg font-bold text-gray-900 mb-2">Message Sent!</h3>
               <p className="text-sm text-gray-500 max-w-sm">
                 Thank you for reaching out. We've received your message and will get back to you
-                at <strong>{}</strong> within 2–3 business days.
+                at <strong>{submittedEmail}</strong> within 2–3 business days.
               </p>
               <button
                 onClick={() => setSubmitted(false)}

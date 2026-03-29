@@ -1,0 +1,1331 @@
+{
+  "version": "1.0",
+  "name": "YRIF Chat",
+  "initial_state": "greeting",
+  "description": "YRIF Chat — bilingual (Swahili + English) assistant for the Youth Research & Innovation Foundation platform (yriftz.org). Bot ID: 6732.",
+  "fallback_state": "fallback",
+  "states": [
+    {
+      "name": "greeting",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 Karibu sana kwenye YRIF Chat! 🌟 Mimi ni msaidizi wako wa kidijitali wa Youth Research & Innovation Foundation.\n\nNinaweza kukusaidia kuhusu:\n📝 Utafiti & Mawasilisho\n📅 Matukio & Mashindano\n🤝 Ushauri wa Kitaaluma\n🏆 Vyeti & Tuzo\n💰 Ruzuku & Ufadhili\n💼 Nafasi za Kazi & Volunteering\n📚 Rasilimali za Kujifunzia\n\nUngehitaji msaada gani leo?\n\n---\n🇬🇧 Welcome to YRIF Chat! 🌟 I'm your digital assistant for the Youth Research & Innovation Foundation.\n\nI can help you with:\n📝 Research & Submissions\n📅 Events & Competitions\n🤝 Mentorship & Guidance\n🏆 Certificates & Awards\n💰 Grants & Funding\n💼 Vacancies & Volunteering\n📚 Learning Resources\n\nWhat can I help you with today?"
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "about_yrif",
+      "type": "STANDARD",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *YRIF — Youth Research & Innovation Foundation* ni taasisi ya kitaifa ya Tanzania. 🇹🇿\n\n🎯 *Dhamira:* Kuleta nguvu kwa vijana wa Tanzania kupitia utafiti, uvumbuzi, na teknolojia ili kushughulikia changamoto za kimataifa.\n\n👥 *Tunakusanyisha:*\n• Vijana na Watafiti\n• Washauri wa Kitaaluma\n• Washirika wa Sekta Binafsi\n• Wasaidizi wa Utafiti\n• Wanafunzi wa Shule za Sekondari na Vyuo Vikuu\n\n🏆 *Tunafanya nini:*\n• Kusaidia mawasilisho ya utafiti wa kisayansi\n• Kupanga mashindano ya uvumbuzi (Youth Bonanza)\n• Kuunganisha vijana na washauri wenye uzoefu\n• Kutoa ruzuku na fursa za ufadhili\n• Kujenga mtandao wa kitaifa wa vijana wabunifu\n\n📊 *Malengo:* Wanachama 3,000+ mwaka wa kwanza, vyuo vikuu 20+, shule 30+\n\n---\n🇬🇧 *YRIF — Youth Research & Innovation Foundation* is Tanzania's national youth research platform. 🇹🇿\n\n🎯 *Mission:* To engage the youth potential by addressing global challenges through research-based solutions.\n\n👥 *We bring together:*\n• Youth and Researchers\n• Academic Mentors & Advisors\n• Private Sector Partners\n• Research Assistants\n• Secondary school and university students\n\n🏆 *What we do:*\n• Support academic research submissions\n• Organise innovation competitions (Youth Bonanza)\n• Connect youth with experienced mentors\n• Provide grants and funding opportunities\n• Build a nationwide network of innovative youth\n\n📊 *Scale targets:* 3,000+ members yr-1, 20+ universities, 30+ high schools"
+        }
+      ],
+      "transitions": {
+        "default": "who_can_join"
+      }
+    },
+    {
+      "name": "vision_mission",
+      "type": "STANDARD",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Maono na Dhamira ya YRIF:*\n\n🔭 *Maono:* \"Kuwa kituo cha dunia cha Utafiti na Uvumbuzi\"\n\n🎯 *Dhamira:* \"Kuleta nguvu kwa vijana kupitia kushughulikia changamoto za kimataifa kupitia ufumbuzi unaotegemea utafiti\"\n\n🌍 *Mwelekeo:*\n• Tanzania Vision 2050\n• Ajenda ya Kitaifa ya Utafiti\n• Malengo ya Maendeleo Endelevu (SDGs): 4, 8, 9\n\nYRIF inajitahidi kujenga kizazi kipya cha watafiti na wabunifu watakaosaidia Tanzania na dunia nzima.\n\n---\n🇬🇧 *YRIF Vision & Mission:*\n\n🔭 *Vision:* \"To become the world's centre of Research and Innovation\"\n\n🎯 *Mission:* \"To engage the youth potential by addressing global challenges through research-based solutions\"\n\n🌍 *Aligned with:*\n• Tanzania Vision 2050\n• National Research Agenda\n• Sustainable Development Goals (SDGs): 4, 8, 9\n\nYRIF strives to build a new generation of researchers and innovators who will contribute to Tanzania and the world."
+        }
+      ],
+      "transitions": {
+        "default": "about_yrif"
+      }
+    },
+    {
+      "name": "core_values",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Maadili Msingi ya YRIF:*\n\n✨ *Utaalamu (Professionalism)* — Tunafanya kazi kwa ubora wa hali ya juu na uwajibikaji katika kila tunalofanya.\n\n🔒 *Uaminifu (Integrity)* — Tunashikamana na ukweli, uwazi, na maadili ya kitaaluma daima.\n\n📌 *Uzingatifu (Adherence)* — Tunafuata viwango, michakato, na ahadi zetu kwa uthabiti.\n\n💡 *Uvumbuzi (Innovation)* — Tunahimiza fikira mpya, suluhisho za ubunifu, na njia za kisasa za kushughulikia matatizo.\n\nMaadili haya yanaongoza kila mwanachama, mshauri, na mshirika wa YRIF.\n\n---\n🇬🇧 *YRIF Core Values:*\n\n✨ *Professionalism* — We operate with the highest standards of quality and accountability in all we do.\n\n🔒 *Integrity* — We uphold truth, transparency, and ethical conduct at all times.\n\n📌 *Adherence* — We consistently follow standards, processes, and our commitments.\n\n💡 *Innovation* — We encourage new ideas, creative solutions, and modern approaches to problem-solving.\n\nThese values guide every member, mentor, and partner of YRIF."
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "who_can_join",
+      "type": "STANDARD",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Nani Anaweza Kujiunga na YRIF?* 🎉\n\nYRIF inakaribishia kila mtu anayependa utafiti na uvumbuzi!\n\n👤 *Aina za Watumiaji:*\n🧑‍🎓 *Kijana* — Wadau wanaotaka kujifunza, kushiriki, na kukua\n🔬 *Mtafiti* — Wanaofanya utafiti wa kitaaluma au wa kisayansi\n👨‍💼 *Mshauri* — Wataalamu wanaotaka kusaidia vijana kukua\n🏢 *Mshirika wa Sekta Binafsi* — Makampuni yanayotaka kushirikiana\n🛠️ *Msaidizi wa Utafiti* — Wanaotaka kusaidia miradi ya utafiti\n\n📋 *Mahitaji:*\n• Umri wowote (mwanafunzi wa sekondari hadi mtu mzima)\n• Nia ya kujifunza na kuchangia\n• Akaunti ya barua pepe au nambari ya simu ya Tanzania\n\nJisajili bure na usubiri idhini ya akaunti yako (siku 1-2 za kazi)!\n\n---\n🇬🇧 *Who Can Join YRIF?* 🎉\n\nYRIF welcomes everyone who is passionate about research and innovation!\n\n👤 *User Types:*\n🧑‍🎓 *Youth* — Members who want to learn, participate, and grow\n🔬 *Researcher* — Those doing academic or scientific research\n👨‍💼 *Mentor/Advisor* — Experienced professionals wanting to guide youth\n🏢 *Private Sector Partner* — Companies wanting to collaborate\n🛠️ *Research Assistant* — Those wanting to support research projects\n\n📋 *Requirements:*\n• Any age (secondary school student to professional)\n• Willingness to learn and contribute\n• Email account or Tanzanian phone number\n\nRegister for free and wait for account approval (1-2 business days)!"
+        }
+      ],
+      "transitions": {
+        "default": "how_to_register"
+      }
+    },
+    {
+      "name": "how_to_register",
+      "type": "STANDARD",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Jinsi ya Kusajili Akaunti ya YRIF:*\n\n1️⃣ Nenda yriftz.org na bonyeza *Register / Jisajili*\n2️⃣ Chagua njia ya kusajili:\n   • 📱 BRIQ Auth — nambari ya simu ya Tanzania (OTP)\n   • 📧 Google — Gmail yako\n3️⃣ Jaza taarifa zako za kibinafsi\n4️⃣ Thibitisha barua pepe au nambari yako\n5️⃣ Kamisha wasifu wako (elimu, maslahi, ujuzi)\n6️⃣ Subiri idhini ya akaunti (siku 1-2 za kazi)\n\n✉️ Utapata arifa ukisha kuidhinishwa na utaweza kutumia jukwaa lote.\n\n---\n🇬🇧 *How to Register a YRIF Account:*\n\n1️⃣ Go to yriftz.org and click *Register / Sign Up*\n2️⃣ Choose your registration method:\n   • 📱 BRIQ Auth — Tanzanian phone number (OTP)\n   • 📧 Google — your Gmail account\n3️⃣ Fill in your personal details\n4️⃣ Verify your email or phone number\n5️⃣ Complete your profile (education, interests, skills)\n6️⃣ Wait for account approval (1-2 business days)\n\n✉️ You'll receive a notification once approved and will have full access to the platform."
+        }
+      ],
+      "transitions": {
+        "default": "account_approval"
+      }
+    },
+    {
+      "name": "account_help",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Msaada wa Akaunti:*\n\nTuna njia mbili za kuingia kwenye YRIF:\n📱 *BRIQ Auth* — Nambari ya simu ya Tanzania (OTP)\n🌐 *Google* — Gmail yako\n\n*Matatizo ya kawaida:*\n• Nenosiri limesahauliwa → Bonyeza Forgot Password\n• Barua pepe haithibitishwa → Angalia kisanduku cha spam\n• OTP haijafika → Jaribu tena baada ya dakika 1\n• Akaunti imefungwa → Wasiliana nasi\n\nBado una tatizo? Wasiliana nasi: info@yriftz.org\n\n---\n🇬🇧 *Account Help:*\n\nYRIF supports two login methods:\n📱 *BRIQ Auth* — Tanzanian phone number (OTP)\n🌐 *Google* — your Gmail account\n\n*Common issues:*\n• Forgotten password → Click Forgot Password\n• Email not verified → Check your spam folder\n• OTP not received → Try again after 1 minute\n• Account suspended → Contact us\n\nStill having trouble? Contact us: info@yriftz.org"
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "account_approval",
+      "type": "STANDARD",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Mchakato wa Idhini ya Akaunti:*\n\nKila akaunti mpya inakaguliwa na timu yetu ili kuhakikisha usalama wa jamii yetu.\n\n⏱️ *Muda:* Kawaida siku 1-2 za kazi\n\n📬 *Utapata arifa kwa barua pepe:*\n• ✅ Akaunti imeidhinishwa — unaweza kuanza kutumia jukwaa\n• ❌ Ombi limekataliwa — pamoja na sababu\n• 🚫 Akaunti imesimamishwa — pamoja na maelezo\n\n*Hali za akaunti:*\n• ⏳ Inasubiri idhini (Pending Approval)\n• ✅ Amilifu (Active)\n• 🚫 Imesimamishwa (Suspended)\n• ❌ Imekataliwa (Rejected)\n\nUkingoja zaidi ya siku 3 bila jibu, wasiliana nasi moja kwa moja:\n📧 info@yriftz.org\n\n---\n🇬🇧 *Account Approval Process:*\n\nEvery new account is reviewed by our team to ensure community safety.\n\n⏱️ *Timeline:* Usually 1-2 business days\n\n📬 *You'll receive an email notification:*\n• ✅ Account approved — you can start using the platform\n• ❌ Request rejected — with reasons provided\n• 🚫 Account suspended — with explanation\n\n*Account statuses:*\n• ⏳ Pending Approval\n• ✅ Active\n• 🚫 Suspended\n• ❌ Rejected\n\nIf you've been waiting more than 3 days without a response, contact us directly:\n📧 info@yriftz.org"
+        }
+      ],
+      "transitions": {
+        "default": "contact_support"
+      }
+    },
+    {
+      "name": "password_help",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Msaada wa Nenosiri:*\n\n*Umesahau Nenosiri?*\n1️⃣ Nenda ukurasa wa kuingia (Login)\n2️⃣ Bonyeza *Forgot Password / Nilikuwa Nenosiri*\n3️⃣ Weka barua pepe yako\n4️⃣ Angalia barua pepe kwa kiungo cha kuanzisha upya nenosiri\n5️⃣ Bonyeza kiungo na weka nenosiri jipya\n\n*Kubadilisha Nenosiri (ukiwa umeingia):*\n1️⃣ Nenda Profile → Security\n2️⃣ Weka nenosiri la sasa\n3️⃣ Weka nenosiri jipya mara mbili\n4️⃣ Bonyeza Save\n\nNenosiri bora liwe na herufi kubwa, ndogo, nambari, na alama.\nBado una tatizo? info@yriftz.org\n\n---\n🇬🇧 *Password Help:*\n\n*Forgot Your Password?*\n1️⃣ Go to the Login page\n2️⃣ Click *Forgot Password*\n3️⃣ Enter your email address\n4️⃣ Check your email for a password reset link\n5️⃣ Click the link and set a new password\n\n*Change Password (when logged in):*\n1️⃣ Go to Profile → Security\n2️⃣ Enter your current password\n3️⃣ Enter your new password twice\n4️⃣ Click Save\n\nA strong password includes uppercase, lowercase, numbers, and symbols.\nStill stuck? info@yriftz.org"
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "profile_help",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Kusasisha Wasifu Wako:*\n\nIngia kwenye akaunti yako na nenda *Profile* ili kusasisha:\n\n📝 *Taarifa za Kibinafsi:*\n• Jina la kwanza na la familia\n• Maelezo yako (Bio)\n• Picha ya wasifu\n• Mkoa na taasisi\n\n📚 *Kielimu & Utaalamu:*\n• Kiwango cha elimu (Sekondari / Chuo / Uzamili / PhD)\n• Maslahi ya utafiti\n• Ujuzi na mafanikio\n\n📱 *Mawasiliano:*\n• Nambari ya simu (thibitisha kwa OTP)\n• Mtandao wa kijamii (hiari)\n\n💡 Wasifu kamili unakusaidia kupata ushauri unaofaa, matukio, na fursa za ufadhili!\n\n---\n🇬🇧 *Updating Your Profile:*\n\nLog in and go to *Profile* to update:\n\n📝 *Personal Information:*\n• First and last name\n• Bio / personal description\n• Profile picture\n• Region and institution\n\n📚 *Education & Expertise:*\n• Education level (Secondary / Degree / Masters / PhD)\n• Research interests\n• Skills and achievements\n\n📱 *Contact:*\n• Phone number (verified via OTP)\n• Social media links (optional)\n\n💡 A complete profile helps you get matched with the right mentors, events, and funding opportunities!"
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "roles",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Majukumu kwenye YRIF:*\n\n🧑‍🎓 *Kijana (Youth)* — Mwanachama wa kawaida: jifunza, shiriki matukio, omba ushauri\n🔬 *Mtafiti (Researcher)* — Wasilisha na usimamie utafiti wa kitaaluma\n👨‍💼 *Mshauri (Mentor/Advisor)* — Toa ushauri na ongoza vijana\n🛠️ *Msaidizi wa Utafiti (Research Assistant)* — Saidia miradi ya utafiti\n🏢 *Mshirika wa Sekta Binafsi (Private Sector Partner)* — Ushirikiano wa biashara na ufadhili\n⚖️ *Hakimu (Judge)* — Kadiria utafiti na miradi ya mashindano\n👑 *Msimamizi (Admin)* — Usimamizi wa jukwaa\n\nKubadilisha jukumu lako: Wasiliana nasi kwa info@yriftz.org au nenda Profile na omba mabadiliko.\n\n---\n🇬🇧 *Roles on YRIF:*\n\n🧑‍🎓 *Youth* — Regular member: learn, join events, request mentorship\n🔬 *Researcher* — Submit and manage academic research\n👨‍💼 *Mentor/Advisor* — Guide and advise youth members\n🛠️ *Research Assistant* — Support research projects\n🏢 *Private Sector Partner* — Business collaboration and funding\n⚖️ *Judge* — Evaluate research and competition projects\n👑 *Admin* — Platform management\n\nTo change your role: Contact us at info@yriftz.org or go to your Profile and request a role change."
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "research_info",
+      "type": "STANDARD",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Jinsi ya Kuwasilisha Utafiti:*\n\n1️⃣ Ingia kwenye akaunti yako\n2️⃣ Nenda *Research → Submit Research*\n3️⃣ Jaza taarifa za utafiti:\n   • Kichwa cha utafiti\n   • Muhtasari (Abstract)\n   • Maneno muhimu (Keywords)\n4️⃣ Chagua kategoria (Sayansi za Asili / Sayansi za Jamii / Sanaa / Teknolojia)\n5️⃣ Pakia hati yako (PDF au Word)\n6️⃣ Bonyeza *Submit / Wasilisha*\n\n⏳ Utafiti wako utakaguliwa na wataalamu. Utapata arifa baada ya ukaguzi!\n\n💡 Kumbuka: Utafiti wote lazima uwe wa asili (original) na usifanane na kazi zilizopita.\n\n---\n🇬🇧 *How to Submit Research:*\n\n1️⃣ Log in to your account\n2️⃣ Go to *Research → Submit Research*\n3️⃣ Fill in the research details:\n   • Research title\n   • Abstract / Summary\n   • Keywords\n4️⃣ Select category (Natural Sciences / Social Sciences / Arts / Technology)\n5️⃣ Upload your document (PDF or Word)\n6️⃣ Click *Submit*\n\n⏳ Your research will be reviewed by our expert panel. You'll receive a notification after review!\n\n💡 Note: All research must be original and must not duplicate previous work."
+        }
+      ],
+      "transitions": {
+        "default": "research_categories"
+      }
+    },
+    {
+      "name": "research_status",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Kufuatilia Utafiti Wako:*\n\nIngia kwenye akaunti yako na nenda *Research → My Submissions*\n\n📊 *Hali za Utafiti:*\n✏️ *Rasimu (Draft)* — Bado hujatuma\n📤 *Imetumwa (Submitted)* — Inasubiri ukaguzi\n🔍 *Inakaguliwa (Under Review)* — Wataalamu wanakagua\n✅ *Imeidhinishwa (Approved)* — Imepitishwa!\n❌ *Imekataliwa (Rejected)* — Tazama maoni ya wataalamu na urekebisha\n🌐 *Imechapishwa (Published)* — Inaonekana kwa umma\n\n📧 Utapata arifa kwa barua pepe kwa kila mabadiliko ya hali.\n\nKama una maswali mahususi kuhusu utafiti wako: info@yriftz.org\n\n---\n🇬🇧 *Tracking Your Research Status:*\n\nLog in and go to *Research → My Submissions*\n\n📊 *Research Statuses:*\n✏️ *Draft* — Not yet submitted\n📤 *Submitted* — Awaiting review\n🔍 *Under Review* — Experts are evaluating\n✅ *Approved* — Accepted!\n❌ *Rejected* — Review expert feedback and revise\n🌐 *Published* — Visible to the public\n\n📧 You'll receive email notifications for every status change.\n\nFor specific questions about your research: info@yriftz.org"
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "research_categories",
+      "type": "STANDARD",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Kategoria za Utafiti katika YRIF:*\n\n🔬 *Sayansi za Asili (Natural Sciences)*\n   Biolojia, Kemia, Fizikia, Mazingira, Afya, Kilimo\n\n👥 *Sayansi za Jamii (Social Sciences)*\n   Uchumi, Saikolojia, Siasa, Elimu, Sosholojia\n\n🎨 *Sanaa (Arts)*\n   Sanaa za ubunifu, Utamaduni, Lugha, Historia, Falsafa\n\n💻 *Teknolojia (Technology)*\n   TEHAMA, Uhandisi, Programu za Kompyuta, Uvumbuzi wa Kidijitali, AI\n\n🏆 *Tuzo za Kila Mwaka (Annual Awards):*\n• Sayansi za Asili\n• Sayansi za Jamii\n• Sanaa\n\nChagua kategoria inayofaa utafiti wako zaidi!\n\n---\n🇬🇧 *Research Categories at YRIF:*\n\n🔬 *Natural Sciences*\n   Biology, Chemistry, Physics, Environment, Health, Agriculture\n\n👥 *Social Sciences*\n   Economics, Psychology, Political Science, Education, Sociology\n\n🎨 *Arts*\n   Creative Arts, Culture, Language, History, Philosophy\n\n💻 *Technology*\n   ICT, Engineering, Computer Science, Digital Innovation, AI\n\n🏆 *Annual Awards categories:*\n• Natural Sciences\n• Social Sciences\n• Arts\n\nSelect the category that best fits your research!"
+        }
+      ],
+      "transitions": {
+        "default": "research_info"
+      }
+    },
+    {
+      "name": "events_info",
+      "type": "STANDARD",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Matukio ya YRIF:*\n\n🎓 *Seminari* — Mazungumzo ya kitaalamu na wataalamu\n🛠️ *Warsha (Workshops)* — Mafunzo ya vitendo na ujuzi\n🏆 *Mashindano* — Shindana na ushinde tuzo za pesa na vyeti\n🎪 *Youth Bonanza* — Onyesha mradi wako mbele ya umma\n💻 *Webinari* — Matukio ya mtandaoni (online)\n🎖️ *Tuzo za Kila Mwaka (Annual Awards)* — Utambuzi wa utafiti bora\n🏫 *Mipango ya Shule* — Warsha za shule za sekondari na vyuo vikuu\n\nTembelea ukurasa wa *Events* kwenye jukwaa letu kuona matukio yanayokuja na kusajili!\n\n---\n🇬🇧 *YRIF Events:*\n\n🎓 *Seminars* — Academic talks with experts\n🛠️ *Workshops* — Hands-on skills training\n🏆 *Competitions* — Compete and win cash prizes and certificates\n🎪 *Youth Bonanza* — Showcase your project to the public\n💻 *Webinars* — Online events you can join from anywhere\n🎖️ *Annual Awards* — Recognition of outstanding research\n🏫 *School Programs* — Workshops at secondary schools and universities\n\nVisit the *Events* page on our platform to see upcoming events and register!"
+        }
+      ],
+      "transitions": {
+        "default": "register_event"
+      }
+    },
+    {
+      "name": "register_event",
+      "type": "STANDARD",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Jinsi ya Kusajili Tukio:*\n\n1️⃣ Ingia kwenye akaunti yako\n2️⃣ Nenda ukurasa wa *Events*\n3️⃣ Bonyeza tukio unalotaka\n4️⃣ Angalia tarehe, mahali (au kiungo cha mkutano wa mtandaoni), na mahitaji\n5️⃣ Bonyeza *Register Now / Jisajili*\n6️⃣ Utapata uthibitisho kwa barua pepe!\n\n📌 *Kumbuka:*\n• Baadhi ya matukio yanahitaji mawasilisho ya utafiti kwa mashindano\n• Hakikisha kusajili kabla ya tarehe ya mwisho\n• Baadhi ya matukio ni ya bure, mengine yana ada ndogo\n\n---\n🇬🇧 *How to Register for an Event:*\n\n1️⃣ Log in to your account\n2️⃣ Go to the *Events* page\n3️⃣ Click on the event you want to attend\n4️⃣ Review the date, location (or online meeting link), and requirements\n5️⃣ Click *Register Now*\n6️⃣ You'll receive a confirmation by email!\n\n📌 *Note:*\n• Some events require a research submission for competitions\n• Ensure you register before the deadline\n• Some events are free, others may have a small fee"
+        }
+      ],
+      "transitions": {
+        "default": "competition"
+      }
+    },
+    {
+      "name": "my_events",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Matukio Yako:*\n\nIngia kwenye akaunti yako na nenda *Events → My Registrations* kuona:\n\n• ✅ Matukio uliyosajili\n• 📋 Hali ya usajili wako\n• 📅 Matukio yanayokuja\n• 🏆 Matokeo ya mashindano\n• 📜 Vyeti vyako vya ushiriki\n\nKama hujasajili tukio lolote bado, tembelea ukurasa wa Events uone kinachofuata!\n\n---\n🇬🇧 *Your Events:*\n\nLog in and go to *Events → My Registrations* to see:\n\n• ✅ Events you've registered for\n• 📋 Your registration status\n• 📅 Upcoming events\n• 🏆 Competition results\n• 📜 Your participation certificates\n\nIf you haven't registered for any events yet, visit the Events page to see what's coming up!"
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "competition",
+      "type": "STANDARD",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Mashindano ya YRIF:*\n\nMashindano yetu yanalenga kuleta uvumbuzi wa vijana mbele ya wataalamu na umma!\n\n🎪 *Youth Bonanza* — Onyesha mradi wako au uvumbuzi wako\n🎖️ *Tuzo za Kila Mwaka* — Utafiti bora katika Sayansi za Asili, Sayansi za Jamii, na Sanaa\n\n📝 *Jinsi ya Kushiriki:*\n1. Wasilisha utafiti au mradi wako kupitia jukwaa\n2. Sajili kwa tukio la mashindano\n3. Wataalamu (majaji) watakadiria kazi zako\n4. Bora wanapata tuzo!\n\n🎖️ *Tuzo:*\n• Vyeti vya ushindi\n• Zawadi za pesa (cash prizes)\n• Nafasi za mafunzo na internship\n• Mtandao wa kitaalamu\n\nTazama matukio ya mashindano kwenye ukurasa wa Events!\n\n---\n🇬🇧 *YRIF Competitions:*\n\nOur competitions bring youth innovation before experts and the public!\n\n🎪 *Youth Bonanza* — Showcase your project or innovation\n🎖️ *Annual Awards* — Best research in Natural Sciences, Social Sciences, and Arts\n\n📝 *How to Participate:*\n1. Submit your research or project through the platform\n2. Register for the competition event\n3. Expert judges will evaluate your work\n4. Top performers receive prizes!\n\n🎖️ *Prizes:*\n• Winner's certificates\n• Cash prizes\n• Training and internship opportunities\n• Professional networking\n\nCheck the Events page for upcoming competitions!"
+        }
+      ],
+      "transitions": {
+        "default": "certificates"
+      }
+    },
+    {
+      "name": "certificates",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Vyeti vya YRIF:*\n\nUnaweza kupata aina mbili za vyeti:\n🥇 *Hati ya Ushindi* — Ukishinda mashindano\n📜 *Hati ya Ushiriki* — Ukishiriki matukio\n\n*Jinsi ya Kupakua Hati Yako:*\n1️⃣ Ingia kwenye akaunti yako\n2️⃣ Nenda *Events → My Registrations*\n3️⃣ Bonyeza tukio husika\n4️⃣ Bonyeza *Download Certificate / Pakua Hati*\n\n⏳ Vyeti vinapatikana baada ya tukio kukamilika na matokeo kuthibitishwa.\n\nKama hati yako haipo baada ya siku 3 za tukio, wasiliana nasi:\n📧 info@yriftz.org\n\n---\n🇬🇧 *YRIF Certificates:*\n\nYou can receive two types of certificates:\n🥇 *Winner's Certificate* — When you win a competition\n📜 *Participation Certificate* — When you attend an event\n\n*How to Download Your Certificate:*\n1️⃣ Log in to your account\n2️⃣ Go to *Events → My Registrations*\n3️⃣ Click on the relevant event\n4️⃣ Click *Download Certificate*\n\n⏳ Certificates are available after the event is completed and results are confirmed.\n\nIf your certificate isn't available after 3 days, contact us:\n📧 info@yriftz.org"
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "mentorship_info",
+      "type": "STANDARD",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Programu ya Ushauri wa YRIF:*\n\nTunaunganisha vijana wenye talanta na wataalamu wenye uzoefu!\n\n*Mchakato wa Ushauri:*\n1. 📋 Jaza ombi la ushauri (Mentorship Request)\n2. 🔍 Timu yetu inakupanga na mshauri anayefaa\n3. 🤝 Mazungumzo na mshauri wako yanaanza\n4. 📈 Fuatilia maendeleo yako kwenye jukwaa\n\n👨‍💼 *Washauri wetu wana uzoefu katika:*\n• Sayansi na Teknolojia (STEM)\n• Biashara na Ujasiriamali\n• Sanaa na Ubunifu\n• Sera na Uongozi\n• Utafiti wa Kitaaluma\n\nOmba mshauri leo kupitia ukurasa wa *Mentorship*!\n\n---\n🇬🇧 *YRIF Mentorship Program:*\n\nWe connect talented youth with experienced professionals!\n\n*Mentorship Process:*\n1. 📋 Fill in a Mentorship Request\n2. 🔍 Our team matches you with a suitable mentor\n3. 🤝 Sessions with your mentor begin\n4. 📈 Track your progress on the platform\n\n👨‍💼 *Our mentors have expertise in:*\n• Science and Technology (STEM)\n• Business and Entrepreneurship\n• Arts and Creativity\n• Policy and Leadership\n• Academic Research\n\nRequest a mentor today via the *Mentorship* page!"
+        }
+      ],
+      "transitions": {
+        "default": "request_mentor"
+      }
+    },
+    {
+      "name": "request_mentor",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Jinsi ya Kuomba Mshauri:*\n\n1️⃣ Ingia kwenye akaunti yako\n2️⃣ Nenda ukurasa wa *Mentorship*\n3️⃣ Bonyeza *Request Mentor / Omba Mshauri*\n4️⃣ Jaza fomu:\n   • Mada unayohitaji ushauri\n   • Ujumbe kwa mshauri wanaotarajiwa\n   • Mshauri unayependekeza (si lazima)\n5️⃣ Tuma ombi\n\n⏳ Timu yetu itakupanga na mshauri ndani ya siku *3-5 za kazi*.\nUtapata arifa kwa barua pepe ukishapangwa!\n\n💡 Ushauri ni wa bure kwa wanachama wote wa YRIF.\n\n---\n🇬🇧 *How to Request a Mentor:*\n\n1️⃣ Log in to your account\n2️⃣ Go to the *Mentorship* page\n3️⃣ Click *Request Mentor*\n4️⃣ Fill in the form:\n   • Topic you need guidance on\n   • Message to the prospective mentor\n   • Preferred mentor (optional)\n5️⃣ Submit the request\n\n⏳ Our team will match you with a mentor within *3-5 business days*.\nYou'll receive an email notification once matched!\n\n💡 Mentorship is free for all YRIF members."
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "become_mentor",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Kuwa Mshauri wa YRIF:* 🌟\n\nKama una uzoefu na unataka kusaidia vijana wa Tanzania kukua, tunakukaribishia!\n\n📋 *Mahitaji ya Mshauri:*\n• Uzoefu wa kitaaluma, kitaaluma, au ubunifu (miaka 3+)\n• Nia ya kweli ya kusaidia vijana\n• Muda wa dakika 30-60 kwa wiki\n\n*Jinsi ya Kusajili kama Mshauri:*\n1️⃣ Ingia kwenye akaunti yako\n2️⃣ Nenda *Profile → Mentor Profile*\n3️⃣ Jaza maelezo ya utaalamu na uzoefu wako\n4️⃣ Weka upatikanaji wako (availability)\n5️⃣ Timu yetu itakukagua na kukuimarisha ndani ya siku 3-5\n\nAsante kwa kutaka kusaidia vijana wa Tanzania! 🇹🇿\n\n---\n🇬🇧 *Become a YRIF Mentor:* 🌟\n\nIf you have experience and want to help Tanzanian youth grow, we welcome you!\n\n📋 *Mentor Requirements:*\n• Professional, academic, or creative experience (3+ years)\n• Genuine desire to help youth\n• 30-60 minutes available per week\n\n*How to Register as a Mentor:*\n1️⃣ Log in to your account\n2️⃣ Go to *Profile → Mentor Profile*\n3️⃣ Fill in your expertise and experience details\n4️⃣ Set your availability\n5️⃣ Our team will review and approve you within 3-5 days\n\nThank you for wanting to help Tanzanian youth! 🇹🇿"
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "my_mentorship",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Ushauri Wako:*\n\nIngia kwenye akaunti yako na nenda *Mentorship → My Mentorship* kuona:\n\n• 📋 Hali ya ombi lako\n• 👤 Maelezo ya mshauri wako\n• 💬 Historia ya mazungumzo ya ushauri\n• 📊 Maendeleo ya vikao\n• ⭐ Toa maoni (feedback) kuhusu ushauri\n\nKama una tatizo na ushauri wako au unataka kubadilisha mshauri, wasiliana na timu yetu:\n📧 info@yriftz.org\n\n---\n🇬🇧 *Your Mentorship:*\n\nLog in and go to *Mentorship → My Mentorship* to see:\n\n• 📋 Status of your mentorship request\n• 👤 Your mentor's profile and contact details\n• 💬 Mentorship session history\n• 📊 Progress tracking\n• ⭐ Leave feedback about your mentorship experience\n\nIf you have an issue with your mentorship or want to change mentors, contact our team:\n📧 info@yriftz.org"
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "partner_info",
+      "type": "STANDARD",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Ushirikiano na YRIF:* 🏢\n\nTunafurahi kushirikiana na makampuni, taasisi za elimu, na mashirika ya serikali!\n\n🎯 *Faida za Ushirikiano:*\n• Fikia talanta za vijana wa Tanzania zaidi ya 3,000\n• Pata utafiti wa kisasa unaoshughulikia changamoto halisi\n• Jenga jina la kampuni yako kama kiongozi wa maendeleo\n• Saidia maendeleo endelevu ya Tanzania\n\n🤝 *Aina za Ushirikiano:*\n• 🏭 Sekta ya Viwanda — Ufadhili wa utafiti, ajira kwa wahitimu\n• 🏢 Mashirika ya Jamii (NGOs) — Miradi ya pamoja\n• 🏫 Taasisi za Elimu — Mipango ya Taaluma\n• 🏛️ Serikali — Mipango ya Sera na Utafiti\n\nWasiliana nasi ili tujadili jinsi ya kushirikiana: info@yriftz.org\n\n---\n🇬🇧 *Partnership with YRIF:* 🏢\n\nWe welcome partnerships with companies, educational institutions, and government agencies!\n\n🎯 *Benefits of Partnership:*\n• Access to 3,000+ talented Tanzanian youth\n• Get cutting-edge research addressing real challenges\n• Build your brand as a development leader\n• Contribute to Tanzania's sustainable development\n\n🤝 *Types of Partnership:*\n• 🏭 Industry — Research funding, graduate employment\n• 🏢 NGOs — Joint development projects\n• 🏫 Educational Institutions — Academic programs\n• 🏛️ Government — Policy and research programs\n\nContact us to discuss collaboration: info@yriftz.org"
+        }
+      ],
+      "transitions": {
+        "default": "contact_support"
+      }
+    },
+    {
+      "name": "resources_info",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Kituo cha Rasilimali cha YRIF:* 📚\n\nPata nyenzo za kujifunzia na rasilimali muhimu za utafiti!\n\n📄 *Makala na Vitabu* — Machapisho ya kisayansi na kiakademia\n🎥 *Video za Mafunzo* — Mafunzo ya jinsi ya kufanya utafiti\n📊 *Ripoti za Utafiti* — Tafiti zilizochapishwa na wanachama\n📋 *Miongozo na Violezo* — Fomu za utafiti na mwongozo wa uandishi\n🎓 *Nyenzo za Mashindano* — Maandalizi ya mashindano\n\n*Jinsi ya Kupata Rasilimali:*\n1️⃣ Ingia kwenye akaunti yako\n2️⃣ Nenda ukurasa wa *Resources*\n3️⃣ Tafuta au vinjari kwa kategoria\n4️⃣ Bonyeza *Download / Pakua*\n\nRasilimali zetu zinaendelea kuongezwa kila wiki!\n\n---\n🇬🇧 *YRIF Resource Centre:* 📚\n\nAccess learning materials and important research resources!\n\n📄 *Articles & Books* — Scientific and academic publications\n🎥 *Training Videos* — Tutorials on how to conduct research\n📊 *Research Reports* — Published work by our members\n📋 *Templates & Guides* — Research forms and writing guides\n🎓 *Competition Materials* — Preparation resources for competitions\n\n*How to Access Resources:*\n1️⃣ Log in to your account\n2️⃣ Go to the *Resources* page\n3️⃣ Search or browse by category\n4️⃣ Click *Download*\n\nNew resources are added every week!"
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "donation",
+      "type": "STANDARD",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Kuchangia YRIF:* 💰\n\nAsante kwa kutaka kuunga mkono kazi yetu ya kuendeleza vijana wa Tanzania!\n\n🌍 *Kwa nini Kuchangia?*\nMchangiaji wako unasaidia:\n• Kutoa ruzuku kwa watafiti vijana\n• Kupanga mashindano na matukio\n• Kuendeleza rasilimali za kujifunzia\n• Kufikia vijana zaidi kote Tanzania\n\n💳 *Jinsi ya Kuchangia:*\nWasiliana nasi kupitia barua pepe ili kupata maelezo kamili ya jinsi ya kutoa michango:\n📧 info@yriftz.org\n\nTuna heshima na shukrani kwa kila mchangiaji, mkubwa au mdogo! 🙏\n\n---\n🇬🇧 *Donate to YRIF:* 💰\n\nThank you for wanting to support our work in developing Tanzania's youth!\n\n🌍 *Why Donate?*\nYour contribution helps:\n• Provide grants to young researchers\n• Organise competitions and events\n• Develop learning resources\n• Reach more youth across Tanzania\n\n💳 *How to Donate:*\nContact us by email to get full details on how to contribute:\n📧 info@yriftz.org\n\nWe appreciate and honour every contributor, big or small! 🙏"
+        }
+      ],
+      "transitions": {
+        "default": "contact_support"
+      }
+    },
+    {
+      "name": "vacancies",
+      "type": "STANDARD",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Nafasi za Kazi na Volunteering katika YRIF:* 💼\n\nYRIF inakua na tunatafuta watu wenye nguvu na nia!\n\n👔 *Aina za Nafasi:*\n• 💼 *Kazi za Muda Kamili* — Katika sekta ya usimamizi na teknolojia\n• 🎓 *Internship* — Kwa wanafunzi wa chuo wanaotaka uzoefu\n• 🤝 *Volunteering / Kujitoa* — Saidia mashindano, matukio, na programu\n• 🔬 *Msaidizi wa Utafiti* — Saidia miradi ya utafiti ya YRIF\n\n📋 *Jinsi ya Kuomba:*\nAngalia nafasi zilizopo au tuma CV yako kupitia:\n📧 info@yriftz.org\nMada: \"Job/Internship/Volunteer Application - [Jina lako]\"\n\nTunashukuru nia yako ya kutaka kuchangia kukua kwa YRIF! 🇹🇿\n\n---\n🇬🇧 *Vacancies & Volunteering at YRIF:* 💼\n\nYRIF is growing and we are looking for passionate and dedicated people!\n\n👔 *Types of Opportunities:*\n• 💼 *Full-time Jobs* — In administration and technology\n• 🎓 *Internships* — For university students seeking experience\n• 🤝 *Volunteering* — Help with competitions, events, and programs\n• 🔬 *Research Assistant* — Support YRIF research projects\n\n📋 *How to Apply:*\nCheck available positions or send your CV through:\n📧 info@yriftz.org\nSubject: \"Job/Internship/Volunteer Application - [Your Name]\"\n\nWe appreciate your interest in contributing to YRIF's growth! 🇹🇿"
+        }
+      ],
+      "transitions": {
+        "default": "contact_support"
+      }
+    },
+    {
+      "name": "journal_publication",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Jarida la YRIF (YRIF Journal):* 📖\n\nYRIF inaunga mkono uchapishaji wa utafiti wa kisayansi wa vijana wa Tanzania!\n\n📰 *Kuhusu Jarida:*\n• Jarida la kisayansi la wazi (Open Access)\n• Linachapisha utafiti wa ubora kutoka kwa vijana\n• Linakaguliwa na wataalamu (Peer-reviewed)\n• Linashughulikia nyanja zote: Sayansi, Teknolojia, Sanaa, Sayansi za Jamii\n\n📝 *Kuchapisha Utafiti Wako:*\n1️⃣ Wasilisha utafiti wako kupitia jukwaa (Research → Submit)\n2️⃣ Utafiti uliopitishwa unaweza kupendekeza kwa uchapishaji\n3️⃣ Timu ya jarida itakukagua na kukuarifu\n\n📧 Maswali kuhusu uchapishaji: info@yriftz.org\n\n---\n🇬🇧 *YRIF Journal:* 📖\n\nYRIF supports the publication of scientific research by Tanzanian youth!\n\n📰 *About the Journal:*\n• Open Access scientific journal\n• Publishes quality research from youth\n• Peer-reviewed by academic experts\n• Covers all fields: Science, Technology, Arts, Social Sciences\n\n📝 *Publishing Your Research:*\n1️⃣ Submit your research through the platform (Research → Submit)\n2️⃣ Approved research can be recommended for journal publication\n3️⃣ The journal team will review and notify you\n\n📧 Journal publication enquiries: info@yriftz.org"
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "grants_funding",
+      "type": "STANDARD",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Ruzuku na Ufadhili wa YRIF:* 💰\n\nYRIF inasaidia vijana kupata rasilimali za kifedha kwa utafiti wao!\n\n🎯 *Aina za Msaada wa Kifedha:*\n• 🏆 *Ruzuku za Mashindano* — Zawadi za pesa kwa washindi wa mashindano\n• 📚 *Ruzuku za Utafiti* — Msaada kwa miradi ya utafiti inayohitaji fedha\n• 🌍 *Nafasi za Nje* — Habari za udhamini wa masomo na konferensi za kimataifa\n• 🤝 *Ufadhili wa Washirika* — Fursa kutoka kwa washirika wa sekta binafsi\n\n📋 *Jinsi ya Kuomba:*\n1️⃣ Hakikisha una akaunti iliyoidhinishwa\n2️⃣ Tazama matangazo ya ruzuku kwenye jukwaa\n3️⃣ Jaza fomu ya ombi ikisema inayohitajika\n4️⃣ Wasiliana na timu kwa msaada: info@yriftz.org\n\n---\n🇬🇧 *YRIF Grants & Funding:* 💰\n\nYRIF helps youth access financial resources for their research!\n\n🎯 *Types of Financial Support:*\n• 🏆 *Competition Grants* — Cash prizes for competition winners\n• 📚 *Research Grants* — Support for research projects needing funding\n• 🌍 *External Opportunities* — Information on scholarships and international conferences\n• 🤝 *Partner Funding* — Opportunities from private sector partners\n\n📋 *How to Apply:*\n1️⃣ Ensure you have an approved account\n2️⃣ Watch for grant announcements on the platform\n3️⃣ Fill in the application form when one is available\n4️⃣ Contact the team for assistance: info@yriftz.org"
+        }
+      ],
+      "transitions": {
+        "default": "contact_support"
+      }
+    },
+    {
+      "name": "high_school_program",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Programu ya Shule za Sekondari (YRIF High School Program):* 🏫\n\nYRIF inafanya kazi moja kwa moja na shule za sekondari Tanzania!\n\n🎯 *Programu Zetu za Shule:*\n• 🔬 *Klabu za Utafiti (Research Clubs)* — Vilabu vya utafiti vya shuleni (Kidato cha 1-6)\n• 🛠️ *Warsha za Uvumbuzi* — Mafunzo ya vitendo kwa wanafunzi\n• 🏆 *Youth Bonanza kwa Shule* — Onyesha miradi yako mbele ya wataalamu\n• 📚 *Rasilimali za Kujifunzia* — Nyenzo za kisayansi kwa wanafunzi\n\n🎯 *Lengo:* Kufikia shule 30+ kote Tanzania\n\n*Jinsi Shule Yako Inaweza Kushiriki:*\n• Mwalimu au mkurugenzi wa shule asiliana nasi\n• Tutapanga ziara na warsha shuleni mwenu\n\n📧 Mawasiliano ya shule: info@yriftz.org\nMada: \"School Partnership - [Jina la Shule]\"\n\n---\n🇬🇧 *YRIF High School Program:* 🏫\n\nYRIF works directly with secondary schools across Tanzania!\n\n🎯 *Our School Programs:*\n• 🔬 *Research Clubs* — In-school research clubs (Form 1-6)\n• 🛠️ *Innovation Workshops* — Hands-on training for students\n• 🏆 *Youth Bonanza for Schools* — Showcase your project to experts\n• 📚 *Learning Resources* — Scientific materials for students\n\n🎯 *Goal:* Reach 30+ schools across Tanzania\n\n*How Your School Can Join:*\n• A teacher or school director contacts us\n• We will arrange visits and workshops at your school\n\n📧 School contact: info@yriftz.org\nSubject: \"School Partnership - [School Name]\""
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "university_program",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Programu ya Vyuo Vikuu (YRIF University Program):* 🎓\n\nYRIF inashirikiana na vyuo vikuu kote Tanzania kuendeleza utafiti wa vijana!\n\n🎯 *Programu Zetu za Chuo:*\n• 🎓 *Seminari za Chuo (University Seminars)* — Mazungumzo ya kitaalamu\n• 🛠️ *Warsha za Utafiti* — Mafunzo ya mbinu za utafiti\n• 🤝 *Mipango ya Pamoja* — Miradi ya utafiti ya pamoja na vyuo\n• 📊 *Ushiriki wa Wanafunzi* — Fursa za mashindano na tuzo\n\n🎯 *Lengo:* Kufikia vyuo vikuu 20+ kote Tanzania\n\n*Jinsi ya Kushirikiana:*\n• Mwanafunzi: Jiandikishe kwenye YRIF platform na shiriki matukio\n• Msimamizi wa chuo au profesa: Wasiliana nasi kupanga programu\n\n📧 Mawasiliano ya chuo: info@yriftz.org\nMada: \"University Partnership - [Jina la Chuo]\"\n\n---\n🇬🇧 *YRIF University Program:* 🎓\n\nYRIF collaborates with universities across Tanzania to advance youth research!\n\n🎯 *Our University Programs:*\n• 🎓 *University Seminars* — Academic talks with experts\n• 🛠️ *Research Workshops* — Training in research methods\n• 🤝 *Joint Programs* — Collaborative research projects with universities\n• 📊 *Student Participation* — Competition and award opportunities\n\n🎯 *Goal:* Reach 20+ universities across Tanzania\n\n*How to Get Involved:*\n• Student: Register on the YRIF platform and join events\n• University administrator or professor: Contact us to arrange programs\n\n📧 University contact: info@yriftz.org\nSubject: \"University Partnership - [University Name]\""
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "contact_support",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Mawasiliano ya YRIF:* 📞\n\n📧 *Barua Pepe:* info@yriftz.org\n🌐 *Tovuti:* yriftz.org\n📱 *Jukwaa:* Unalitumia sasa hivi!\n\n📋 *Kwa Msaada wa Haraka:*\n• Tumia fomu ya *Contact* kwenye jukwaa letu\n• Au niambie hapa — nitajaribu kukusaidia!\n• Tuma barua pepe moja kwa moja kwa info@yriftz.org\n\n⏰ *Masaa ya Kazi:* Jumatatu–Ijumaa, 08:00–17:00 EAT\n\n📬 Tutajibu ndani ya masaa 24 siku za kazi.\n\n---\n🇬🇧 *Contact YRIF:* 📞\n\n📧 *Email:* info@yriftz.org\n🌐 *Website:* yriftz.org\n📱 *Platform:* You're using it right now!\n\n📋 *For Quick Support:*\n• Use the *Contact* form on our platform\n• Or ask me here — I'll try to help!\n• Email us directly at info@yriftz.org\n\n⏰ *Working Hours:* Monday–Friday, 08:00–17:00 EAT\n\n📬 We'll respond within 24 hours on business days."
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "report_issue",
+      "type": "STANDARD",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Kuripoti Tatizo la Kiufundi:* 🐛\n\nAsante kwa kutuarifu! Hii inasaidia kuboresha jukwaa letu kwa kila mtu.\n\n*Jinsi ya Kuripoti Tatizo:*\n1️⃣ Nenda ukurasa wa *Contact* kwenye jukwaa\n2️⃣ Chagua mada: *Technical Issue / Tatizo la Kiufundi*\n3️⃣ Eleza tatizo kwa undani (pamoja na hatua zilizotokeza tatizo)\n4️⃣ Ambatisha picha ya skrini (screenshot) kama inasaidia\n5️⃣ Tuma\n\nAu tuma barua pepe moja kwa moja:\n📧 info@yriftz.org\nMada: [Technical Issue] — Maelezo mafupi ya tatizo\n\nTimu yetu ya kiufundi itashughulikia haraka!\n\n---\n🇬🇧 *Report a Technical Issue:* 🐛\n\nThank you for letting us know! This helps us improve the platform for everyone.\n\n*How to Report an Issue:*\n1️⃣ Go to the *Contact* page on the platform\n2️⃣ Select topic: *Technical Issue*\n3️⃣ Describe the problem in detail (include steps that led to the issue)\n4️⃣ Attach a screenshot if it helps\n5️⃣ Submit\n\nOr email us directly:\n📧 info@yriftz.org\nSubject: [Technical Issue] — Brief description\n\nOur technical team will handle it promptly!"
+        }
+      ],
+      "transitions": {
+        "default": "escalate"
+      }
+    },
+    {
+      "name": "escalate",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 *Msaada wa Mtu wa Kweli:* 👨‍💼\n\nNakuelewa! Ombi lako linahitaji usikivu zaidi wa kibinafsi.\n\n✅ Tuma barua pepe kwa timu yetu moja kwa moja:\n📧 info@yriftz.org\nMada: [Urgent/Tatizo Kubwa] — Maelezo mafupi\n\n⏱️ Tutajibu ndani ya masaa 24 siku za kazi.\n\nAsante kwa uvumilivu wako! Tutahakikisha hoja yako inashughulikiwa vizuri. 🙏\n\n---\n🇬🇧 *Human Support:* 👨‍💼\n\nI understand! Your request needs more personal attention.\n\n✅ Email our team directly:\n📧 info@yriftz.org\nSubject: [Urgent/Major Issue] — Brief description\n\n⏱️ We'll respond within 24 hours on business days.\n\nThank you for your patience! We'll make sure your concern is handled properly. 🙏"
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "goodbye",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 Kwaheri! Asante kwa kutumia YRIF Chat. 👋\nNiko hapa ukihitaji msaada zaidi wakati wowote. Endelea kufanya kazi nzuri na kuendeleza uvumbuzi! 🌟🇹🇿\n\n---\n🇬🇧 Goodbye! Thank you for using YRIF Chat. 👋\nI'm here whenever you need help again. Keep up the great work and keep innovating! 🌟🇹🇿"
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "end",
+      "type": "TERMINAL",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 Je, kuna kitu kingine ninachoweza kukusaidia? 😊\nNiambie chochote kuhusu utafiti, matukio, ushauri, au YRIF kwa ujumla!\n\n---\n🇬🇧 Is there anything else I can help you with? 😊\nFeel free to ask me anything about research, events, mentorship, or YRIF in general!"
+        }
+      ],
+      "transitions": {}
+    },
+    {
+      "name": "fallback",
+      "type": "FALLBACK",
+      "actions": [
+        {
+          "type": "SEND_MESSAGE",
+          "text": "🇹🇿 Samahani, sijaelewea vizuri. Unaweza kuniambia tena kwa maneno mengine?\n\nNinaweza kukusaidia kuhusu: utafiti, matukio, ushauri, akaunti, ruzuku, nafasi za kazi, au mawasiliano.\n\n---\n🇬🇧 Sorry, I didn't quite understand that. Could you rephrase your question?\n\nI can help with: research, events, mentorship, account issues, grants, vacancies, or contact information."
+        }
+      ],
+      "transitions": {}
+    }
+  ],
+  "intents": [
+    {
+      "name": "greeting",
+      "description": "User greets the bot or starts a conversation",
+      "llm_prompt": "User is greeting or starting a conversation",
+      "examples": [
+        "hello",
+        "hi",
+        "hey",
+        "habari",
+        "mambo",
+        "salamu",
+        "hujambo",
+        "good morning",
+        "good afternoon",
+        "good evening",
+        "sasa",
+        "niaje",
+        "karibu",
+        "habari yako",
+        "habari za leo",
+        "shikamoo",
+        "marahaba",
+        "vipi",
+        "start",
+        "begin",
+        "anza",
+        "nzuri",
+        "poa"
+      ],
+      "enabled": true,
+      "connected_to": "greeting"
+    },
+    {
+      "name": "goodbye",
+      "description": "User wants to end the conversation or says goodbye",
+      "llm_prompt": "User wants to end the conversation or say goodbye",
+      "examples": [
+        "bye",
+        "goodbye",
+        "kwaheri",
+        "asante",
+        "thank you",
+        "thanks",
+        "see you",
+        "asante sana",
+        "sawa",
+        "ok bye",
+        "done",
+        "tutaonana",
+        "nimemaliza",
+        "baadaye",
+        "later",
+        "take care",
+        "good night",
+        "usiku mwema",
+        "nina kazi",
+        "naenda",
+        "I'm done"
+      ],
+      "enabled": true,
+      "connected_to": "goodbye"
+    },
+    {
+      "name": "about_yrif",
+      "description": "User asks about what YRIF is or what it does",
+      "llm_prompt": "User wants to know about YRIF organization",
+      "examples": [
+        "what is YRIF",
+        "YRIF ni nini",
+        "about YRIF",
+        "tell me about YRIF",
+        "maelezo ya YRIF",
+        "YRIF inafanya nini",
+        "what does YRIF do",
+        "Youth Research Innovation Foundation",
+        "YRIF goals",
+        "malengo ya YRIF",
+        "what is this platform",
+        "jukwaa hili ni nini",
+        "explain YRIF",
+        "YRIF organization",
+        "who is YRIF",
+        "YRIF ni nani"
+      ],
+      "enabled": true,
+      "connected_to": "about_yrif"
+    },
+    {
+      "name": "vision_mission",
+      "description": "User asks about YRIF's vision, mission, or purpose",
+      "llm_prompt": "User wants to know YRIF's vision or mission statement",
+      "examples": [
+        "what is YRIF's vision",
+        "maono ya YRIF",
+        "YRIF mission",
+        "dhamira ya YRIF",
+        "YRIF's purpose",
+        "YRIF inalenga nini",
+        "mission statement",
+        "what does YRIF stand for",
+        "YRIF objectives",
+        "goals of YRIF",
+        "why does YRIF exist",
+        "YRIF ilianzishwa kwa nini",
+        "vision and mission",
+        "maono na dhamira",
+        "YRIF aims"
+      ],
+      "enabled": true,
+      "connected_to": "vision_mission"
+    },
+    {
+      "name": "core_values",
+      "description": "User asks about YRIF's core values or principles",
+      "llm_prompt": "User wants to know YRIF's core values or principles",
+      "examples": [
+        "core values",
+        "maadili ya YRIF",
+        "YRIF principles",
+        "misingi ya YRIF",
+        "what does YRIF stand for",
+        "thamani za YRIF",
+        "YRIF values",
+        "YRIF ethics",
+        "maadili msingi",
+        "professionalism integrity",
+        "YRIF beliefs",
+        "what YRIF believes in",
+        "YRIF philosophy"
+      ],
+      "enabled": true,
+      "connected_to": "core_values"
+    },
+    {
+      "name": "who_can_join",
+      "description": "User asks who can join YRIF or membership eligibility",
+      "llm_prompt": "User wants to know who can join YRIF",
+      "examples": [
+        "who can join",
+        "nani anaweza kujiunga",
+        "can I join",
+        "eligibility",
+        "membership",
+        "join YRIF",
+        "how to join",
+        "jinsi ya kujiunga",
+        "am I eligible",
+        "requirements to join",
+        "who is YRIF for",
+        "can students join",
+        "wanafunzi wanaweza kujiunga",
+        "age limit",
+        "umri gani",
+        "university student YRIF",
+        "high school YRIF"
+      ],
+      "enabled": true,
+      "connected_to": "who_can_join"
+    },
+    {
+      "name": "how_to_register",
+      "description": "User asks how to register or create an account on YRIF",
+      "llm_prompt": "User wants to know how to register an account on YRIF",
+      "examples": [
+        "how do I register",
+        "how to register",
+        "registration steps",
+        "account creation steps",
+        "how to sign up",
+        "jinsi ya kusajili",
+        "create account",
+        "open account",
+        "new account",
+        "sign up",
+        "jisajili",
+        "tengeneza akaunti",
+        "register",
+        "kusajili YRIF",
+        "create YRIF account"
+      ],
+      "enabled": true,
+      "connected_to": "how_to_register"
+    },
+    {
+      "name": "account_help",
+      "description": "User has account or login issues",
+      "llm_prompt": "User has account or login problems",
+      "examples": [
+        "account",
+        "login",
+        "sign in",
+        "can't login",
+        "account issues",
+        "account help",
+        "account problem",
+        "login help",
+        "kuingia",
+        "shida ya kuingia",
+        "login not working",
+        "can't sign in",
+        "account error",
+        "login failed",
+        "not able to login",
+        "I can't access my account",
+        "account locked",
+        "akaunti imefungwa"
+      ],
+      "enabled": true,
+      "connected_to": "account_help"
+    },
+    {
+      "name": "account_approval",
+      "description": "User asks about account approval or pending status",
+      "llm_prompt": "User wants to know about account approval process or status",
+      "examples": [
+        "account approval",
+        "when will I be approved",
+        "pending approval",
+        "account status",
+        "account not active",
+        "approval process",
+        "how long does approval take",
+        "why is my account pending",
+        "akaunti inasubiri",
+        "when can I use my account",
+        "account pending",
+        "not yet approved",
+        "bado sijaidhinishwa",
+        "account under review",
+        "akaunti yangu inakaguliwa"
+      ],
+      "enabled": true,
+      "connected_to": "account_approval"
+    },
+    {
+      "name": "password_help",
+      "description": "User needs help with password reset or change",
+      "llm_prompt": "User needs help resetting or changing their password",
+      "examples": [
+        "forgot password",
+        "reset password",
+        "change password",
+        "password help",
+        "nimesahau nenosiri",
+        "password reset",
+        "I forgot my password",
+        "can't remember password",
+        "new password",
+        "update password",
+        "kubadilisha nenosiri",
+        "lost password",
+        "password not working",
+        "nenosiri halifanyi kazi"
+      ],
+      "enabled": true,
+      "connected_to": "password_help"
+    },
+    {
+      "name": "profile_help",
+      "description": "User wants help updating their profile",
+      "llm_prompt": "User wants to update or edit their profile",
+      "examples": [
+        "profile",
+        "update profile",
+        "change details",
+        "edit profile",
+        "profile picture",
+        "bio",
+        "skills",
+        "education",
+        "my information",
+        "taarifa zangu",
+        "wasifu wangu",
+        "complete profile",
+        "how to edit profile",
+        "jinsi ya kusasisha wasifu",
+        "change my name",
+        "update my details",
+        "add phone number"
+      ],
+      "enabled": true,
+      "connected_to": "profile_help"
+    },
+    {
+      "name": "roles",
+      "description": "User asks about user roles on YRIF",
+      "llm_prompt": "User wants to know about different user roles on YRIF",
+      "examples": [
+        "user roles",
+        "majukumu",
+        "what roles are available",
+        "researcher role",
+        "mentor role",
+        "youth role",
+        "admin role",
+        "change role",
+        "kubadilisha jukumu",
+        "what is a researcher",
+        "what is a mentor",
+        "mshauri ni nani",
+        "jukumu langu",
+        "my role",
+        "types of users",
+        "aina za watumiaji"
+      ],
+      "enabled": true,
+      "connected_to": "roles"
+    },
+    {
+      "name": "research_info",
+      "description": "User asks about submitting research",
+      "llm_prompt": "User wants to know how to submit or manage research",
+      "examples": [
+        "research",
+        "utafiti",
+        "research submission",
+        "submit research",
+        "how to submit research",
+        "jinsi ya kuwasilisha utafiti",
+        "publish research",
+        "research paper",
+        "academic research",
+        "niwasilishe utafiti wangu vipi",
+        "research submission process",
+        "upload research",
+        "research guidelines",
+        "submit paper",
+        "wasilisha utafiti"
+      ],
+      "enabled": true,
+      "connected_to": "research_info"
+    },
+    {
+      "name": "research_status",
+      "description": "User asks about the status of their submitted research",
+      "llm_prompt": "User wants to know the status of their research submission",
+      "examples": [
+        "my research status",
+        "check research",
+        "research yangu iko wapi",
+        "research under review",
+        "when will my research be approved",
+        "utafiti wangu unaangaliwa",
+        "research feedback",
+        "check my submission",
+        "utafiti wangu",
+        "my submissions",
+        "research approved",
+        "research rejected",
+        "utafiti wangu umepitishwa",
+        "submission status",
+        "hali ya utafiti wangu"
+      ],
+      "enabled": true,
+      "connected_to": "research_status"
+    },
+    {
+      "name": "research_categories",
+      "description": "User asks about research categories available on YRIF",
+      "llm_prompt": "User wants to know about research categories",
+      "examples": [
+        "research categories",
+        "aina za utafiti",
+        "natural sciences",
+        "social sciences",
+        "arts",
+        "technology",
+        "what category",
+        "which category should I use",
+        "research topics",
+        "sayansi",
+        "kategoria za utafiti",
+        "STEM research",
+        "humanities research",
+        "which field",
+        "nyanja za utafiti"
+      ],
+      "enabled": true,
+      "connected_to": "research_categories"
+    },
+    {
+      "name": "events_info",
+      "description": "User asks about YRIF events",
+      "llm_prompt": "User wants to know about YRIF events",
+      "examples": [
+        "events",
+        "matukio",
+        "upcoming events",
+        "what events are available",
+        "competitions",
+        "seminars",
+        "workshops",
+        "webinars",
+        "bonanza",
+        "shindano",
+        "mkutano",
+        "warsha",
+        "tukio lijalo",
+        "YRIF events",
+        "matukio yanayokuja",
+        "seminar",
+        "annual awards",
+        "tuzo za kila mwaka"
+      ],
+      "enabled": true,
+      "connected_to": "events_info"
+    },
+    {
+      "name": "register_event",
+      "description": "User wants to register for an event",
+      "llm_prompt": "User wants to register for a YRIF event",
+      "examples": [
+        "register for event",
+        "jisajili kwa tukio",
+        "how to register for event",
+        "event registration",
+        "sign up for event",
+        "register competition",
+        "attend event",
+        "jinsi ya kusajili tukio",
+        "I want to attend",
+        "nataka kushiriki tukio",
+        "join event",
+        "shiriki tukio",
+        "how to join event",
+        "event sign up"
+      ],
+      "enabled": true,
+      "connected_to": "register_event"
+    },
+    {
+      "name": "my_events",
+      "description": "User asks about events they have registered for",
+      "llm_prompt": "User wants to see their registered events",
+      "examples": [
+        "my events",
+        "matukio yangu",
+        "my registrations",
+        "events I registered",
+        "events nimesajili",
+        "my event status",
+        "am I registered",
+        "matukio niliyosajili",
+        "event history",
+        "my upcoming events",
+        "matukio yangu yanayokuja",
+        "event confirmations",
+        "matukio niliyojisajili"
+      ],
+      "enabled": true,
+      "connected_to": "my_events"
+    },
+    {
+      "name": "competition",
+      "description": "User asks about competitions and Youth Bonanza",
+      "llm_prompt": "User wants to know about competitions at YRIF",
+      "examples": [
+        "competition",
+        "shindano",
+        "research competition",
+        "innovation bonanza",
+        "youth bonanza",
+        "how to participate in competition",
+        "competition rules",
+        "prizes",
+        "judge scores",
+        "competition results",
+        "shindano la uvumbuzi",
+        "how to win",
+        "annual awards",
+        "tuzo za mwaka",
+        "mashindano ya utafiti",
+        "compete"
+      ],
+      "enabled": true,
+      "connected_to": "competition"
+    },
+    {
+      "name": "certificates",
+      "description": "User asks about certificates or how to download them",
+      "llm_prompt": "User wants to know about certificates",
+      "examples": [
+        "certificate",
+        "shahada",
+        "my certificate",
+        "download certificate",
+        "hati yangu",
+        "participation certificate",
+        "winner certificate",
+        "how to get certificate",
+        "jinsi ya kupata hati",
+        "certifications",
+        "where is my certificate",
+        "hati yangu iko wapi",
+        "digital certificate",
+        "pakua hati"
+      ],
+      "enabled": true,
+      "connected_to": "certificates"
+    },
+    {
+      "name": "mentorship_info",
+      "description": "User asks about the mentorship program",
+      "llm_prompt": "User wants to know about YRIF's mentorship program",
+      "examples": [
+        "mentorship",
+        "ushauri",
+        "mentor",
+        "mentoring",
+        "mshauri",
+        "find mentor",
+        "tafuta mshauri",
+        "mentorship program",
+        "how does mentorship work",
+        "mentorship process",
+        "get a mentor",
+        "guidance",
+        "advisory",
+        "academic mentorship",
+        "mentorship info",
+        "ushauri wa kitaaluma"
+      ],
+      "enabled": true,
+      "connected_to": "mentorship_info"
+    },
+    {
+      "name": "request_mentor",
+      "description": "User wants to request a mentor",
+      "llm_prompt": "User wants to request or apply for a mentor",
+      "examples": [
+        "I need a mentor",
+        "request mentor",
+        "omba mshauri",
+        "how to request mentor",
+        "jinsi ya kuomba mshauri",
+        "connect me with mentor",
+        "need guidance",
+        "nahitaji mshauri",
+        "mentor application",
+        "apply for mentor",
+        "I want a mentor",
+        "nataka mshauri",
+        "how do I get a mentor",
+        "mentor request"
+      ],
+      "enabled": true,
+      "connected_to": "request_mentor"
+    },
+    {
+      "name": "become_mentor",
+      "description": "User wants to become a mentor on YRIF",
+      "llm_prompt": "User wants to become a mentor on YRIF",
+      "examples": [
+        "become a mentor",
+        "kuwa mshauri",
+        "mentor registration",
+        "I want to mentor",
+        "how to be mentor",
+        "jinsi ya kuwa mshauri",
+        "mentor profile",
+        "share expertise",
+        "mentor application",
+        "volunteer as mentor",
+        "be a mentor",
+        "mentor sign up",
+        "I can mentor others",
+        "I want to guide youth",
+        "nataka kusaidia vijana"
+      ],
+      "enabled": true,
+      "connected_to": "become_mentor"
+    },
+    {
+      "name": "my_mentorship",
+      "description": "User asks about their active mentorship",
+      "llm_prompt": "User wants to check their mentorship status",
+      "examples": [
+        "my mentor",
+        "mshauri wangu",
+        "mentorship status",
+        "active mentorship",
+        "mentorship session",
+        "mentorship feedback",
+        "my mentee",
+        "ushauri wangu",
+        "jukwaa la ushauri",
+        "my mentorship progress",
+        "mentorship history",
+        "mentorship update",
+        "when do I meet my mentor",
+        "mshauri wangu ni nani"
+      ],
+      "enabled": true,
+      "connected_to": "my_mentorship"
+    },
+    {
+      "name": "partner_info",
+      "description": "User asks about partnership opportunities with YRIF",
+      "llm_prompt": "User wants to know about partnering with YRIF",
+      "examples": [
+        "partnership",
+        "ushirikiano",
+        "partner with YRIF",
+        "collaborate",
+        "company partnership",
+        "corporate partnership",
+        "how to partner",
+        "jinsi ya kushirikiana",
+        "private sector",
+        "sekta binafsi",
+        "sponsor YRIF",
+        "business collaboration",
+        "NGO partnership",
+        "university partnership",
+        "partner info",
+        "institutional partnership"
+      ],
+      "enabled": true,
+      "connected_to": "partner_info"
+    },
+    {
+      "name": "resources_info",
+      "description": "User asks about learning resources on YRIF",
+      "llm_prompt": "User wants to access learning resources",
+      "examples": [
+        "resources",
+        "rasilimali",
+        "learning materials",
+        "study materials",
+        "research resources",
+        "templates",
+        "guides",
+        "videos",
+        "articles",
+        "documents",
+        "nyenzo za kujifunzia",
+        "vitabu",
+        "mwongozo",
+        "how to access resources",
+        "resource center",
+        "kituo cha rasilimali"
+      ],
+      "enabled": true,
+      "connected_to": "resources_info"
+    },
+    {
+      "name": "contact_support",
+      "description": "User wants to contact YRIF support",
+      "llm_prompt": "User wants to contact YRIF or get support",
+      "examples": [
+        "contact",
+        "mawasiliano",
+        "contact YRIF",
+        "support",
+        "help",
+        "msaada",
+        "email YRIF",
+        "how to contact",
+        "jinsi ya kuwasiliana",
+        "get help",
+        "pata msaada",
+        "customer support",
+        "contact information",
+        "taarifa za mawasiliano",
+        "reach YRIF",
+        "YRIF email",
+        "info@yriftz.org"
+      ],
+      "enabled": true,
+      "connected_to": "contact_support"
+    },
+    {
+      "name": "report_issue",
+      "description": "User wants to report a technical issue or problem",
+      "llm_prompt": "User wants to report a technical issue or bug",
+      "examples": [
+        "report issue",
+        "bug",
+        "technical issue",
+        "something is broken",
+        "tatizo la kiufundi",
+        "report a bug",
+        "the website is broken",
+        "error on platform",
+        "platform issue",
+        "feature not working",
+        "kuna tatizo",
+        "kitu kimevunjika",
+        "report problem",
+        "notify team",
+        "arifu timu",
+        "page not loading",
+        "ukurasa haupakii"
+      ],
+      "enabled": true,
+      "connected_to": "report_issue"
+    },
+    {
+      "name": "escalate",
+      "description": "User wants to speak to a human agent or escalate their issue",
+      "llm_prompt": "User wants human support or to escalate their issue",
+      "examples": [
+        "speak to a human",
+        "human support",
+        "real person",
+        "escalate",
+        "talk to staff",
+        "ongelea na mtu",
+        "this is urgent",
+        "I need urgent help",
+        "nahitaji msaada wa haraka",
+        "real support",
+        "connect me to someone",
+        "contact a person",
+        "I need help now",
+        "ninahitaji msaada sasa",
+        "serious issue",
+        "tatizo kubwa"
+      ],
+      "enabled": true,
+      "connected_to": "escalate"
+    },
+    {
+      "name": "donation",
+      "description": "User wants to donate or financially support YRIF",
+      "llm_prompt": "User wants to donate or support YRIF financially",
+      "examples": [
+        "donate",
+        "donation",
+        "changia",
+        "mchango",
+        "how to donate",
+        "jinsi ya kuchangia",
+        "support YRIF financially",
+        "contribute to YRIF",
+        "financial support",
+        "msaada wa fedha",
+        "kutoa msaada",
+        "sponsor",
+        "fund YRIF",
+        "help YRIF financially",
+        "give to YRIF",
+        "I want to support YRIF"
+      ],
+      "enabled": true,
+      "connected_to": "donation"
+    },
+    {
+      "name": "vacancies",
+      "description": "User asks about jobs, internships, or volunteering at YRIF",
+      "llm_prompt": "User wants to know about job or volunteer opportunities at YRIF",
+      "examples": [
+        "jobs at YRIF",
+        "vacancy",
+        "career",
+        "internship",
+        "volunteer",
+        "kazi YRIF",
+        "nafasi za kazi",
+        "kujitoa",
+        "work at YRIF",
+        "job opening",
+        "internship opportunity",
+        "volunteer opportunity",
+        "nafasi za volunteering",
+        "ajira YRIF",
+        "employment",
+        "how to get job at YRIF",
+        "work with YRIF",
+        "fanya kazi na YRIF",
+        "msaidizi wa kujitoa"
+      ],
+      "enabled": true,
+      "connected_to": "vacancies"
+    },
+    {
+      "name": "journal_publication",
+      "description": "User asks about the YRIF journal or publishing research",
+      "llm_prompt": "User wants to know about the YRIF journal and publishing research",
+      "examples": [
+        "YRIF journal",
+        "jarida la YRIF",
+        "publish paper",
+        "kuchapisha utafiti",
+        "open access",
+        "academic journal",
+        "jarida la kisayansi",
+        "research publication",
+        "peer review",
+        "get published",
+        "chapisha utafiti wangu",
+        "journal submission",
+        "scientific journal",
+        "publish my research",
+        "academic publication",
+        "research paper publication"
+      ],
+      "enabled": true,
+      "connected_to": "journal_publication"
+    },
+    {
+      "name": "grants_funding",
+      "description": "User asks about grants, funding, or scholarships",
+      "llm_prompt": "User wants to know about grants, funding, or scholarships at YRIF",
+      "examples": [
+        "grant",
+        "funding",
+        "scholarship",
+        "ruzuku",
+        "ufadhili",
+        "research funding",
+        "financial support",
+        "msaada wa fedha",
+        "ufadhili wa utafiti",
+        "apply for grant",
+        "get funded",
+        "pata ruzuku",
+        "research grant",
+        "YRIF scholarship",
+        "bursary",
+        "udhamini",
+        "funding opportunities",
+        "fursa za ufadhili"
+      ],
+      "enabled": true,
+      "connected_to": "grants_funding"
+    },
+    {
+      "name": "high_school_program",
+      "description": "User asks about YRIF's high school or secondary school program",
+      "llm_prompt": "User wants to know about YRIF's program for secondary school students",
+      "examples": [
+        "high school program",
+        "secondary school",
+        "research club",
+        "form 5",
+        "form 6",
+        "shule ya sekondari",
+        "klabu ya utafiti",
+        "kidato cha tano",
+        "kidato cha sita",
+        "school program",
+        "YRIF for schools",
+        "YRIF na shule",
+        "secondary student",
+        "mwanafunzi wa sekondari",
+        "high school research",
+        "youth program school",
+        "kidato",
+        "A-level",
+        "O-level"
+      ],
+      "enabled": true,
+      "connected_to": "high_school_program"
+    },
+    {
+      "name": "university_program",
+      "description": "User asks about YRIF's university or campus outreach program",
+      "llm_prompt": "User wants to know about YRIF's university outreach program",
+      "examples": [
+        "university program",
+        "campus program",
+        "university seminar",
+        "university outreach",
+        "chuo kikuu",
+        "semina ya chuo",
+        "warsha ya chuo",
+        "YRIF at university",
+        "YRIF na vyuo",
+        "university student",
+        "mwanafunzi wa chuo",
+        "university research",
+        "college program",
+        "higher education",
+        "elimu ya juu",
+        "campus outreach",
+        "YRIF campus"
+      ],
+      "enabled": true,
+      "connected_to": "university_program"
+    }
+  ]
+}

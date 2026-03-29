@@ -40,6 +40,8 @@ const EventManagement    = lazy(() => import('@/pages/admin/EventManagement'))
 const ContentManagement  = lazy(() => import('@/pages/admin/ContentManagement'))
 const Reports            = lazy(() => import('@/pages/admin/Reports'))
 const MentorshipMgmt     = lazy(() => import('@/pages/admin/MentorshipManagement'))
+const Vacancies          = lazy(() => import('@/pages/vacancies/Vacancies'))
+const Donations          = lazy(() => import('@/pages/donations/Donations'))
 
 // ── Guards ────────────────────────────────────────────────────────────────────
 
@@ -89,8 +91,10 @@ export const router = createBrowserRouter([
   {
     element: <PublicLayout />,
     children: [
-      { path: '/',        element: wrap(LandingPage) },
-      { path: '/contact', element: wrap(Contact) },
+      { path: '/',           element: wrap(LandingPage) },
+      { path: '/contact',    element: wrap(Contact) },
+      { path: '/vacancies',  element: wrap(Vacancies) },
+      { path: '/donate',     element: wrap(Donations) },
     ],
   },
 

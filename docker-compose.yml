@@ -45,6 +45,8 @@ services:
       - ./backend/.env
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.development
+      - DB_HOST=db
+      - REDIS_URL=redis://redis:6379/0
     ports:
       - "8000:8000"
     depends_on:

@@ -36,8 +36,13 @@ export const authApi = {
     apiClient.post<AuthResponse>('/auth/verify-email/', { email, code }),
 
   // ── BRIQ Auth (phone-based login/signup) ──────────────────────────────────
-  briqAuthRequest: (phone_number: string) =>
-    apiClient.post<{ detail: string; otp_id: string }>('/auth/briq/request/', { phone_number }),
+  briqAuthRequest: (phone_number: string, email?: string) =>
+    apiClient.post<{
+      detail: string
+      otp_id?: string
+      method: 'sms' | 'email' | 'email_required'
+      masked_email?: string
+    }>('/auth/briq/request/', { phone_number, ...(email ? { email } : {}) }),
 
   briqAuthVerify: (phone_number: string, otp_id: string, code: string) =>
     apiClient.post<

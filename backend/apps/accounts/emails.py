@@ -120,6 +120,29 @@ def notify_user_suspended(user):
     )
 
 
+# ── Phone auth email fallback ─────────────────────────────────────────────────
+
+def send_otp_email_fallback(email: str, otp_code: str) -> None:
+    """Send a login OTP via email when BRIQ SMS is unavailable."""
+    content = (
+        _h2("Your YRIF Login Code", color="#0D9488")
+        + _p("SMS is temporarily unavailable. Use the code below to sign in.")
+        + _otp_box(otp_code)
+        + _p(
+            "This code expires in <strong>10 minutes</strong>. Do not share it with anyone.",
+            color="#6B7280",
+            size="13px",
+        )
+        + _small("If you did not request this code, please ignore this email.")
+    )
+    send_email(
+        to_email=email,
+        to_name="YRIF Member",
+        subject="[YRIF] Your login code",
+        html_content=_wrap(content),
+    )
+
+
 # ── Email verification OTPs ───────────────────────────────────────────────────
 
 def send_email_verification_otp(user, otp_code):

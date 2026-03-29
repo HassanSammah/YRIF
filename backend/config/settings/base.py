@@ -162,7 +162,7 @@ BRIQ_API_KEY = config("BRIQ_API_KEY", default="-7UxVFkdeQXKhKY1wMGrgJQpdw_z3slbk
 BRIQ_APP_KEY = config("BRIQ_APP_KEY", default="briq_mkb71g9z39n4frg0")
 BRIQ_DEVELOPER_APP_ID = config("BRIQ_DEVELOPER_APP_ID", default=BRIQ_APP_KEY)  # defaults to BRIQ_APP_KEY if not set separately
 BRIQ_SMS_SENDER = config("BRIQ_SMS_SENDER", default="YRIF")
-BRIQ_BASE_URL = "https://karibu.briq.tz"
+BRIQ_BASE_URL = config("BRIQ_BASE_URL", default="https://karibu.briq.tz")
 BRIQ_WEBHOOK_SECRET = config("BRIQ_WEBHOOK_SECRET", default="")  # set in BRIQ dashboard & env
 
 # Google OAuth

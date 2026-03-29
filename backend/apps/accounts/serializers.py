@@ -176,6 +176,7 @@ class EmailVerifySerializer(serializers.Serializer):
 
 class BriqAuthRequestSerializer(serializers.Serializer):
     phone_number = serializers.CharField()
+    email = serializers.EmailField(required=False, allow_blank=True, default="")
 
 
 class BriqAuthVerifySerializer(serializers.Serializer):

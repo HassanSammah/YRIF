@@ -32,6 +32,11 @@ export default function BriqAuth() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [resendCountdown, setResendCountdown] = useState(0)
+  // Email fallback state
+  const [otpMethod, setOtpMethod] = useState<'sms' | 'email' | null>(null)
+  const [maskedEmail, setMaskedEmail] = useState('')
+  const [needsEmail, setNeedsEmail] = useState(false)
+  const [fallbackEmail, setFallbackEmail] = useState('')
 
   useEffect(() => {
     if (resendCountdown <= 0) return
@@ -39,13 +44,23 @@ export default function BriqAuth() {
     return () => clearTimeout(t)
   }, [resendCountdown])
 
-  const handleRequestOTP = async () => {
+  const handleRequestOTP = async (emailOverride?: string) => {
     if (!phone.trim()) return
     setError('')
     setLoading(true)
     try {
-      const { data } = await authApi.briqAuthRequest(phone.trim())
-      setOtpId(data.otp_id)
+      const { data } = await authApi.briqAuthRequest(phone.trim(), emailOverride)
+
+      if (data.method === 'email_required') {
+        setNeedsEmail(true)
+        setError(data.detail)
+        return
+      }
+
+      setOtpId(data.otp_id ?? '')
+      setOtpMethod(data.method)
+      if (data.masked_email) setMaskedEmail(data.masked_email)
+      setNeedsEmail(false)
       setStep('otp')
       setResendCountdown(60)
     } catch (err: unknown) {
@@ -62,8 +77,18 @@ export default function BriqAuth() {
     setError('')
     setLoading(true)
     try {
-      const { data } = await authApi.briqAuthRequest(phone.trim())
-      setOtpId(data.otp_id)
+      const emailArg = otpMethod === 'email' ? (fallbackEmail || undefined) : undefined
+      const { data } = await authApi.briqAuthRequest(phone.trim(), emailArg)
+
+      if (data.method === 'email_required') {
+        setNeedsEmail(true)
+        setError(data.detail)
+        return
+      }
+
+      setOtpId(data.otp_id ?? '')
+      setOtpMethod(data.method)
+      if (data.masked_email) setMaskedEmail(data.masked_email)
       setOtpCode('')
       setResendCountdown(60)
     } catch (err: unknown) {
@@ -169,7 +194,9 @@ export default function BriqAuth() {
             <p className="text-gray-500 text-sm mt-1">
               {step === 'phone'
                 ? 'Enter your phone number to receive an OTP via SMS.'
-                : `OTP sent to ${phone}. Enter the code below.`}
+                : otpMethod === 'email'
+                  ? `SMS unavailable. Code sent to ${maskedEmail}.`
+                  : `OTP sent to ${phone}. Enter the code below.`}
             </p>
           </div>
 
@@ -201,14 +228,31 @@ export default function BriqAuth() {
                   />
                 </div>
               </div>
+              {needsEmail && (
+                <div className="space-y-1.5">
+                  <label htmlFor="fallback-email" className="block text-sm font-medium text-gray-700">
+                    Your email address
+                  </label>
+                  <input
+                    id="fallback-email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    value={fallbackEmail}
+                    onChange={(e) => setFallbackEmail(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleRequestOTP(fallbackEmail)}
+                    className={inputCls()}
+                  />
+                </div>
+              )}
               <button
                 type="button"
-                onClick={handleRequestOTP}
-                disabled={loading || !phone.trim()}
+                onClick={() => needsEmail ? handleRequestOTP(fallbackEmail) : handleRequestOTP()}
+                disabled={loading || !phone.trim() || (needsEmail && !fallbackEmail.trim())}
                 className="w-full flex justify-center items-center gap-2 rounded-xl bg-[#093344] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0D9488] focus:outline-none focus:ring-2 focus:ring-[#0D9488]/50 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm"
               >
                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                Send OTP
+                {needsEmail ? 'Send Code to Email' : 'Send OTP'}
               </button>
               <p className="text-center text-sm text-gray-500">
                 Prefer email?{' '}
@@ -252,7 +296,7 @@ export default function BriqAuth() {
               <div className="flex items-center justify-between text-sm text-gray-500">
                 <button
                   type="button"
-                  onClick={() => { setStep('phone'); setOtpCode(''); setError('') }}
+                  onClick={() => { setStep('phone'); setOtpCode(''); setError(''); setNeedsEmail(false); setOtpMethod(null); setMaskedEmail('') }}
                   className="hover:text-[#093344] transition-colors"
                 >
                   Change number

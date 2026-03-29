@@ -1,3 +1,4 @@
+import logging
 import random
 import uuid
 import requests as http_requests
@@ -39,6 +40,8 @@ from .serializers import (
 )
 from . import emails as account_emails
 
+logger = logging.getLogger(__name__)
+
 
 def _normalise_phone(raw: str) -> str:
     """Return phone in E.164 format (+255XXXXXXXXX) expected by BRIQ."""
@@ -60,6 +63,18 @@ def _extract_otp_id(data):
         if otp_id:
             return otp_id
     return data.get("otp_id", "")
+
+
+def _mask_email(email: str) -> str:
+    """Mask an email for display: hassan@example.com → ha***n@example.com"""
+    local, _, domain = email.partition("@")
+    if len(local) <= 2:
+        return f"{'*' * len(local)}@{domain}"
+    return f"{local[0]}{'*' * (len(local) - 2)}{local[-1]}@{domain}"
+
+
+def _generate_otp() -> str:
+    return f"{random.randint(100000, 999999)}"
 
 
 def _get_tokens(user):
@@ -338,7 +353,11 @@ class VerifyEmailView(APIView):
 # ─── Briq Auth — phone-first login/signup (unauthenticated) ──────────────────
 
 class BriqAuthRequestView(APIView):
-    """POST /auth/briq/request/ — send OTP to phone for login or new account signup."""
+    """POST /auth/briq/request/ — send OTP to phone for login or new account signup.
+
+    Falls back to email OTP if BRIQ SMS is unavailable.
+    Optional body field `email` enables email fallback for new (unknown) phone numbers.
+    """
     permission_classes = [AllowAny]
     authentication_classes = []
 
@@ -346,10 +365,14 @@ class BriqAuthRequestView(APIView):
         serializer = BriqAuthRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         phone_number = _normalise_phone(serializer.validated_data["phone_number"])
+        fallback_email = serializer.validated_data.get("email", "").strip()
 
         if not settings.BRIQ_API_KEY:
             return Response({"detail": "OTP service not configured."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
+        # ── Try BRIQ (primary) ────────────────────────────────────────────────
+        briq_ok = False
+        briq_data = {}
         try:
             resp = http_requests.post(
                 f"{settings.BRIQ_BASE_URL}/v1/otp/request",
@@ -363,20 +386,54 @@ class BriqAuthRequestView(APIView):
                 timeout=10,
             )
             resp.raise_for_status()
-            data = resp.json()
+            briq_data = resp.json()
+            briq_ok = bool(briq_data.get("success"))
         except http_requests.RequestException as exc:
-            return Response({"detail": f"OTP request failed: {exc}"}, status=status.HTTP_502_BAD_GATEWAY)
+            logger.warning("BRIQ OTP unavailable, trying email fallback: %s", exc)
 
-        if not data.get("success"):
-            return Response({"detail": data.get("message", "OTP request failed.")}, status=status.HTTP_400_BAD_REQUEST)
+        if briq_ok:
+            otp_id = _extract_otp_id(briq_data)
+            cache.set(f"briq_auth:{phone_number}", otp_id, timeout=900)
+            cache.delete(f"email_otp:{phone_number}")  # clear any stale email OTP
+            return Response({"detail": "OTP sent.", "otp_id": otp_id, "method": "sms"})
 
-        otp_id = _extract_otp_id(data)
-        cache.set(f"briq_auth:{phone_number}", otp_id, timeout=900)  # 15 minutes
-        return Response({"detail": "OTP sent.", "otp_id": otp_id})
+        # ── Email fallback ────────────────────────────────────────────────────
+        email = fallback_email
+        if not email:
+            profile = Profile.objects.filter(phone=phone_number).exclude(phone="").select_related("user").first()
+            if profile and profile.user.email:
+                email = profile.user.email
+
+        if not email:
+            return Response({
+                "method": "email_required",
+                "detail": "SMS is temporarily unavailable. Please provide your email to receive a login code.",
+            })
+
+        otp_code = _generate_otp()
+        cache.set(f"email_otp:{phone_number}", {"code": otp_code, "email": email}, timeout=600)
+        try:
+            account_emails.send_otp_email_fallback(email=email, otp_code=otp_code)
+        except Exception as exc:
+            logger.error("Email OTP fallback send failed: %s", exc)
+            return Response(
+                {"detail": "SMS unavailable and email delivery failed. Please use email login instead."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        return Response({
+            "method": "email",
+            "otp_id": "",
+            "masked_email": _mask_email(email),
+            "detail": f"SMS unavailable. A login code was sent to {_mask_email(email)}.",
+        })
 
 
 class BriqAuthVerifyView(APIView):
-    """POST /auth/briq/verify/ — verify OTP; log in existing user or prompt new user to register."""
+    """POST /auth/briq/verify/ — verify OTP; log in existing user or prompt new user to register.
+
+    Checks email OTP cache first (fallback path), then BRIQ (primary path).
+    """
     permission_classes = [AllowAny]
     authentication_classes = []
 
@@ -385,30 +442,44 @@ class BriqAuthVerifyView(APIView):
         serializer.is_valid(raise_exception=True)
         phone_number = _normalise_phone(serializer.validated_data["phone_number"])
         code = serializer.validated_data["code"]
+
         if not settings.BRIQ_API_KEY:
             return Response({"detail": "OTP service not configured."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
-        try:
-            resp = http_requests.post(
-                f"{settings.BRIQ_BASE_URL}/v1/otp/verify",
-                json={
-                    "phone_number": phone_number,
-                    "app_key": settings.BRIQ_APP_KEY,
-                    "code": code,
-                },
-                headers={"X-API-Key": settings.BRIQ_API_KEY, "Content-Type": "application/json"},
-                timeout=10,
-            )
-            resp.raise_for_status()
-            data = resp.json()
-        except http_requests.RequestException as exc:
-            return Response({"detail": f"OTP verification failed: {exc}"}, status=status.HTTP_502_BAD_GATEWAY)
+        # ── Check email OTP path first ────────────────────────────────────────
+        email_otp = cache.get(f"email_otp:{phone_number}")
+        if email_otp:
+            if email_otp["code"] != code:
+                return Response({"detail": "Invalid or expired OTP."}, status=status.HTTP_400_BAD_REQUEST)
+            cache.delete(f"email_otp:{phone_number}")
+            # Fall through to user lookup below
 
-        if not data.get("success"):
-            return Response({"detail": data.get("message", "Invalid OTP.")}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            # ── BRIQ verify path ──────────────────────────────────────────────
+            try:
+                resp = http_requests.post(
+                    f"{settings.BRIQ_BASE_URL}/v1/otp/verify",
+                    json={
+                        "phone_number": phone_number,
+                        "app_key": settings.BRIQ_APP_KEY,
+                        "code": code,
+                    },
+                    headers={"X-API-Key": settings.BRIQ_API_KEY, "Content-Type": "application/json"},
+                    timeout=10,
+                )
+                resp.raise_for_status()
+                data = resp.json()
+            except http_requests.RequestException:
+                return Response(
+                    {"detail": "OTP verification unavailable. Please try again."},
+                    status=status.HTTP_502_BAD_GATEWAY,
+                )
 
-        cache.delete(f"briq_auth:{phone_number}")
+            if not data.get("success"):
+                return Response({"detail": data.get("message", "Invalid OTP.")}, status=status.HTTP_400_BAD_REQUEST)
+            cache.delete(f"briq_auth:{phone_number}")
 
+        # ── Common: look up or prepare new user ───────────────────────────────
         # Check whether this phone belongs to an existing user (verified or not —
         # successful OTP proves ownership, so we accept either state)
         profile_qs = Profile.objects.filter(phone=phone_number).exclude(phone="").select_related("user")

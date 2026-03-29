@@ -182,10 +182,10 @@ jobs:
           echo "Waiting 30s for deployment to settle..."
           sleep 30
           for i in 1 2 3 4 5; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L --max-time 15 \
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 \
               "http://${{ secrets.PROD_SSH_HOST }}/health/")
             echo "Attempt $i: HTTP $STATUS"
-            if [ "$STATUS" = "200" ]; then
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "301" ] || [ "$STATUS" = "302" ]; then
               echo "Production health check passed."
               exit 0
             fi

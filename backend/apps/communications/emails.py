@@ -175,6 +175,33 @@ def notify_mentorship_request_received(mentor, mentee_name: str, topic: str) -> 
     )
 
 
+# ── Chat escalation ───────────────────────────────────────────────────────────
+
+def notify_chat_escalation(chat_id: str, last_message: str) -> None:
+    """Notify YRIF staff when a chatbot user requests human support."""
+    content = (
+        _h2("YRIF Chat: User Requested Human Support")
+        + _p("A user has requested to speak with a team member via YRIF Chat.")
+        + _info_card(
+            ("Session ID", chat_id),
+            ("Last message", last_message[:500]),
+        )
+        + _p(
+            "Please follow up with this user at your earliest convenience. "
+            f"Reply directly to <a href='mailto:{CONTACT_EMAIL}' style='color:#0D9488;'>{CONTACT_EMAIL}</a> "
+            "or check the admin notifications panel.",
+            color="#6B7280",
+            size="14px",
+        )
+    )
+    send_email(
+        to_email=CONTACT_EMAIL,
+        to_name="YRIF Team",
+        subject="[YRIF Chat] User requested human support",
+        html_content=_wrap(content),
+    )
+
+
 # ── In-app notification helper ────────────────────────────────────────────────
 
 def create_in_app_notification(recipient, subject: str, body: str) -> None:

@@ -308,13 +308,15 @@ INTENTS = {
         "kitu kimevunjika", "tatizo la kiufundi",
     ],
     "escalate": [
-        "speak to a human", "talk to admin", "real person",
-        "human support", "connect me to staff", "I need real help",
-        "speak to someone", "live agent", "official support",
-        "formal complaint", "escalate my issue",
-        "niongee na mtu wa kweli", "niongee na msimamizi",
+        "speak to a human", "talk to a human", "talk to human", "talk to admin",
+        "real person", "human support", "connect me to staff", "I need real help",
+        "speak to someone", "live agent", "official support", "talk to staff",
+        "formal complaint", "escalate my issue", "human agent", "talk to someone",
+        "I want a human", "speak with a person", "contact support",
+        "niongee na mtu wa kweli", "niongee na mtu", "niongee na msimamizi",
         "mtu halisi", "msaada wa kweli", "nisiliano na wafanyakazi",
         "malalamiko rasmi", "peleka tatizo langu juu",
+        "zungumza na mtu", "msaada wa binadamu", "nisiliano na timu",
     ],
 }
 
@@ -1416,6 +1418,11 @@ class Command(BaseCommand):
             self.stderr.write(self.style.ERROR("\nNo bot ID provided — skipping API push."))
             return
 
+        # Resolve webhook URL from settings (falls back to production domain)
+        webhook_url = getattr(settings, "SARUFI_WEBHOOK_URL", None) or (
+            "https://yriftz.org/api/v1/communications/sarufi/webhook/"
+        )
+
         payload = {
             "name": BOT_METADATA["name"],
             "description": BOT_METADATA["description"],
@@ -1424,7 +1431,9 @@ class Command(BaseCommand):
             "flow": FLOWS,
             "visible_on_community": BOT_METADATA["visible_on_community"],
             "webhook_trigger_intents": BOT_METADATA["webhook_trigger_intents"],
+            "webhook": webhook_url,
         }
+        self.stdout.write(f"Webhook URL: {webhook_url}")
 
         # ── Attempt 1: new platform (api.sarufi.io) ───────────────────────────
         endpoints = [

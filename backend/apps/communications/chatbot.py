@@ -49,9 +49,20 @@ def send_chatbot_message(chat_id: str, message: str) -> dict:
             if isinstance(action, dict):
                 text = action.get("send_message") or action.get("text") or action.get("message")
                 if text:
+                    if isinstance(text, list):
+                        text = "\n\n".join(str(item) for item in text if item)
                     parts.append(str(text))
-        reply = " ".join(parts) if parts else "I didn't understand that. Please try again."
-        return {"reply": reply}
+        reply = "\n\n".join(parts) if parts else "Sijaelewea. Jaribu tena au wasiliana: info@yriftz.org"
+
+        # Detect if Sarufi reached the escalation state so the view can notify staff
+        current_state = (
+            data.get("memory", {}).get("state")
+            or data.get("current_state")
+            or ""
+        )
+        escalated = current_state in {"escalate", "human_handover", "handover"}
+
+        return {"reply": reply, "escalated": escalated}
 
     except Exception as exc:
         logger.error("Sarufi chatbot error: %s", exc)

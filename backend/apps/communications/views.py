@@ -16,7 +16,7 @@ from .serializers import (
     ConversationSerializer, MessageSerializer,
 )
 from .chatbot import send_chatbot_message
-from .emails import notify_contact_received, notify_contact_auto_reply
+from .emails import notify_contact_received, notify_contact_auto_reply, notify_chat_escalation
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +87,18 @@ class NotificationMarkReadView(APIView):
 
 # ── Chatbot ───────────────────────────────────────────────────────────────────
 
+_ESCALATION_KEYWORDS = [
+    "speak to a human", "talk to a human", "talk to human", "talk to admin",
+    "real person", "human support", "connect me to staff", "live agent",
+    "official support", "escalate", "speak to someone", "talk to staff",
+    "talk to someone", "human agent",
+    # Swahili
+    "niongee na mtu", "niongee na msimamizi", "mtu halisi", "msaada wa kweli",
+    "nisiliano na wafanyakazi", "malalamiko rasmi", "peleka tatizo",
+    "zungumza na mtu", "msaada wa binadamu",
+]
+
+
 class ChatbotView(APIView):
     permission_classes = [AllowAny]
 
@@ -95,8 +107,19 @@ class ChatbotView(APIView):
         chat_id = request.data.get("chat_id", "anonymous")
         if not message:
             return Response({"error": "message is required"}, status=status.HTTP_400_BAD_REQUEST)
-        reply = send_chatbot_message(chat_id=chat_id, message=message)
-        return Response(reply)
+
+        result = send_chatbot_message(chat_id=chat_id, message=message)
+
+        # Notify staff if user requested human support (from Sarufi state or keyword match)
+        msg_lower = message.lower()
+        is_escalation = result.get("escalated") or any(kw in msg_lower for kw in _ESCALATION_KEYWORDS)
+        if is_escalation:
+            try:
+                notify_chat_escalation(chat_id=chat_id, last_message=message)
+            except Exception as exc:
+                logger.error("Chat escalation email failed: %s", exc)
+
+        return Response({"reply": result["reply"]})
 
 
 # ── Sarufi Webhook (escalation fulfillment) ────────────────────────────────────

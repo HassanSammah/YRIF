@@ -1,6 +1,6 @@
 """Outreach email notifications — donation confirmation."""
 from django.conf import settings
-from apps.core.brevo import send_email, _wrap, _cta, _h2, _p, _small
+from apps.core.brevo import send_email, _wrap, _h2, _p, _small
 
 CONTACT_EMAIL = getattr(settings, "CONTACT_EMAIL", "info@yriftz.org")
 

@@ -1,11 +1,9 @@
 import logging
 
-from rest_framework import generics, status
+from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-
-logger = logging.getLogger(__name__)
 
 from apps.accounts.models import User, PartnerProfile
 from apps.research.models import Research, ResearchStatus
@@ -13,6 +11,8 @@ from apps.events.models import Event
 from .models import Vacancy
 from .serializers import VacancySerializer, DonationSerializer
 from .emails import notify_donation_received
+
+logger = logging.getLogger(__name__)
 
 
 class PublicStatsView(APIView):

@@ -29,8 +29,7 @@ def fast_settings(settings):
     }
     settings.BREVO_API_KEY = ""
     settings.BRIQ_API_KEY = ""
-    settings.SARUFI_API_KEY = ""
-    settings.SARUFI_BOT_ID = ""
+    settings.ANTHROPIC_API_KEY = ""
     settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
     # Clear cache between tests to prevent OTP/key leakage
     from django.core.cache import cache

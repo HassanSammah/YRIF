@@ -172,10 +172,8 @@ GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default="350998195827-59nlf2oraqut
 SUPABASE_URL = config("SUPABASE_URL", default="")
 SUPABASE_KEY = config("SUPABASE_KEY", default="")
 
-# Sarufi AI — YRIF Chat (beta.sarufi.io)
-SARUFI_API_KEY = config("SARUFI_API_KEY", default="")
-SARUFI_BOT_ID = config("SARUFI_BOT_ID", default="")
-SARUFI_BASE_URL = config("SARUFI_BASE_URL", default="https://developers.beta.sarufi.io/")
+# Claude AI — YRIF Chat
+ANTHROPIC_API_KEY = config("ANTHROPIC_API_KEY", default="")
 NGROK_BACKEND_URL = config("NGROK_BACKEND_URL", default="")
 
 # Email — Brevo Transactional API

@@ -105,13 +105,61 @@ jobs:
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
+        env:
+          PROD_SECRET_KEY: ${{ secrets.PROD_SECRET_KEY }}
+          PROD_DB_NAME: ${{ secrets.PROD_DB_NAME }}
+          PROD_DB_USER: ${{ secrets.PROD_DB_USER }}
+          PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          PROD_BRIQ_API_KEY: ${{ secrets.PROD_BRIQ_API_KEY }}
+          PROD_BRIQ_APP_KEY: ${{ secrets.PROD_BRIQ_APP_KEY }}
+          PROD_BREVO_API_KEY: ${{ secrets.PROD_BREVO_API_KEY }}
+          PROD_SARUFI_BOT_ID: ${{ secrets.PROD_SARUFI_BOT_ID }}
+          PROD_SARUFI_API_KEY: ${{ secrets.PROD_SARUFI_API_KEY }}
+          PROD_GOOGLE_CLIENT_ID: ${{ secrets.PROD_GOOGLE_CLIENT_ID }}
+          PROD_SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
+          PROD_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
+          PROD_ALLOWED_HOSTS: ${{ secrets.PROD_ALLOWED_HOSTS }}
+          PROD_CORS_ALLOWED_ORIGINS: ${{ secrets.PROD_CORS_ALLOWED_ORIGINS }}
+          PROD_API_BASE_URL: ${{ secrets.PROD_API_BASE_URL }}
         with:
           host: ${{ secrets.PROD_SSH_HOST }}
           username: root
           password: ${{ secrets.PROD_SSH_PASSWORD }}
+          envs: PROD_SECRET_KEY,PROD_DB_NAME,PROD_DB_USER,PROD_DB_PASSWORD,PROD_BRIQ_API_KEY,PROD_BRIQ_APP_KEY,PROD_BREVO_API_KEY,PROD_SARUFI_BOT_ID,PROD_SARUFI_API_KEY,PROD_GOOGLE_CLIENT_ID,PROD_SUPABASE_URL,PROD_SUPABASE_ANON_KEY,PROD_ALLOWED_HOSTS,PROD_CORS_ALLOWED_ORIGINS,PROD_API_BASE_URL
           script: |
             set -e
             cd /var/www/yrif
+
+            echo "--- Syncing .env.production ---"
+            _uenv() {
+              local k="$1" v="$2" f="backend/.env.production"
+              touch "$f"
+              if grep -q "^${k}=" "$f" 2>/dev/null; then
+                sed -i "s|^${k}=.*|${k}=${v}|" "$f"
+              else
+                echo "${k}=${v}" >> "$f"
+              fi
+            }
+            _uenv SECRET_KEY          "$PROD_SECRET_KEY"
+            _uenv DB_NAME             "$PROD_DB_NAME"
+            _uenv DB_USER             "$PROD_DB_USER"
+            _uenv DB_PASSWORD         "$PROD_DB_PASSWORD"
+            _uenv DB_HOST             "db"
+            _uenv DB_PORT             "5432"
+            _uenv REDIS_URL           "redis://redis:6379/0"
+            _uenv BRIQ_API_KEY        "$PROD_BRIQ_API_KEY"
+            _uenv BRIQ_APP_KEY        "$PROD_BRIQ_APP_KEY"
+            _uenv BREVO_API_KEY       "$PROD_BREVO_API_KEY"
+            _uenv SARUFI_BOT_ID       "$PROD_SARUFI_BOT_ID"
+            _uenv SARUFI_API_KEY      "$PROD_SARUFI_API_KEY"
+            _uenv GOOGLE_CLIENT_ID    "$PROD_GOOGLE_CLIENT_ID"
+            _uenv SUPABASE_URL        "$PROD_SUPABASE_URL"
+            _uenv SUPABASE_KEY        "$PROD_SUPABASE_ANON_KEY"
+            _uenv ALLOWED_HOSTS       "$PROD_ALLOWED_HOSTS"
+            _uenv CORS_ALLOWED_ORIGINS "$PROD_CORS_ALLOWED_ORIGINS"
+            _uenv DEFAULT_FROM_EMAIL  "noreply@yriftz.org"
+            _uenv CONTACT_EMAIL       "info@yriftz.org"
+
             echo "--- Pulling latest code ---"
             git pull origin main
             echo "--- Pulling new Docker images ---"

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import logoDark from '@/assets/logos/logo-dark-full-horizontal.svg'
 
@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { label: 'Events', href: '#events' },
   { label: 'Partners', href: '#partners' },
   { label: 'Vacancies', href: '/vacancies' },
+  { label: 'Donate', href: '/donate' },
   { label: 'Contact', href: '/contact' },
 ]
 
@@ -16,6 +17,7 @@ export default function PublicHeader() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
   const isLanding = location.pathname === '/'
 
   useEffect(() => {
@@ -28,11 +30,26 @@ export default function PublicHeader() {
     ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100'
     : 'bg-transparent'
 
-  const handleNavClick = (href: string) => {
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     setMobileOpen(false)
-    if (href.startsWith('#') && isLanding) {
-      const el = document.getElementById(href.slice(1))
-      if (el) el.scrollIntoView({ behavior: 'smooth' })
+    
+    if (href.startsWith('#')) {
+      e.preventDefault()
+      
+      // If not on landing page, navigate there first with the hash
+      if (!isLanding) {
+        navigate('/' + href, { replace: false })
+      } else {
+        // Already on landing page, scroll directly
+        const elementId = href.slice(1)
+        setTimeout(() => {
+          const element = document.getElementById(elementId)
+          if (element) {
+            const top = element.getBoundingClientRect().top + window.scrollY - 80
+            window.scrollTo({ top, behavior: 'smooth' })
+          }
+        }, 100)
+      }
     }
   }
 
@@ -49,13 +66,14 @@ export default function PublicHeader() {
           <nav className="hidden md:flex items-center gap-6">
             {NAV_LINKS.map(({ label, href }) =>
               href.startsWith('#') ? (
-                <button
+                <a
                   key={label}
-                  onClick={() => handleNavClick(href)}
-                  className="text-sm font-medium text-content-secondary hover:text-brand-navy transition-colors"
+                  href={href}
+                  onClick={(e) => handleNavClick(e, href)}
+                  className="text-sm font-medium text-content-secondary hover:text-brand-navy transition-colors cursor-pointer"
                 >
                   {label}
-                </button>
+                </a>
               ) : (
                 <Link
                   key={label}
@@ -100,13 +118,14 @@ export default function PublicHeader() {
         <div className="md:hidden bg-white border-t border-gray-100 px-4 pb-4 pt-2 space-y-1">
           {NAV_LINKS.map(({ label, href }) =>
             href.startsWith('#') ? (
-              <button
+              <a
                 key={label}
-                onClick={() => handleNavClick(href)}
-                className="block w-full text-left px-3 py-2 text-sm font-medium text-content-secondary hover:text-brand-navy hover:bg-gray-50 rounded-lg"
+                href={href}
+                onClick={(e) => handleNavClick(e, href)}
+                className="block w-full text-left px-3 py-2 text-sm font-medium text-content-secondary hover:text-brand-navy hover:bg-gray-50 rounded-lg cursor-pointer"
               >
                 {label}
-              </button>
+              </a>
             ) : (
               <Link
                 key={label}

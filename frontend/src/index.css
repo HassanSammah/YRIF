@@ -21,6 +21,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem; /* account for fixed header */
+}
+
 body {
   min-height: 100vh;
   background-color: #FDFBF7;

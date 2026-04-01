@@ -8,6 +8,93 @@ function generateId() {
   return Math.random().toString(36).slice(2, 10)
 }
 
+/** Render basic markdown (bold, headers, lists, links) as JSX */
+function renderMarkdown(text: string) {
+  const lines = text.split('\n')
+  const elements: React.ReactNode[] = []
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i]
+
+    // Headers: ## or ###
+    const headerMatch = line.match(/^(#{1,3})\s+(.+)$/)
+    if (headerMatch) {
+      const level = headerMatch[1].length
+      const content = inlineFormat(headerMatch[2])
+      elements.push(
+        <p key={i} className={`${level === 1 ? 'text-sm' : 'text-[13px]'} font-bold text-gray-900 mt-2 mb-0.5`}>
+          {content}
+        </p>
+      )
+      continue
+    }
+
+    // Bullet list items: - or •
+    const bulletMatch = line.match(/^[\-•✅❌📧🎯]\s+(.+)$/)
+    if (bulletMatch) {
+      elements.push(
+        <div key={i} className="flex gap-1.5 ml-1">
+          <span className="text-[#0D9488] mt-px">•</span>
+          <span>{inlineFormat(bulletMatch[1])}</span>
+        </div>
+      )
+      continue
+    }
+
+    // Numbered list: 1. 2. etc.
+    const numMatch = line.match(/^(\d+)\.\s+(.+)$/)
+    if (numMatch) {
+      elements.push(
+        <div key={i} className="flex gap-1.5 ml-1">
+          <span className="text-[#0D9488] font-medium min-w-[1rem]">{numMatch[1]}.</span>
+          <span>{inlineFormat(numMatch[2])}</span>
+        </div>
+      )
+      continue
+    }
+
+    // Horizontal rule: ---
+    if (/^-{3,}$/.test(line.trim())) {
+      elements.push(<hr key={i} className="border-gray-200 my-1.5" />)
+      continue
+    }
+
+    // Empty line → small spacer
+    if (line.trim() === '') {
+      elements.push(<div key={i} className="h-1.5" />)
+      continue
+    }
+
+    // Regular paragraph
+    elements.push(<p key={i} className="my-0">{inlineFormat(line)}</p>)
+  }
+
+  return <div className="space-y-0.5">{elements}</div>
+}
+
+/** Format inline markdown: **bold**, *italic*, `code`, [links](url) */
+function inlineFormat(text: string): React.ReactNode {
+  const parts: React.ReactNode[] = []
+  // Match **bold**, *italic*, `code`, [text](url), or plain text
+  const regex = /\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`|\[(.+?)\]\((.+?)\)/g
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index))
+    }
+    if (match[1]) parts.push(<strong key={match.index} className="font-semibold text-gray-900">{match[1]}</strong>)
+    else if (match[2]) parts.push(<em key={match.index}>{match[2]}</em>)
+    else if (match[3]) parts.push(<code key={match.index} className="bg-gray-100 text-[#0D9488] px-1 rounded text-xs">{match[3]}</code>)
+    else if (match[4] && match[5]) parts.push(<a key={match.index} href={match[5]} target="_blank" rel="noopener noreferrer" className="text-[#0D9488] underline">{match[4]}</a>)
+    lastIndex = match.index + match[0].length
+  }
+
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex))
+  return parts.length === 1 ? parts[0] : <>{parts}</>
+}
+
 // Stable chat_id persists for the browser session
 const SESSION_KEY = 'yrif_chat_session'
 function getSessionId(userId?: string): string {
@@ -121,13 +208,13 @@ export default function ChatWidget() {
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
+                  className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
                     msg.role === 'user'
-                      ? 'bg-[#093344] text-white rounded-br-md'
+                      ? 'bg-[#093344] text-white rounded-br-md whitespace-pre-wrap'
                       : 'bg-white text-gray-800 border border-gray-100 shadow-sm rounded-bl-md'
                   }`}
                 >
-                  {msg.text}
+                  {msg.role === 'bot' ? renderMarkdown(msg.text) : msg.text}
                 </div>
               </div>
             ))}

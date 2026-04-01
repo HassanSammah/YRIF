@@ -114,23 +114,75 @@ jobs:
       - name: Deploy via SSH
         if: steps.check.outputs.deploy == 'true'
         uses: appleboy/ssh-action@v1
+        env:
+          STAGING_SECRET_KEY: ${{ secrets.STAGING_SECRET_KEY }}
+          STAGING_DB_NAME: ${{ secrets.STAGING_DB_NAME }}
+          STAGING_DB_USER: ${{ secrets.STAGING_DB_USER }}
+          STAGING_DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
+          STAGING_BRIQ_API_KEY: ${{ secrets.STAGING_BRIQ_API_KEY }}
+          STAGING_BRIQ_APP_KEY: ${{ secrets.STAGING_BRIQ_APP_KEY }}
+          STAGING_BREVO_API_KEY: ${{ secrets.STAGING_BREVO_API_KEY }}
+          STAGING_ANTHROPIC_API_KEY: ${{ secrets.STAGING_ANTHROPIC_API_KEY }}
+          STAGING_GOOGLE_CLIENT_ID: ${{ secrets.STAGING_GOOGLE_CLIENT_ID }}
+          STAGING_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          STAGING_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          STAGING_ALLOWED_HOSTS: ${{ secrets.STAGING_ALLOWED_HOSTS }}
+          STAGING_CORS_ALLOWED_ORIGINS: ${{ secrets.STAGING_CORS_ALLOWED_ORIGINS }}
+          STAGING_API_BASE_URL: ${{ secrets.STAGING_API_BASE_URL }}
         with:
           host: ${{ secrets.STAGING_SSH_HOST }}
           username: root
           key: ${{ secrets.STAGING_SSH_KEY }}
+          envs: STAGING_SECRET_KEY,STAGING_DB_NAME,STAGING_DB_USER,STAGING_DB_PASSWORD,STAGING_BRIQ_API_KEY,STAGING_BRIQ_APP_KEY,STAGING_BREVO_API_KEY,STAGING_ANTHROPIC_API_KEY,STAGING_GOOGLE_CLIENT_ID,STAGING_SUPABASE_URL,STAGING_SUPABASE_ANON_KEY,STAGING_ALLOWED_HOSTS,STAGING_CORS_ALLOWED_ORIGINS,STAGING_API_BASE_URL
           script: |
             set -e
             cd /var/www/yrif
+
+            echo "--- Syncing .env.production ---"
+            _uenv() {
+              local k="$1" v="$2" f="backend/.env.production"
+              touch "$f"
+              if grep -q "^${k}=" "$f" 2>/dev/null; then
+                sed -i "s|^${k}=.*|${k}=${v}|" "$f"
+              else
+                echo "${k}=${v}" >> "$f"
+              fi
+            }
+            _uenv SECRET_KEY          "$STAGING_SECRET_KEY"
+            _uenv DB_NAME             "$STAGING_DB_NAME"
+            _uenv DB_USER             "$STAGING_DB_USER"
+            _uenv DB_PASSWORD         "$STAGING_DB_PASSWORD"
+            _uenv DB_HOST             "db"
+            _uenv DB_PORT             "5432"
+            _uenv REDIS_URL           "redis://redis:6379/0"
+            _uenv BRIQ_API_KEY        "$STAGING_BRIQ_API_KEY"
+            _uenv BRIQ_APP_KEY        "$STAGING_BRIQ_APP_KEY"
+            _uenv BREVO_API_KEY       "$STAGING_BREVO_API_KEY"
+            _uenv ANTHROPIC_API_KEY   "$STAGING_ANTHROPIC_API_KEY"
+            _uenv GOOGLE_CLIENT_ID    "$STAGING_GOOGLE_CLIENT_ID"
+            _uenv SUPABASE_URL        "$STAGING_SUPABASE_URL"
+            _uenv SUPABASE_KEY        "$STAGING_SUPABASE_ANON_KEY"
+            _uenv ALLOWED_HOSTS       "$STAGING_ALLOWED_HOSTS"
+            _uenv CORS_ALLOWED_ORIGINS "$STAGING_CORS_ALLOWED_ORIGINS"
+            _uenv DEFAULT_FROM_EMAIL  "noreply@yriftz.org"
+            _uenv CONTACT_EMAIL       "info@yriftz.org"
+
+            echo "--- Pulling latest code ---"
             git pull origin staging
+            echo "--- Pulling new Docker images ---"
             docker compose -f docker-compose.prod.yml pull
+            echo "--- Restarting containers ---"
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            echo "--- Running migrations ---"
             for i in $(seq 1 12); do
               if docker exec yrif-backend-1 python manage.py check 2>/dev/null; then
                 break
               fi
+              echo "Waiting for backend ($i/12)..."
               sleep 5
             done
             docker exec yrif-backend-1 python manage.py migrate --no-input
+            echo "--- Deploy complete ---"
 
       - name: Health check (staging)
         if: steps.check.outputs.healthcheck == 'true'

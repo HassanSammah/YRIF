@@ -101,7 +101,7 @@ class TestChatbotEndpoint:
     URL = "/api/v1/communications/chatbot/"
 
     def test_chatbot_returns_reply_when_unconfigured(self, api_client):
-        # autouse fast_settings sets SARUFI_API_KEY="", so chatbot returns canned response
+        # chatbot returns fallback reply when ANTHROPIC_API_KEY is unset
         response = api_client.post(self.URL, {"message": "Hello"}, format="json")
         assert response.status_code == 200
         assert "reply" in response.data

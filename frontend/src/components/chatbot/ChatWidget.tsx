@@ -8,6 +8,64 @@ function generateId() {
   return Math.random().toString(36).slice(2, 10)
 }
 
+/** Render basic markdown (bold, headers, lists, links) as JSX */
+function renderMarkdown(text: string) {
+  const lines = text.split('\n')
+  const elements: React.ReactNode[] = []
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+
+    // Headers: ## or ###
+    const headerMatch = line.match(/^(#{1,3})\s+(.+)$/)
+    if (headerMatch) {
+      const level = headerMatch[1].length
+      const content = headerMatch[2]
+      elements.push(
+        <p key={i} className={`${level === 1 ? 'text-sm' : 'text-[13px]'} font-bold text-gray-900 mt-2 mb-0.5`}>
+          {content}
+        </p>
+      )
+      continue
+    }
+
+    // Bullet list items: - or •
+    const bulletMatch = line.match(/^[-•✅❌📧🎯]\s+(.+)$/u)
+    if (bulletMatch) {
+      elements.push(
+        <div key={i} className="flex gap-1.5 ml-1">
+          <span className="text-[#0D9488] mt-px">•</span>
+          <span>{bulletMatch[1]}</span>
+        </div>
+      )
+      continue
+    }
+
+    // Numbered list: 1. 2. etc.
+    const numMatch = line.match(/^(\d+)\.\s+(.+)$/)
+    if (numMatch) {
+      elements.push(
+        <div key={i} className="flex gap-1.5 ml-1">
+          <span className="text-[#0D9488] font-medium min-w-[1rem]">{numMatch[1]}.</span>
+          <span>{numMatch[2]}</span>
+        </div>
+      )
+      continue
+    }
+
+    // Regular text
+    if (line.trim()) {
+      elements.push(
+        <p key={i} className="text-sm text-gray-800 leading-relaxed">
+          {line}
+        </p>
+      )
+    }
+  }
+
+  return elements
+}
+
 // Stable chat_id persists for the browser session
 const SESSION_KEY = 'yrif_chat_session'
 function getSessionId(userId?: string): string {

@@ -158,15 +158,15 @@ SIMPLE_JWT = {
 }
 
 # Briq Auth / SMS / OTP  (YRIF-App-Dev)
-BRIQ_API_KEY = config("BRIQ_API_KEY", default="-7UxVFkdeQXKhKY1wMGrgJQpdw_z3slbkGBRKyJgwPw")
-BRIQ_APP_KEY = config("BRIQ_APP_KEY", default="briq_mkb71g9z39n4frg0")
+BRIQ_API_KEY = config("BRIQ_API_KEY", default="")
+BRIQ_APP_KEY = config("BRIQ_APP_KEY", default="")
 BRIQ_DEVELOPER_APP_ID = config("BRIQ_DEVELOPER_APP_ID", default=BRIQ_APP_KEY)  # defaults to BRIQ_APP_KEY if not set separately
 BRIQ_SMS_SENDER = config("BRIQ_SMS_SENDER", default="YRIF")
 BRIQ_BASE_URL = config("BRIQ_BASE_URL", default="https://karibu.briq.tz")
 BRIQ_WEBHOOK_SECRET = config("BRIQ_WEBHOOK_SECRET", default="")  # set in BRIQ dashboard & env
 
 # Google OAuth
-GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default="350998195827-59nlf2oraqutqvags0f5qah6k6ggprg7.apps.googleusercontent.com")
+GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default="")
 
 # Supabase Realtime
 SUPABASE_URL = config("SUPABASE_URL", default="")
@@ -174,7 +174,6 @@ SUPABASE_KEY = config("SUPABASE_KEY", default="")
 
 # Claude AI — YRIF Chat
 ANTHROPIC_API_KEY = config("ANTHROPIC_API_KEY", default="")
-NGROK_BACKEND_URL = config("NGROK_BACKEND_URL", default="")
 
 # Email — Brevo Transactional API
 BREVO_API_KEY = config("BREVO_API_KEY", default="")

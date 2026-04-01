@@ -104,7 +104,7 @@ export default function ChatWidget() {
             </div>
             <div>
               <p className="text-sm font-bold">YRIF Chat</p>
-              <p className="text-xs text-blue-100">Powered by Sarufi AI</p>
+              <p className="text-xs text-blue-100">Powered by Claude AI</p>
             </div>
             <button onClick={() => setOpen(false)} className="ml-auto p-1 rounded-lg hover:bg-white/20">
               <X className="w-4 h-4" />

@@ -38,6 +38,7 @@ services:
 
   # ── Django API (Gunicorn) ──────────────────────────────────────────────────
   backend:
+    image: ghcr.io/hassansammah/yrif-backend:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -62,6 +63,7 @@ services:
 
   # ── React SPA + API proxy (nginx-alpine) ──────────────────────────────────
   frontend:
+    image: ghcr.io/hassansammah/yrif-frontend:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile

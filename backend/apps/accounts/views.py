@@ -42,6 +42,11 @@ from . import emails as account_emails
 
 logger = logging.getLogger(__name__)
 
+# Cache timeouts (seconds)
+CACHE_TTL_10_MIN = 600
+CACHE_TTL_15_MIN = 900
+CACHE_TTL_30_MIN = 1800
+
 
 def _normalise_phone(raw: str) -> str:
     """Return phone in E.164 format (+255XXXXXXXXX) expected by BRIQ."""
@@ -207,6 +212,20 @@ class GoogleAuthView(APIView):
         return Response({**tokens, "user": UserSerializer(user).data, "is_new": created})
 
 
+# ─── BRIQ API helper ──────────────────────────────────────────────────────────
+
+def _briq_post(endpoint: str, payload: dict) -> dict:
+    """POST to BRIQ API with standard headers/timeout. Raises RequestException."""
+    resp = http_requests.post(
+        f"{settings.BRIQ_BASE_URL}{endpoint}",
+        json={"app_key": settings.BRIQ_APP_KEY, **payload},
+        headers={"X-API-Key": settings.BRIQ_API_KEY, "Content-Type": "application/json"},
+        timeout=10,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
 # ─── Phone OTP (Briq) ─────────────────────────────────────────────────────────
 
 class PhoneOTPRequestView(APIView):
@@ -221,19 +240,11 @@ class PhoneOTPRequestView(APIView):
             return Response({"detail": "OTP service not configured."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         try:
-            resp = http_requests.post(
-                f"{settings.BRIQ_BASE_URL}/v1/otp/request",
-                json={
-                    "phone_number": phone_number,
-                    "app_key": settings.BRIQ_APP_KEY,
-                    "sender_id": settings.BRIQ_SMS_SENDER,
-                    "minutes_to_expire": 10,
-                },
-                headers={"X-API-Key": settings.BRIQ_API_KEY, "Content-Type": "application/json"},
-                timeout=10,
-            )
-            resp.raise_for_status()
-            data = resp.json()
+            data = _briq_post("/v1/otp/request", {
+                "phone_number": phone_number,
+                "sender_id": settings.BRIQ_SMS_SENDER,
+                "minutes_to_expire": 10,
+            })
         except http_requests.RequestException as exc:
             return Response({"detail": f"OTP request failed: {exc}"}, status=status.HTTP_502_BAD_GATEWAY)
 
@@ -261,18 +272,10 @@ class PhoneOTPVerifyView(APIView):
             return Response({"detail": "OTP service not configured."}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         try:
-            resp = http_requests.post(
-                f"{settings.BRIQ_BASE_URL}/v1/otp/verify",
-                json={
-                    "phone_number": phone_number,
-                    "app_key": settings.BRIQ_APP_KEY,
-                    "code": code,
-                },
-                headers={"X-API-Key": settings.BRIQ_API_KEY, "Content-Type": "application/json"},
-                timeout=10,
-            )
-            resp.raise_for_status()
-            data = resp.json()
+            data = _briq_post("/v1/otp/verify", {
+                "phone_number": phone_number,
+                "code": code,
+            })
         except http_requests.RequestException as exc:
             return Response({"detail": f"OTP verification failed: {exc}"}, status=status.HTTP_502_BAD_GATEWAY)
 
@@ -374,19 +377,11 @@ class BriqAuthRequestView(APIView):
         briq_ok = False
         briq_data = {}
         try:
-            resp = http_requests.post(
-                f"{settings.BRIQ_BASE_URL}/v1/otp/request",
-                json={
-                    "phone_number": phone_number,
-                    "app_key": settings.BRIQ_APP_KEY,
-                    "sender_id": settings.BRIQ_SMS_SENDER,
-                    "minutes_to_expire": 10,
-                },
-                headers={"X-API-Key": settings.BRIQ_API_KEY, "Content-Type": "application/json"},
-                timeout=10,
-            )
-            resp.raise_for_status()
-            briq_data = resp.json()
+            briq_data = _briq_post("/v1/otp/request", {
+                "phone_number": phone_number,
+                "sender_id": settings.BRIQ_SMS_SENDER,
+                "minutes_to_expire": 10,
+            })
             briq_ok = bool(briq_data.get("success"))
         except http_requests.RequestException as exc:
             logger.warning("BRIQ OTP unavailable, trying email fallback: %s", exc)
@@ -457,18 +452,10 @@ class BriqAuthVerifyView(APIView):
         else:
             # ── BRIQ verify path ──────────────────────────────────────────────
             try:
-                resp = http_requests.post(
-                    f"{settings.BRIQ_BASE_URL}/v1/otp/verify",
-                    json={
-                        "phone_number": phone_number,
-                        "app_key": settings.BRIQ_APP_KEY,
-                        "code": code,
-                    },
-                    headers={"X-API-Key": settings.BRIQ_API_KEY, "Content-Type": "application/json"},
-                    timeout=10,
-                )
-                resp.raise_for_status()
-                data = resp.json()
+                data = _briq_post("/v1/otp/verify", {
+                    "phone_number": phone_number,
+                    "code": code,
+                })
             except http_requests.RequestException:
                 return Response(
                     {"detail": "OTP verification unavailable. Please try again."},

@@ -63,7 +63,7 @@ export const communicationsApi = {
   sendMessage: (convId: string, text: string) =>
     apiClient.post<Message>(`/communications/conversations/${convId}/messages/`, { text }),
 
-  // ── Admin ──────────────────────────────────────────────────────────────────
+  // ── Admin (wired to real backend endpoints; admin UI not yet built) ───────
   adminListFaqs: () =>
     apiClient.get<FAQ[]>('/communications/admin/faqs/'),
 

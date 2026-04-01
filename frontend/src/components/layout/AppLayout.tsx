@@ -43,7 +43,7 @@ export default function AppLayout() {
   const { data: notifs } = useQuery(
     'notifications-count',
     () => communicationsApi.getNotifications().then((r) => r.data),
-    { refetchInterval: 30_000, retry: 1 },
+    { refetchInterval: 30_000, refetchOnWindowFocus: false, retry: 1 },
   )
   const unreadCount = Array.isArray(notifs)
     ? notifs.filter((n) => !n.is_read).length
@@ -53,7 +53,7 @@ export default function AppLayout() {
   const { data: convs } = useQuery(
     'messages-count',
     () => communicationsApi.listConversations().then((r) => r.data),
-    { refetchInterval: 30_000, retry: 1 },
+    { refetchInterval: 30_000, refetchOnWindowFocus: false, retry: 1 },
   )
   const unreadMsgCount = convs?.results?.reduce((sum, c) => sum + (c.unread_count ?? 0), 0) ?? 0
 

@@ -14,7 +14,7 @@ function renderMarkdown(text: string) {
   const elements: React.ReactNode[] = []
 
   for (let i = 0; i < lines.length; i++) {
-    let line = lines[i]
+    const line = lines[i]
 
     // Headers: ## or ###
     const headerMatch = line.match(/^(#{1,3})\s+(.+)$/)
@@ -30,12 +30,24 @@ function renderMarkdown(text: string) {
     }
 
     // Bullet list items: - or •
-    const bulletMatch = line.match(/^[\-•✅❌📧🎯]\s+(.+)$/)
+    // const bulletMatch = line.match(/^[\-•✅❌📧🎯]\s+(.+)$/
+    // const bulletMatch = line.match(/^[\-•✅❌📧🎯]\s+(.+)$/)
+    // if (bulletMatch) {
+    //   elements.push(
+    //     <div key={i} className="flex gap-1.5 ml-1">
+    //       <span className="text-[#0D9488] mt-px">•</span>
+    //       <span>{inlineFormat(bulletMatch[1])}</span>
+    //     </div>
+    //   )
+    //   continue
+    // }
+    // Bullet list items: -, •, or some common emoji bullets
+    const bulletMatch = line.match(/^(-|•|✅|❌|📧|🎯)\s+(.+)$/u)
     if (bulletMatch) {
       elements.push(
         <div key={i} className="flex gap-1.5 ml-1">
           <span className="text-[#0D9488] mt-px">•</span>
-          <span>{inlineFormat(bulletMatch[1])}</span>
+          <span>{inlineFormat(bulletMatch[2])}</span>
         </div>
       )
       continue

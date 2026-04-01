@@ -3,7 +3,7 @@ import { useQuery } from 'react-query'
 import {
   Search, Download, ExternalLink, BookOpen, FileText, Database,
   Video, Play, ChevronLeft, ChevronRight, Loader2, Calendar,
-  Eye, Tag,
+  Eye, Tag, type LucideIcon,
 } from 'lucide-react'
 import { SkeletonCard } from '@/components/common/Skeleton'
 import { resourcesApi } from '@/api/resources'
@@ -13,7 +13,7 @@ import { usePageTitle } from '@/hooks/usePageTitle'
 
 // ── Type icons & colours ──────────────────────────────────────────────────────
 
-const TYPE_META: Record<ResourceType, { icon: React.ComponentType<any>; colour: string; bg: string }> = {
+const TYPE_META: Record<ResourceType, { icon: LucideIcon; colour: string; bg: string }> = {
   guide:     { icon: BookOpen, colour: 'text-[#0D9488]',   bg: 'bg-teal-50' },
   template:  { icon: FileText, colour: 'text-purple-600', bg: 'bg-purple-50' },
   dataset:   { icon: Database, colour: 'text-green-600',  bg: 'bg-green-50' },

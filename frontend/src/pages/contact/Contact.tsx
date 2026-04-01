@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Mail, Phone, MapPin, CheckCircle, Send, ChevronDown, MessageCircle } from 'lucide-react'
+import { Mail, Phone, MapPin, CheckCircle, Send, ChevronDown, MessageCircle, MessageSquare } from 'lucide-react'
 import { communicationsApi } from '@/api/communications'
 import { Field, inputCls, PrimaryButton, FormError } from '@/components/ui'
 import { usePageTitle } from '@/hooks/usePageTitle'
@@ -72,25 +72,33 @@ export default function Contact() {
   }
 
   return (
-    /* pt-16 offsets the fixed 64px public navbar */
-    <div className="max-w-5xl mx-auto px-4 pt-20 pb-16">
-      {/* Header */}
-      <div className="text-center mb-10">
-        <h1 className="text-3xl font-bold text-gray-900">Contact Us</h1>
-        <p className="text-gray-500 mt-2 max-w-xl mx-auto">
-          Have a question, suggestion, or partnership inquiry? We'd love to hear from you.
-          Our team typically responds within 2–3 business days.
-        </p>
+    <div className="min-h-screen bg-gradient-cream pt-16">
+      {/* Hero */}
+      <div className="bg-brand-navy text-white py-20 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-brand-teal/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-gold/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center gap-2 bg-brand-teal/20 text-brand-teal px-3 py-1.5 rounded-full text-xs font-semibold mb-6">
+            <MessageSquare size={13} /> Get in Touch
+          </div>
+          <h1 className="font-display text-4xl sm:text-5xl font-bold mb-4">
+            Contact Us
+          </h1>
+          <p className="text-white/70 text-lg max-w-2xl mx-auto">
+            Have a question, suggestion, or partnership inquiry? We'd love to hear from you. Our team typically responds within 2–3 business days.
+          </p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Contact info */}
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide mb-4">
-              Get in Touch
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Contact info */}
+          <div className="space-y-6">
+          <div className="glass-card bg-white rounded-2xl p-6">
+            <h2 className="text-xs font-bold text-brand-navy uppercase tracking-wide mb-6">
+              Direct Contact
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-5">
               <ContactInfo
                 icon={Mail}
                 label="Email"
@@ -111,38 +119,41 @@ export default function Contact() {
           </div>
 
           {/* Chat teaser */}
-          <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl p-4 border border-teal-100">
-            <div className="flex items-center gap-2 mb-1">
-              <MessageCircle className="w-4 h-4 text-[#0D9488]" />
-              <p className="text-sm font-semibold text-[#093344]">Need instant help?</p>
+          <div className="glass-card bg-gradient-to-br from-brand-teal/10 to-brand-navy/5 rounded-2xl p-6 border border-brand-teal/20">
+            <div className="flex items-start gap-3">
+              <MessageCircle className="w-5 h-5 text-brand-teal flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-brand-navy mb-1">Quick Support?</p>
+                <p className="text-xs text-content-secondary leading-relaxed">
+                  Use the <strong>YRIF Chat</strong> widget for instant AI answers about the platform available 24/7.
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-[#0D9488] leading-relaxed">
-              Use the <strong>YRIF Chat</strong> widget in the bottom-right corner for
-              immediate AI-powered answers about the platform.
-            </p>
           </div>
         </div>
 
         {/* Form */}
         <div className="lg:col-span-2">
           {submitted ? (
-            <div className="flex flex-col items-center justify-center text-center py-16 bg-white rounded-2xl border border-gray-100 shadow-sm">
-              <CheckCircle className="w-12 h-12 text-green-500 mb-4" />
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Message Sent!</h3>
-              <p className="text-sm text-gray-500 max-w-sm">
+            <div className="flex flex-col items-center justify-center text-center py-16 glass-card bg-white rounded-2xl p-8">
+              <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-brand-navy mb-2">Message Sent!</h3>
+              <p className="text-sm text-content-secondary max-w-sm mb-6">
                 Thank you for reaching out. We've received your message and will get back to you
                 at <strong>{submittedEmail}</strong> within 2–3 business days.
               </p>
               <button
                 onClick={() => setSubmitted(false)}
-                className="mt-6 text-sm text-[#0D9488] hover:underline"
+                className="text-sm font-medium text-brand-teal hover:text-brand-navy transition-colors"
               >
-                Send another message
+                Send another message →
               </button>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="glass-card bg-white rounded-2xl p-8">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field id="name" label="Full Name" required error={errors.name?.message}>
                     <input
@@ -190,12 +201,12 @@ export default function Contact() {
 
                 {error && <FormError message={error} />}
 
-                <div className="flex justify-end">
+                <div className="flex justify-end pt-2">
                   <PrimaryButton
                     type="submit"
                     disabled={submitting}
                     loading={submitting}
-                    className="px-6"
+                    className="px-8"
                   >
                     <Send className="w-4 h-4" />
                     Send Message
@@ -204,41 +215,42 @@ export default function Contact() {
               </form>
             </div>
           )}
+          </div>
         </div>
-      </div>
 
-      {/* ── FAQ Section ──────────────────────────────────────────────────────── */}
-      <div className="mt-20">
-        <div className="text-center mb-10">
-          <span className="inline-block px-3 py-1 rounded-full bg-teal-50 text-[#0D9488] text-xs font-semibold uppercase tracking-wider mb-3">
-            FAQ
-          </span>
-          <h2 className="text-2xl font-bold text-[#093344]">Frequently Asked Questions</h2>
-          <p className="text-gray-500 text-sm mt-2 max-w-lg mx-auto">
-            Quick answers to the most common questions about YRIF and the platform.
+        {/* ── FAQ Section ──────────────────────────────────────────────────────── */}
+        <div className="mt-24">
+          <div className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 bg-brand-teal/10 text-brand-teal px-3 py-1.5 rounded-full text-xs font-semibold mb-4">
+              <ChevronDown size={13} /> FAQ
+            </div>
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand-navy mb-3">Frequently Asked Questions</h2>
+            <p className="text-content-secondary text-lg max-w-2xl mx-auto">
+              Quick answers to the most common questions about YRIF and how to use the platform.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+            {FAQS.map((faq, i) => (
+              <FaqItem
+                key={i}
+                index={i}
+                question={faq.q}
+                answer={faq.a}
+                open={openFaq === i}
+                onToggle={() => setOpenFaq(openFaq === i ? null : i)}
+              />
+            ))}
+          </div>
+
+          <p className="text-center text-sm text-content-secondary mt-10">
+            Didn't find your answer?{' '}
+            <a href="mailto:info@yriftz.org" className="text-brand-teal font-semibold hover:underline">
+              Email us directly
+            </a>{' '}
+            or use the YRIF Chat widget.
           </p>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {FAQS.map((faq, i) => (
-            <FaqItem
-              key={i}
-              index={i}
-              question={faq.q}
-              answer={faq.a}
-              open={openFaq === i}
-              onToggle={() => setOpenFaq(openFaq === i ? null : i)}
-            />
-          ))}
-        </div>
-
-        <p className="text-center text-sm text-gray-400 mt-8">
-          Didn't find your answer?{' '}
-          <a href="mailto:info@yriftz.org" className="text-[#0D9488] font-medium hover:underline">
-            Email us directly
-          </a>{' '}
-          or use the YRIF Chat widget.
-        </p>
       </div>
     </div>
   )
@@ -264,26 +276,26 @@ function FaqItem({
       type="button"
       onClick={onToggle}
       className={[
-        'w-full text-left rounded-2xl border transition-all duration-200 overflow-hidden',
+        'w-full text-left glass-card rounded-2xl border transition-all duration-200 overflow-hidden',
         open
-          ? 'border-[#0D9488]/30 bg-teal-50/60 shadow-sm'
-          : 'border-gray-100 bg-white hover:border-teal-200 hover:shadow-sm',
+          ? 'border-brand-teal/30 bg-brand-teal/5 shadow-sm'
+          : 'border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm',
       ].join(' ')}
     >
-      <div className="flex items-start justify-between gap-4 px-5 py-4">
-        <div className="flex items-start gap-3 min-w-0">
-          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#093344]/8 flex items-center justify-center text-[10px] font-bold text-[#093344] mt-0.5">
+      <div className="flex items-start justify-between gap-4 px-6 py-5">
+        <div className="flex items-start gap-3 min-w-0 flex-1">
+          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-brand-navy/10 flex items-center justify-center text-xs font-bold text-brand-navy mt-0.5">
             {index + 1}
           </span>
-          <span className="text-sm font-semibold text-[#093344] leading-snug">{question}</span>
+          <span className="text-sm font-semibold text-brand-navy leading-snug">{question}</span>
         </div>
         <ChevronDown
-          className={`flex-shrink-0 w-4 h-4 text-[#0D9488] transition-transform duration-200 mt-0.5 ${open ? 'rotate-180' : ''}`}
+          className={`flex-shrink-0 w-5 h-5 text-brand-teal transition-transform duration-300 mt-0.5 ${open ? 'rotate-180' : ''}`}
         />
       </div>
       {open && (
-        <div className="px-5 pb-4">
-          <div className="ml-9 text-sm text-gray-600 leading-relaxed border-t border-teal-100 pt-3">
+        <div className="px-6 pb-5 border-t border-brand-teal/10">
+          <div className="ml-9 text-sm text-content-secondary leading-relaxed pt-4">
             {answer}
           </div>
         </div>
@@ -305,12 +317,12 @@ function ContactInfo({
 }) {
   const inner = (
     <div className="flex items-start gap-3">
-      <div className="w-8 h-8 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
-        <Icon className="w-4 h-4 text-[#0D9488]" />
+      <div className="w-10 h-10 rounded-xl bg-brand-teal/10 flex items-center justify-center flex-shrink-0">
+        <Icon className="w-5 h-5 text-brand-teal" />
       </div>
       <div>
-        <p className="text-xs text-gray-400">{label}</p>
-        <p className="text-sm font-medium text-gray-800">{value}</p>
+        <p className="text-xs font-semibold text-content-secondary uppercase tracking-wide mb-0.5">{label}</p>
+        <p className="text-sm font-semibold text-brand-navy">{value}</p>
       </div>
     </div>
   )

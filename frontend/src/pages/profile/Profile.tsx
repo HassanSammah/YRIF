@@ -393,8 +393,9 @@ function ChangeEmailSection({ currentEmail, onChanged }: {
     try {
       await authApi.changeEmail(newEmail)
       setStep('otp')
-    } catch (e: any) {
-      setError(e?.response?.data?.new_email?.[0] ?? e?.response?.data?.detail ?? 'Failed to send code.')
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { new_email?: string[]; detail?: string } } }
+      setError(err?.response?.data?.new_email?.[0] ?? err?.response?.data?.detail ?? 'Failed to send code.')
     } finally {
       setLoading(false)
     }
@@ -407,8 +408,9 @@ function ChangeEmailSection({ currentEmail, onChanged }: {
       await authApi.confirmEmailChange(newEmail, code)
       setStep('done')
       setTimeout(() => { setStep('idle'); setNewEmail(''); setCode(''); onChanged() }, 3000)
-    } catch (e: any) {
-      setError(e?.response?.data?.detail ?? 'Invalid or expired code.')
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { detail?: string } } }
+      setError(err?.response?.data?.detail ?? 'Invalid or expired code.')
     } finally {
       setLoading(false)
     }
@@ -506,8 +508,9 @@ function AccountDeletionSection() {
     try {
       await authApi.requestDeletion(reason)
       setStep('submitted')
-    } catch (e: any) {
-      setError(e?.response?.data?.detail ?? 'Failed to submit request. You may already have a pending request.')
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { detail?: string } } }
+      setError(err?.response?.data?.detail ?? 'Failed to submit request. You may already have a pending request.')
     } finally {
       setLoading(false)
     }

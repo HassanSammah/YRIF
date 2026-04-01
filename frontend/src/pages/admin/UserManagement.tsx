@@ -213,8 +213,8 @@ function UserEditModal({ user, onClose, onSaved }: {
       await authApi.updateUser(user.id, form)
       setSaved(true)
       setTimeout(() => { onSaved(); onClose() }, 800)
-    } catch (e: any) {
-      const data = e?.response?.data
+    } catch (e: unknown) {
+      const data = (e as { response?: { data?: Record<string, string[]> & { detail?: string } } })?.response?.data
       if (data?.email) setError(`Email: ${data.email[0]}`)
       else setError(data?.detail ?? 'Failed to save changes.')
     } finally {

@@ -3,6 +3,7 @@ import { useQuery } from 'react-query'
 import { Megaphone, Newspaper, Clock, ArrowRight } from 'lucide-react'
 import { publicApi } from '@/api/public'
 import { SkeletonCard } from '@/components/common/Skeleton'
+import type { Announcement, NewsPost } from '@/types/admin'
 
 function timeAgo(iso: string) {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000
@@ -11,7 +12,7 @@ function timeAgo(iso: string) {
   return `${Math.floor(diff / 86400)}d ago`
 }
 
-function AnnouncementCard({ item }: { item: any }) {
+function AnnouncementCard({ item }: { item: Announcement }) {
   return (
     <div className="flex gap-4 p-4 rounded-xl border border-gray-100 bg-white hover:shadow-sm transition-shadow">
       <div className="w-9 h-9 rounded-lg bg-brand-gold/10 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -29,7 +30,7 @@ function AnnouncementCard({ item }: { item: any }) {
   )
 }
 
-function NewsCard({ item }: { item: any }) {
+function NewsCard({ item }: { item: NewsPost }) {
   return (
     <Link
       to="/dashboard"
@@ -75,8 +76,8 @@ export default function NewsAnnouncements() {
     { staleTime: 5 * 60_000, retry: false }
   )
 
-  const announcements = Array.isArray(annData) ? annData : (annData as any)?.results ?? []
-  const newsPosts = Array.isArray(newsData) ? newsData : (newsData as any)?.results ?? []
+  const announcements: Announcement[] = Array.isArray(annData) ? annData : (annData as unknown as { results?: Announcement[] })?.results ?? []
+  const newsPosts: NewsPost[] = Array.isArray(newsData) ? newsData : (newsData as unknown as { results?: NewsPost[] })?.results ?? []
 
   if (!annLoading && !newsLoading && announcements.length === 0 && newsPosts.length === 0) {
     return null
@@ -112,7 +113,7 @@ export default function NewsAnnouncements() {
               </h3>
               {annLoading
                 ? [0, 1, 2].map((i) => <SkeletonCard key={i} rows={2} />)
-                : announcements.slice(0, 4).map((a: any) => <AnnouncementCard key={a.id} item={a} />)
+                : announcements.slice(0, 4).map((a) => <AnnouncementCard key={a.id} item={a} />)
               }
             </div>
           )}
@@ -121,7 +122,7 @@ export default function NewsAnnouncements() {
           <div className={`${announcements.length > 0 ? 'lg:col-span-2' : 'lg:col-span-3'} grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${announcements.length > 0 ? '2' : '3'} gap-6`}>
             {newsLoading
               ? [0, 1].map((i) => <SkeletonCard key={i} rows={3} />)
-              : newsPosts.map((n: any) => <NewsCard key={n.id} item={n} />)
+              : newsPosts.map((n) => <NewsCard key={n.id} item={n} />)
             }
           </div>
         </div>

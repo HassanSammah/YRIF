@@ -5,6 +5,7 @@ import { Calendar, MapPin, ArrowRight, Clock } from 'lucide-react'
 import { publicApi } from '@/api/public'
 import { SkeletonCard } from '@/components/common/Skeleton'
 import { EVENT_TYPE_LABELS } from '@/types/events'
+import type { Event } from '@/types/events'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-TZ', {
@@ -49,7 +50,7 @@ export default function UpcomingEvents() {
     { staleTime: 5 * 60_000, retry: false }
   )
 
-  const items: any[] = Array.isArray(data) ? data : (data as any)?.results ?? []
+  const items: Event[] = Array.isArray(data) ? data : (data as unknown as { results?: Event[] })?.results ?? []
   const nextEvent = items[0] ?? null
   const countdown = useCountdown(nextEvent?.start_date ?? null)
 
@@ -91,7 +92,7 @@ export default function UpcomingEvents() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
             {/* Events list */}
             <div className="space-y-4">
-              {items.map((ev: any) => (
+              {items.map((ev) => (
                 <Link
                   key={ev.id}
                   to={`/events/${ev.id}`}

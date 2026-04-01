@@ -4,6 +4,7 @@ import { BookOpen, User, ArrowRight, Eye, Download } from 'lucide-react'
 import { publicApi } from '@/api/public'
 import { SkeletonCard } from '@/components/common/Skeleton'
 import { RESEARCH_CATEGORY_LABELS } from '@/types/research'
+import type { Research } from '@/types/research'
 
 export default function FeaturedResearch() {
   const { data, isLoading } = useQuery(
@@ -12,7 +13,7 @@ export default function FeaturedResearch() {
     { staleTime: 5 * 60_000, retry: false }
   )
 
-  const items = Array.isArray(data) ? data : (data as any)?.results ?? []
+  const items: Research[] = Array.isArray(data) ? data : (data as unknown as { results?: Research[] })?.results ?? []
 
   return (
     <section id="research" className="py-20 bg-white">
@@ -56,7 +57,7 @@ export default function FeaturedResearch() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {items.map((r: any) => (
+            {items.map((r) => (
               <Link
                 key={r.id}
                 to="/dashboard"

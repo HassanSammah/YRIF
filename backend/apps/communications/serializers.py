@@ -41,7 +41,7 @@ class ConversationParticipantSerializer(serializers.Serializer):
                 if request:
                     return request.build_absolute_uri(profile.avatar.url)
                 return profile.avatar.url
-        except Exception:
+        except (AttributeError, ValueError):
             pass
         return None
 

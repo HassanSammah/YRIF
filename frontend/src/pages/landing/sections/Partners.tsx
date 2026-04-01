@@ -1,6 +1,7 @@
 import { useQuery } from 'react-query'
 import { Building2 } from 'lucide-react'
 import { publicApi } from '@/api/public'
+import type { PartnerListing } from '@/types/mentorship'
 
 // Fallback static partner names shown when API has no data
 const STATIC_PARTNERS = [
@@ -41,8 +42,8 @@ export default function Partners() {
   )
 
   const apiItems: string[] = Array.isArray(data)
-    ? (data as any[]).map((p) => p.org_name ?? p.full_name)
-    : (data as any)?.results?.map((p: any) => p.org_name ?? p.full_name) ?? []
+    ? (data as PartnerListing[]).map((p) => p.org_name ?? p.full_name)
+    : (data as unknown as { results?: PartnerListing[] })?.results?.map((p) => p.org_name ?? p.full_name) ?? []
 
   const names = apiItems.length > 0 ? apiItems : STATIC_PARTNERS
   const doubled = [...names, ...names] // duplicate for seamless loop

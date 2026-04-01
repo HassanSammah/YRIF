@@ -411,7 +411,7 @@ class StartMentorshipConversationView(APIView):
             match = MentorshipMatch.objects.select_related("mentor", "mentee", "request").get(
                 pk=match_id
             )
-        except Exception:
+        except (MentorshipMatch.DoesNotExist, ValueError):
             return Response({"detail": "Match not found"}, status=status.HTTP_404_NOT_FOUND)
 
         if request.user not in (match.mentor, match.mentee):

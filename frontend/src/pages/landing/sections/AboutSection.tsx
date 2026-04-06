@@ -1,4 +1,5 @@
 import { CheckCircle2, Quote } from 'lucide-react'
+import researchMeetingImg from '@/assets/images/research_meeting.png'
 
 const OFFERINGS = [
   'A national research submission and peer-review platform',
@@ -14,7 +15,7 @@ export default function AboutSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
           {/* Visual */}
           <div className="relative">
-            <img src="/src/assets/images/research_meeting.png" alt="Research Team Meeting" className="rounded-2xl shadow-xl w-full object-cover" />
+            <img src={researchMeetingImg} alt="Research Team Meeting" className="rounded-2xl shadow-xl w-full object-cover" />
 
             {/* Floating testimonial */}
             <div className="absolute -bottom-6 -right-6 max-w-xs bg-white rounded-2xl p-4 shadow-xl hidden lg:block">

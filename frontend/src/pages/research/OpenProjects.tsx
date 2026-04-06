@@ -11,6 +11,7 @@ import { RESEARCH_CATEGORY_LABELS } from '@/types/research'
 import type { Research, ResearchCategory, RAJoinRequestStatus } from '@/types/research'
 import { usePageTitle } from '@/hooks/usePageTitle'
 
+
 const CATEGORIES: { value: ResearchCategory | ''; label: string }[] = [
   { value: '', label: 'All Categories' },
   { value: 'natural_sciences', label: 'Natural Sciences' },

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Heart, RefreshCw, CheckCircle } from 'lucide-react'
+import { Heart, RefreshCw, CheckCircle, Lock, Building2, Gift, CreditCard, ChevronRight } from 'lucide-react'
 import { publicApi } from '@/api/public'
 
 const PRESET_AMOUNTS = [5000, 10000, 25000, 50000]
@@ -180,6 +180,28 @@ export default function Donations() {
                   />
                 </div>
 
+                {/* Payment Method */}
+                <div>
+                  <label className="block text-xs font-semibold text-brand-navy mb-2">
+                    Preferred Payment Method
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      className="flex items-center justify-center gap-2 p-2.5 border-2 border-brand-teal bg-brand-teal/5 rounded-lg transition-all font-semibold text-sm"
+                    >
+                      <CreditCard size={14} /> Bank Card
+                    </button>
+                    <button
+                      type="button"
+                      disabled
+                      className="flex items-center justify-center gap-2 p-2.5 border-2 border-gray-200 rounded-lg opacity-50 cursor-not-allowed text-xs"
+                    >
+                      Mobile Money
+                    </button>
+                  </div>
+                </div>
+
                 {error && <p className="text-xs text-red-500">{error}</p>}
 
                 <button
@@ -190,11 +212,58 @@ export default function Donations() {
                   {loading ? 'Processing…' : <><Heart size={16} /> Donate TZS {finalAmount ? finalAmount.toLocaleString() : '—'}</>}
                 </button>
 
+                <div className="flex items-center justify-center gap-1 text-xs text-gray-500">
+                  <Lock size={12} /> Secure payment processing
+                </div>
+
                 <p className="text-xs text-center text-content-secondary">
                   We'll contact you with payment instructions after submission.
                 </p>
               </form>
             )}
+          </div>
+        </div>
+
+        {/* Additional sections */}
+        <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Corporate Partnerships */}
+          <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
+            <h3 className="font-display text-xl font-bold text-brand-navy mb-4 flex items-center gap-2">
+              <Building2 size={20} className="text-brand-navy" />
+              Corporate Partnerships
+            </h3>
+            <p className="text-content-secondary text-sm mb-4">
+              Looking to align your company with youth empowerment and national development? We offer tailored partnership packages for corporate sponsors.
+            </p>
+            <a
+              href="mailto:partners@yrif.org"
+              className="text-brand-teal font-semibold text-sm hover:text-brand-navy transition-colors flex items-center gap-1"
+            >
+              Contact our partnerships team <ChevronRight size={14} />
+            </a>
+          </div>
+
+          {/* Other Ways to Give */}
+          <div className="bg-gradient-cream rounded-2xl p-8 shadow-sm">
+            <h3 className="font-display text-xl font-bold text-brand-navy mb-4 flex items-center gap-2">
+              <Gift size={20} className="text-brand-gold" />
+              Other Ways to Give
+            </h3>
+            <p className="text-content-secondary text-sm mb-3">
+              We also accept donations via:
+            </p>
+            <ul className="text-sm text-content-secondary space-y-2">
+              <li>• Bank transfer</li>
+              <li>• Mobile money (M-Pesa, Tigo Pesa, Airtel Money)</li>
+              <li>• In-kind donations (equipment, books, software)</li>
+              <li>• Honorary gifts & endowments</li>
+            </ul>
+            <a
+              href="mailto:donate@yrif.org"
+              className="text-brand-teal font-semibold text-sm hover:text-brand-navy transition-colors flex items-center gap-1 mt-4"
+            >
+              Get in touch for details <ChevronRight size={14} />
+            </a>
           </div>
         </div>
       </div>

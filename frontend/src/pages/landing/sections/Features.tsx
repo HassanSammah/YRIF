@@ -1,82 +1,64 @@
 import { BookOpen, Users, Trophy, Calendar, Database, Lightbulb } from 'lucide-react'
+import mentorshipImage from '@/assets/images/mentorship.png'
 
-const FEATURES = [
-  {
-    Icon: BookOpen,
-    title: 'Research Portal',
-    description:
-      'Submit, review, and publish research papers through a structured peer-review workflow. Build your academic portfolio.',
-    color: 'bg-brand-teal/10 text-brand-teal',
-  },
-  {
-    Icon: Users,
-    title: 'Mentorship Network',
-    description:
-      'Connect with experienced professionals and academics who guide your research and career development.',
-    color: 'bg-brand-navy/10 text-brand-navy',
-  },
-  {
-    Icon: Trophy,
-    title: 'Innovation Grants',
-    description:
-      'Compete in national competitions and win grants to fund your research projects and innovations.',
-    color: 'bg-brand-gold/10 text-brand-gold',
-  },
-  {
-    Icon: Calendar,
-    title: 'Events & Workshops',
-    description:
-      'Attend seminars, workshops, hackathons, and bonanzas. Earn verified certificates for your participation.',
-    color: 'bg-brand-teal/10 text-brand-teal',
-  },
-  {
-    Icon: Database,
-    title: 'Data Repository',
-    description:
-      'Access a growing library of Tanzanian youth research, datasets, and learning resources curated for impact.',
-    color: 'bg-brand-navy/10 text-brand-navy',
-  },
-  {
-    Icon: Lightbulb,
-    title: 'Idea Incubator',
-    description:
-      'Collaborate with research assistants and partner organizations to transform early-stage ideas into real projects.',
-    color: 'bg-brand-gold/10 text-brand-gold',
-  },
+const features = [
+  { icon: BookOpen, title: 'Research Portal', description: 'Access a comprehensive database of youth-led research papers and publications.' },
+  { icon: Users, title: 'Mentorship', description: 'Connect with experienced academic and industry mentors for guidance.' },
+  { icon: Trophy, title: 'Innovation Grants', description: 'Apply for funding to turn your research ideas into tangible solutions.' },
+  { icon: Calendar, title: 'Events & Workshops', description: 'Participate in skill-building workshops and networking events.' },
+  { icon: Database, title: 'Data Repository', description: 'Utilize open-access datasets for your research projects.' },
+  { icon: Lightbulb, title: 'Idea Incubator', description: 'Collaborate with peers to refine and launch innovative concepts.' },
 ]
 
 export default function Features() {
   return (
-    <section className="py-20 bg-gradient-cream">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <div className="inline-block text-xs font-semibold text-brand-teal bg-brand-teal/10 px-3 py-1.5 rounded-full border border-brand-teal/20 mb-4">
-            Platform Features
+    <section id="features" className="py-32 relative overflow-hidden">
+      {/* Background elements */}
+      <div className="absolute inset-0 bg-white/50 -z-50" />
+
+      <div className="container mx-auto px-6 md:px-12">
+        {/* Intro Section */}
+        <div className="mb-24">
+          <div className="relative rounded-[3rem] overflow-hidden bg-brand-navy text-white p-8 md:p-16 flex flex-col md:flex-row items-center gap-12 shadow-2xl">
+            <div className="w-full md:w-1/2 z-10">
+              <span className="text-brand-teal font-bold tracking-widest uppercase text-sm mb-4 block">Our Core Pillars</span>
+              <h2 className="font-display text-4xl md:text-5xl font-bold mb-6 leading-tight">
+                bridging the gap between <span className="text-brand-teal">knowledge</span> and <span className="text-brand-gold">innovation</span>.
+              </h2>
+              <p className="text-gray-300 text-lg leading-relaxed mb-8">
+                We provide the essential infrastructure for young Tanzanians to thrive in the global knowledge economy.
+              </p>
+            </div>
+            <div className="w-full md:w-1/2 relative h-64 md:h-80">
+              <img
+                src={mentorshipImage}
+                alt="Mentorship"
+                className="absolute inset-0 w-full h-full object-cover rounded-2xl opacity-90 mix-blend-overlay"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-brand-navy to-transparent" />
+            </div>
+
+            {/* Decorative Circle */}
+            <div className="absolute -top-24 -right-24 w-96 h-96 bg-brand-blue/30 rounded-full blur-3xl pointer-events-none" />
           </div>
-          <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand-navy mb-4">
-            Bridging the Gap Between{' '}
-            <span className="text-brand-teal">Knowledge and Innovation</span>
-          </h2>
-          <p className="text-content-secondary leading-relaxed">
-            Everything a young Tanzanian researcher needs — from first draft to national recognition.
-          </p>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {FEATURES.map(({ Icon, title, description, color }) => (
-            <div
-              key={title}
-              className="group glass-card bg-white rounded-2xl p-6 hover:-translate-y-1 transition-transform cursor-default"
-            >
-              <div className={`w-11 h-11 rounded-xl flex items-center justify-center mb-4 ${color} group-hover:scale-110 transition-transform`}>
-                <Icon size={20} />
+        {/* Bento Grid Features */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map((feature, index) => {
+            const Icon = feature.icon
+            return (
+              <div key={index} className="glass-card p-8 rounded-3xl hover:border-brand-teal/30 hover:-translate-y-2 group cursor-pointer">
+                <div className="w-14 h-14 bg-brand-light rounded-2xl flex items-center justify-center mb-6 group-hover:bg-brand-navy transition-colors duration-300">
+                  <Icon className="text-brand-gold group-hover:text-white transition-colors duration-300" size={28} />
+                </div>
+                <h3 className="font-display text-2xl font-bold text-brand-navy mb-3">{feature.title}</h3>
+                <p className="text-text-secondary leading-relaxed">
+                  {feature.description}
+                </p>
               </div>
-              <h3 className="font-semibold text-brand-navy mb-2">{title}</h3>
-              <p className="text-sm text-content-secondary leading-relaxed">{description}</p>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>

@@ -1,0 +1,47 @@
+name: Supabase Keep-Alive
+
+# Supabase free-tier projects are paused after ~7 days of no database activity.
+# Our realtime-only usage doesn't count, so we ping the `public.keepalive`
+# table once a day to keep the YRIF Web Platform project marked active.
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # daily at 06:00 UTC (09:00 EAT)
+  workflow_dispatch:       # allow manual runs
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  ping:
+    name: Ping Supabase
+    runs-on: ubuntu-latest
+    steps:
+      - name: SELECT from keepalive table
+        env:
+          SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_URL}" ] || [ -z "${SUPABASE_ANON_KEY}" ]; then
+            echo "::error::PROD_SUPABASE_URL or PROD_SUPABASE_ANON_KEY secret is missing"
+            exit 1
+          fi
+
+          response=$(curl -sS -w "\n%{http_code}" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            "${SUPABASE_URL}/rest/v1/keepalive?select=id,last_ping&limit=1")
+
+          body=$(echo "${response}" | sed '$d')
+          status=$(echo "${response}" | tail -n1)
+
+          echo "HTTP ${status}"
+          echo "Body: ${body}"
+
+          if [ "${status}" != "200" ]; then
+            echo "::error::Unexpected status code ${status}"
+            exit 1
+          fi
+
+          echo "Supabase keep-alive ping succeeded."

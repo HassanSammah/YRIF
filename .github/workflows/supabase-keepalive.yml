@@ -16,16 +16,15 @@ jobs:
   ping:
     name: Ping Supabase
     runs-on: ubuntu-latest
-    environment: production   # required to access PROD_SUPABASE_* secrets
     steps:
       - name: SELECT from keepalive table
         env:
-          SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_KEEPALIVE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEEPALIVE_KEY }}
         run: |
           set -euo pipefail
           if [ -z "${SUPABASE_URL}" ] || [ -z "${SUPABASE_ANON_KEY}" ]; then
-            echo "::error::PROD_SUPABASE_URL or PROD_SUPABASE_ANON_KEY secret is missing"
+            echo "::error::SUPABASE_KEEPALIVE_URL or SUPABASE_KEEPALIVE_KEY secret is missing"
             exit 1
           fi
 

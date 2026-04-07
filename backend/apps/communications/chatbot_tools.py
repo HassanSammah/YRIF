@@ -465,7 +465,7 @@ def _get_event_detail(args, user):
 
 
 def _search_mentors(args, user):
-    from apps.accounts.models import User, UserRole, UserStatus, MentorProfile
+    from apps.accounts.models import UserRole, UserStatus, MentorProfile
 
     expertise = (args.get("expertise") or "").strip()
     limit = _clamp_limit(args.get("limit"))

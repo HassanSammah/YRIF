@@ -101,6 +101,23 @@ _ESCALATION_KEYWORDS = [
 
 class ChatbotView(APIView):
     permission_classes = [AllowAny]
+    # No authentication_classes: we parse the JWT manually below so that an
+    # expired/invalid token does not return 401 on this public endpoint.
+    authentication_classes = []
+
+    def _authenticated_user(self, request):
+        """Best-effort JWT parse — returns a User or None. Never raises."""
+        auth_header = request.headers.get("Authorization", "")
+        if not auth_header.startswith("Bearer "):
+            return None
+        try:
+            from rest_framework_simplejwt.authentication import JWTAuthentication
+            result = JWTAuthentication().authenticate(request)
+            if result:
+                return result[0]
+        except Exception as exc:
+            logger.debug("Chatbot JWT parse failed (ignored): %s", exc)
+        return None
 
     def post(self, request):
         message = request.data.get("message", "").strip()
@@ -108,7 +125,8 @@ class ChatbotView(APIView):
         if not message:
             return Response({"error": "message is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        result = send_chatbot_message(chat_id=chat_id, message=message)
+        user = self._authenticated_user(request)
+        result = send_chatbot_message(chat_id=chat_id, message=message, user=user)
 
         # Notify staff if user requested human support (escalation keyword match)
         msg_lower = message.lower()

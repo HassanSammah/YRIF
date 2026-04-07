@@ -16,6 +16,7 @@ jobs:
   ping:
     name: Ping Supabase
     runs-on: ubuntu-latest
+    environment: production   # required to access PROD_SUPABASE_* secrets
     steps:
       - name: SELECT from keepalive table
         env:

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Menu, Bell, MessageSquare, Search, LogOut, User, Settings, X } from 'lucide-react'
+import { Menu, Bell, MessageSquare, Search, LogOut, User, X } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { USER_ROLE_LABELS } from '@/types/user'
 
@@ -149,14 +149,6 @@ export default function TopBar({ onMenuClick, notifCount = 0, msgCount = 0, titl
             >
               <User className="w-3.5 h-3.5 text-gray-400" />
               View Profile
-            </Link>
-            <Link
-              to="/profile"
-              onClick={() => setDropdownOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2 text-sm text-[#093344] hover:bg-gray-50 transition-colors"
-            >
-              <Settings className="w-3.5 h-3.5 text-gray-400" />
-              Settings
             </Link>
             <div className="border-t border-gray-100 mt-1 pt-1">
               <button

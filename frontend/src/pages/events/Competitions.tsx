@@ -79,7 +79,7 @@ export default function Competitions() {
             {data.count} competition{data.count !== 1 ? 's' : ''}
           </p>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {data.results.map((comp) => {
               const isPast = new Date(comp.end_date) < new Date()
               return (

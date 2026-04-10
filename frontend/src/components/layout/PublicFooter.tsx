@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Mail, Phone, MapPin, Twitter, Facebook, Linkedin, Youtube } from 'lucide-react'
+import { Mail, MapPin, Twitter, Facebook, Linkedin, Youtube } from 'lucide-react'
 import logoWhite from '@/assets/logos/logo-white-full-horizontal.svg'
 
 const PLATFORM_LINKS = [
@@ -108,10 +108,6 @@ export default function PublicFooter() {
                 <a href="mailto:info@yriftz.org" className="hover:text-white transition-colors">
                   info@yriftz.org
                 </a>
-              </li>
-              <li className="flex items-start gap-2.5 text-sm text-white/70">
-                <Phone size={15} className="mt-0.5 flex-shrink-0 text-brand-teal" />
-                <span>+255 XXX XXX XXX</span>
               </li>
               <li className="flex items-start gap-2.5 text-sm text-white/70">
                 <MapPin size={15} className="mt-0.5 flex-shrink-0 text-brand-teal" />

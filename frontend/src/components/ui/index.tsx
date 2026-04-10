@@ -3,6 +3,7 @@
  * Brand: Navy #093344 | Teal #0D9488 | Gold #df8d31 | Light #FDFBF7
  */
 import React from 'react'
+import { createPortal } from 'react-dom'
 import { Loader2 } from 'lucide-react'
 
 // ── Input class helper ─────────────────────────────────────────────────────
@@ -225,7 +226,7 @@ export function Modal({
   children: React.ReactNode
   wide?: boolean
 }) {
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div
         className={[
@@ -246,7 +247,8 @@ export function Modal({
         </div>
         <div className="px-6 py-5 space-y-5 overflow-y-auto">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

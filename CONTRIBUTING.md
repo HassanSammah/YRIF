@@ -81,12 +81,18 @@ Set these under **Settings → Secrets and variables → Actions**:
 ### Production environment (`production`)
 | Secret | Description |
 |--------|-------------|
-| `PROD_SUPABASE_URL` | Supabase project URL |
-| `PROD_SUPABASE_ANON_KEY` | Supabase anon key |
-| `PROD_API_BASE_URL` | Backend API URL |
+| `PROD_SSH_HOST` | VPS IP or hostname |
+| `PROD_SSH_KEY` | Deploy SSH private key (ed25519) |
 | `PROD_SECRET_KEY` | Django SECRET_KEY |
-| `PROD_DB_NAME` / `PROD_DB_USER` / `PROD_DB_PASSWORD` / `PROD_DB_HOST` | Database credentials |
-| `PROD_DEPLOY_HOOK` | Deploy trigger URL/command |
+| `PROD_DB_NAME` / `PROD_DB_USER` / `PROD_DB_PASSWORD` | Database credentials |
+| `PROD_API_BASE_URL` | Frontend API base (`""` for same-origin `/api/`) |
+| `PROD_ALLOWED_HOSTS` | Comma-separated hosts |
+| `PROD_CORS_ALLOWED_ORIGINS` | Comma-separated HTTPS origins |
+| `PROD_BRIQ_API_KEY` / `PROD_BRIQ_APP_KEY` / `PROD_BRIQ_WEBHOOK_SECRET` / `PROD_BRIQ_SMS_SENDER` | Briq SMS/OTP |
+| `PROD_BREVO_API_KEY` | Brevo transactional email |
+| `PROD_ANTHROPIC_API_KEY` | YRIF Chat |
+| `PROD_GOOGLE_CLIENT_ID` | Google OAuth |
+| `PROD_SUPABASE_URL` / `PROD_SUPABASE_ANON_KEY` | Supabase realtime |
 
 ## Branch Protection (configured on GitHub)
 

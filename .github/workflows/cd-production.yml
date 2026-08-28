@@ -3,6 +3,7 @@ name: CD – Production
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: deploy-production
@@ -101,6 +102,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     environment: production
+    permissions:
+      contents: read
+      packages: read
 
     steps:
       - name: Deploy via SSH
@@ -112,6 +116,8 @@ jobs:
           PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
           PROD_BRIQ_API_KEY: ${{ secrets.PROD_BRIQ_API_KEY }}
           PROD_BRIQ_APP_KEY: ${{ secrets.PROD_BRIQ_APP_KEY }}
+          PROD_BRIQ_WEBHOOK_SECRET: ${{ secrets.PROD_BRIQ_WEBHOOK_SECRET }}
+          PROD_BRIQ_SMS_SENDER: ${{ secrets.PROD_BRIQ_SMS_SENDER }}
           PROD_BREVO_API_KEY: ${{ secrets.PROD_BREVO_API_KEY }}
           PROD_ANTHROPIC_API_KEY: ${{ secrets.PROD_ANTHROPIC_API_KEY }}
           PROD_GOOGLE_CLIENT_ID: ${{ secrets.PROD_GOOGLE_CLIENT_ID }}
@@ -120,18 +126,26 @@ jobs:
           PROD_ALLOWED_HOSTS: ${{ secrets.PROD_ALLOWED_HOSTS }}
           PROD_CORS_ALLOWED_ORIGINS: ${{ secrets.PROD_CORS_ALLOWED_ORIGINS }}
           PROD_API_BASE_URL: ${{ secrets.PROD_API_BASE_URL }}
+          GHCR_PULL_TOKEN: ${{ github.token }}
+          GHCR_USERNAME: ${{ github.repository_owner }}
         with:
           host: ${{ secrets.PROD_SSH_HOST }}
           username: root
-          password: ${{ secrets.PROD_SSH_PASSWORD }}
-          envs: PROD_SECRET_KEY,PROD_DB_NAME,PROD_DB_USER,PROD_DB_PASSWORD,PROD_BRIQ_API_KEY,PROD_BRIQ_APP_KEY,PROD_BREVO_API_KEY,PROD_ANTHROPIC_API_KEY,PROD_GOOGLE_CLIENT_ID,PROD_SUPABASE_URL,PROD_SUPABASE_ANON_KEY,PROD_ALLOWED_HOSTS,PROD_CORS_ALLOWED_ORIGINS,PROD_API_BASE_URL
+          key: ${{ secrets.PROD_SSH_KEY }}
+          command_timeout: 10m
+          envs: PROD_SECRET_KEY,PROD_DB_NAME,PROD_DB_USER,PROD_DB_PASSWORD,PROD_BRIQ_API_KEY,PROD_BRIQ_APP_KEY,PROD_BRIQ_WEBHOOK_SECRET,PROD_BRIQ_SMS_SENDER,PROD_BREVO_API_KEY,PROD_ANTHROPIC_API_KEY,PROD_GOOGLE_CLIENT_ID,PROD_SUPABASE_URL,PROD_SUPABASE_ANON_KEY,PROD_ALLOWED_HOSTS,PROD_CORS_ALLOWED_ORIGINS,PROD_API_BASE_URL,GHCR_PULL_TOKEN,GHCR_USERNAME
           script: |
-            set -e
+            set -euo pipefail
             cd /var/www/yrif
 
-            echo "--- Syncing .env.production ---"
+            if [ -n "${GHCR_PULL_TOKEN:-}" ]; then
+              echo "--- Logging in to GHCR ---"
+              echo "$GHCR_PULL_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+            fi
+
+            echo "--- Syncing env files ---"
             _uenv() {
-              local k="$1" v="$2" f="backend/.env.production"
+              local k="$1" v="$2" f="$3"
               touch "$f"
               if grep -q "^${k}=" "$f" 2>/dev/null; then
                 sed -i "s|^${k}=.*|${k}=${v}|" "$f"
@@ -139,24 +153,37 @@ jobs:
                 echo "${k}=${v}" >> "$f"
               fi
             }
-            _uenv SECRET_KEY          "$PROD_SECRET_KEY"
-            _uenv DB_NAME             "$PROD_DB_NAME"
-            _uenv DB_USER             "$PROD_DB_USER"
-            _uenv DB_PASSWORD         "$PROD_DB_PASSWORD"
-            _uenv DB_HOST             "db"
-            _uenv DB_PORT             "5432"
-            _uenv REDIS_URL           "redis://redis:6379/0"
-            _uenv BRIQ_API_KEY        "$PROD_BRIQ_API_KEY"
-            _uenv BRIQ_APP_KEY        "$PROD_BRIQ_APP_KEY"
-            _uenv BREVO_API_KEY       "$PROD_BREVO_API_KEY"
-            _uenv ANTHROPIC_API_KEY   "$PROD_ANTHROPIC_API_KEY"
-            _uenv GOOGLE_CLIENT_ID    "$PROD_GOOGLE_CLIENT_ID"
-            _uenv SUPABASE_URL        "$PROD_SUPABASE_URL"
-            _uenv SUPABASE_KEY        "$PROD_SUPABASE_ANON_KEY"
-            _uenv ALLOWED_HOSTS       "$PROD_ALLOWED_HOSTS"
-            _uenv CORS_ALLOWED_ORIGINS "$PROD_CORS_ALLOWED_ORIGINS"
-            _uenv DEFAULT_FROM_EMAIL  "noreply@yriftz.org"
-            _uenv CONTACT_EMAIL       "info@yriftz.org"
+
+            BE="backend/.env.production"
+            ROOT=".env"
+            _uenv SECRET_KEY           "$PROD_SECRET_KEY" "$BE"
+            _uenv DB_NAME              "$PROD_DB_NAME" "$BE"
+            _uenv DB_USER              "$PROD_DB_USER" "$BE"
+            _uenv DB_PASSWORD          "$PROD_DB_PASSWORD" "$BE"
+            _uenv DB_HOST              "db" "$BE"
+            _uenv DB_PORT              "5432" "$BE"
+            _uenv REDIS_URL            "redis://redis:6379/0" "$BE"
+            _uenv BRIQ_API_KEY         "$PROD_BRIQ_API_KEY" "$BE"
+            _uenv BRIQ_APP_KEY         "$PROD_BRIQ_APP_KEY" "$BE"
+            _uenv BRIQ_WEBHOOK_SECRET  "${PROD_BRIQ_WEBHOOK_SECRET:-}" "$BE"
+            _uenv BRIQ_SMS_SENDER      "${PROD_BRIQ_SMS_SENDER:-YRIF}" "$BE"
+            _uenv BREVO_API_KEY        "$PROD_BREVO_API_KEY" "$BE"
+            _uenv ANTHROPIC_API_KEY    "$PROD_ANTHROPIC_API_KEY" "$BE"
+            _uenv GOOGLE_CLIENT_ID     "$PROD_GOOGLE_CLIENT_ID" "$BE"
+            _uenv SUPABASE_URL         "$PROD_SUPABASE_URL" "$BE"
+            _uenv SUPABASE_KEY         "$PROD_SUPABASE_ANON_KEY" "$BE"
+            _uenv ALLOWED_HOSTS        "$PROD_ALLOWED_HOSTS" "$BE"
+            _uenv CORS_ALLOWED_ORIGINS "$PROD_CORS_ALLOWED_ORIGINS" "$BE"
+            _uenv DEFAULT_FROM_EMAIL   "noreply@yriftz.org" "$BE"
+            _uenv CONTACT_EMAIL        "info@yriftz.org" "$BE"
+
+            # Compose interpolates these from the project .env
+            _uenv DB_NAME                  "$PROD_DB_NAME" "$ROOT"
+            _uenv DB_USER                  "$PROD_DB_USER" "$ROOT"
+            _uenv DB_PASSWORD              "$PROD_DB_PASSWORD" "$ROOT"
+            _uenv VITE_SUPABASE_URL        "$PROD_SUPABASE_URL" "$ROOT"
+            _uenv VITE_SUPABASE_ANON_KEY   "$PROD_SUPABASE_ANON_KEY" "$ROOT"
+            _uenv VITE_GOOGLE_CLIENT_ID    "$PROD_GOOGLE_CLIENT_ID" "$ROOT"
 
             echo "--- Pulling latest code ---"
             git pull origin main
@@ -180,10 +207,9 @@ jobs:
           echo "Waiting 30s for deployment to settle..."
           sleep 30
           for i in 1 2 3 4 5; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 \
-              "http://${{ secrets.PROD_SSH_HOST }}/health/")
-            echo "Attempt $i: HTTP $STATUS"
-            if [ "$STATUS" = "200" ] || [ "$STATUS" = "301" ] || [ "$STATUS" = "302" ]; then
+            BODY=$(curl -sSL --max-time 20 "https://yriftz.org/health/" || true)
+            echo "Attempt $i: $BODY"
+            if echo "$BODY" | grep -q '"database": "ok"' && echo "$BODY" | grep -q '"cache": "ok"'; then
               echo "Production health check passed."
               exit 0
             fi

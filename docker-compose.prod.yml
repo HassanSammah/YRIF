@@ -2,6 +2,7 @@ version: '3.9'
 
 # Production Docker Compose — Contabo VPS (yriftz.org)
 # Host nginx handles SSL; this stack provides the application layer.
+# Compose interpolates DB_* / VITE_* from /var/www/yrif/.env (written by CD).
 
 services:
   # ── Database ──────────────────────────────────────────────────────────────
@@ -12,6 +13,14 @@ services:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+    command: >
+      postgres
+      -c shared_buffers=1GB
+      -c effective_cache_size=3GB
+      -c max_connections=100
+      -c work_mem=8MB
+    mem_limit: 2560m
+    shm_size: "1g"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     expose:
@@ -26,6 +35,8 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --appendonly yes
+    mem_limit: 384m
     volumes:
       - redis_data:/data
     expose:
@@ -46,6 +57,7 @@ services:
     env_file: ./backend/.env.production
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.production
+    mem_limit: 3g
     expose:
       - "8000"
     depends_on:
@@ -73,10 +85,13 @@ services:
         VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
         VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
     restart: unless-stopped
+    mem_limit: 256m
     ports:
       - "127.0.0.1:3000:80"   # only on loopback — host nginx proxies here
     depends_on:
       - backend
+    volumes:
+      - media_files:/media:ro
     logging:
       driver: "json-file"
       options:

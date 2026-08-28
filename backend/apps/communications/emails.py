@@ -91,7 +91,7 @@ def notify_research_submitted(user, title: str) -> None:
             color="#6B7280",
             size="14px",
         )
-        + _cta("https://app.yriftz.org/research/my", "Track Submission")
+        + _cta("https://yriftz.org/research/my", "Track Submission")
     )
     send_email(
         to_email=user.email,
@@ -113,7 +113,7 @@ def notify_research_status_changed(user, title: str, new_status: str) -> None:
         _h2(f"Research Status Update: {label}")
         + _p(f"Hi {user.first_name}, the status of your research submission has been updated.")
         + _info_card(("Title", title), ("New Status", label))
-        + _cta("https://app.yriftz.org/research/my", "View Details")
+        + _cta("https://yriftz.org/research/my", "View Details")
     )
     send_email(
         to_email=user.email,
@@ -130,7 +130,7 @@ def notify_event_registration_confirmed(user, event_title: str, event_date: str)
         _h2("Registration Confirmed!", color="#0D9488")
         + _p(f"Hi {user.first_name}, your event registration has been confirmed.")
         + _info_card(("Event", event_title), ("Date", event_date))
-        + _cta("https://app.yriftz.org/events", "View Event")
+        + _cta("https://yriftz.org/events", "View Event")
     )
     send_email(
         to_email=user.email,
@@ -145,7 +145,7 @@ def notify_competition_results(user, competition_title: str, result: str) -> Non
         _h2("Competition Results Published", color="#0D9488")
         + _p(f"Hi {user.first_name}, the results for <strong>{competition_title}</strong> are in.")
         + _info_card(("Your result", result))
-        + _cta("https://app.yriftz.org/competitions", "View Full Results")
+        + _cta("https://yriftz.org/competitions", "View Full Results")
     )
     send_email(
         to_email=user.email,
@@ -165,7 +165,7 @@ def notify_mentorship_request_received(mentor, mentee_name: str, topic: str) -> 
             f"on the YRIF platform."
         )
         + _info_card(("From", mentee_name), ("Topic", topic))
-        + _cta("https://app.yriftz.org/mentorship", "Review Request")
+        + _cta("https://yriftz.org/mentorship", "Review Request")
     )
     send_email(
         to_email=mentor.email,

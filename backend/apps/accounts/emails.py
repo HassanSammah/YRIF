@@ -27,7 +27,7 @@ def notify_admin_new_registration(user):
             ("Email", user.email),
             ("Role", user.get_role_display()),
         )
-        + _cta("https://app.yriftz.org/admin/users", "Review in Admin Panel")
+        + _cta("https://yriftz.org/admin/users", "Review in Admin Panel")
     )
     for admin_email in _admin_list():
         send_email(
@@ -55,7 +55,7 @@ def notify_user_approved(user):
             "Join competitions and earn certificates",
             "Access learning resources and webinars",
         )
-        + _cta("https://app.yriftz.org/dashboard", "Get Started")
+        + _cta("https://yriftz.org/dashboard", "Get Started")
         + _small("Questions? Contact us at <a href='mailto:info@yriftz.org' "
                  "style='color:#0D9488;'>info@yriftz.org</a>")
     )
@@ -207,7 +207,7 @@ def send_welcome_email(user):
             "Join national competitions and earn certificates",
             "Access curated learning resources and webinars",
         )
-        + _cta("https://app.yriftz.org/dashboard", "Go to Your Dashboard")
+        + _cta("https://yriftz.org/dashboard", "Go to Your Dashboard")
         + _small(
             "Need help getting started? Email us at "
             "<a href='mailto:info@yriftz.org' style='color:#0D9488;'>info@yriftz.org</a>"
@@ -236,7 +236,7 @@ def send_post_verification_welcome_email(user):
             "Join national competitions and earn certificates",
             "Access curated learning resources and webinars",
         )
-        + _cta("https://app.yriftz.org/dashboard", "Get Started")
+        + _cta("https://yriftz.org/dashboard", "Get Started")
         + _small(
             "Questions? We're here at "
             "<a href='mailto:info@yriftz.org' style='color:#0D9488;'>info@yriftz.org</a>"
@@ -290,7 +290,7 @@ def send_deletion_rejected_email(user):
             color="#6B7280",
             size="14px",
         )
-        + _cta("https://app.yriftz.org/dashboard", "Go to Dashboard")
+        + _cta("https://yriftz.org/dashboard", "Go to Dashboard")
     )
     send_email(
         to_email=user.email,

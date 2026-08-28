@@ -1,5 +1,3 @@
-version: '3.9'
-
 # Production Docker Compose — Contabo VPS (yriftz.org)
 # Host nginx handles SSL; this stack provides the application layer.
 # Compose interpolates DB_* / VITE_* from /var/www/yrif/.env (written by CD).

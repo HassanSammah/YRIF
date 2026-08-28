@@ -1,13 +1,12 @@
 name: Supabase Keep-Alive
 
-# Supabase free-tier projects are paused after ~7 days of no database activity.
-# Our realtime-only usage doesn't count, so we ping the `public.keepalive`
-# table once a day to keep the YRIF Web Platform project marked active.
+# Supabase free-tier projects pause after ~7 days of no activity.
+# Ping GoTrue health daily so the YRIF realtime project stays awake.
 
 on:
   schedule:
     - cron: '0 6 * * *'   # daily at 06:00 UTC (09:00 EAT)
-  workflow_dispatch:       # allow manual runs
+  workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -17,7 +16,7 @@ jobs:
     name: Ping Supabase
     runs-on: ubuntu-latest
     steps:
-      - name: SELECT from keepalive table
+      - name: GET auth health
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_KEEPALIVE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEEPALIVE_KEY }}
@@ -28,10 +27,11 @@ jobs:
             exit 1
           fi
 
+          BASE="${SUPABASE_URL%/}"
           response=$(curl -sS -w "\n%{http_code}" \
             -H "apikey: ${SUPABASE_ANON_KEY}" \
             -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
-            "${SUPABASE_URL}/rest/v1/keepalive?select=id,last_ping&limit=1")
+            "${BASE}/auth/v1/health")
 
           body=$(echo "${response}" | sed '$d')
           status=$(echo "${response}" | tail -n1)

@@ -191,14 +191,16 @@ jobs:
             docker compose -f docker-compose.prod.yml pull
             echo "--- Restarting containers ---"
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
-            echo "--- Running migrations ---"
-            for i in $(seq 1 12); do
-              if docker exec yrif-backend-1 python manage.py check --deploy 2>/dev/null; then
+            echo "--- Waiting for Gunicorn ---"
+            for i in $(seq 1 24); do
+              if docker exec yrif-backend-1 python -c "import socket; socket.create_connection(('127.0.0.1', 8000), 2).close()" 2>/dev/null; then
+                echo "Gunicorn is listening"
                 break
               fi
-              echo "Waiting for backend ($i/12)..."
+              echo "Waiting for Gunicorn ($i/24)..."
               sleep 5
             done
+            echo "--- Running migrations ---"
             docker exec yrif-backend-1 python manage.py migrate --no-input
             echo "--- Deploy complete ---"
 

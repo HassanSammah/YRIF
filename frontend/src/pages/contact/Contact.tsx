@@ -108,7 +108,8 @@ export default function Contact() {
               <ContactInfo
                 icon={Phone}
                 label="Phone"
-                value="+255 (0) 000 000 000"
+                value="+255 716 713 332"
+                href="tel:+255716713332"
               />
               <ContactInfo
                 icon={MapPin}

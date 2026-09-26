@@ -5,7 +5,7 @@ from apps.core.brevo import (
     send_email, _wrap, _cta, _info_card, _h2, _p,
 )
 
-_MENTORSHIP_URL = "https://app.yriftz.org/mentorship"
+_MENTORSHIP_URL = "https://yriftz.org/mentorship"
 
 
 def _mentorship_cta():

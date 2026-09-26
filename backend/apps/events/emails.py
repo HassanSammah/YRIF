@@ -35,7 +35,7 @@ def notify_registration_confirmed(registration):
             color="#6B7280",
             size="14px",
         )
-        + _cta("https://app.yriftz.org/events", "View Event Details")
+        + _cta("https://yriftz.org/events", "View Event Details")
     )
     send_email(
         to_email=registration.participant.email,
@@ -59,7 +59,7 @@ def notify_registration_cancelled(registration):
             color="#6B7280",
             size="14px",
         )
-        + _cta("https://app.yriftz.org/events", "Browse Events")
+        + _cta("https://yriftz.org/events", "Browse Events")
     )
     send_email(
         to_email=registration.participant.email,
@@ -112,7 +112,7 @@ def notify_competition_results(event, winners):
                     color="#6B7280",
                     size="14px",
                 )
-                + _cta("https://app.yriftz.org/certificates", "Download Certificate")
+                + _cta("https://yriftz.org/certificates", "Download Certificate")
             )
         else:
             content = (
@@ -128,7 +128,7 @@ def notify_competition_results(event, winners):
                     color="#6B7280",
                     size="14px",
                 )
-                + _cta("https://app.yriftz.org/certificates", "Download Certificate")
+                + _cta("https://yriftz.org/certificates", "Download Certificate")
             )
 
         send_email(

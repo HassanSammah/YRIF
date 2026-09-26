@@ -1,0 +1,47 @@
+name: Supabase Keep-Alive
+
+# Supabase free-tier projects pause after ~7 days of no activity.
+# Ping GoTrue health daily so the YRIF realtime project stays awake.
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # daily at 06:00 UTC (09:00 EAT)
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  ping:
+    name: Ping Supabase
+    runs-on: ubuntu-latest
+    steps:
+      - name: GET auth health
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_KEEPALIVE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEEPALIVE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_URL}" ] || [ -z "${SUPABASE_ANON_KEY}" ]; then
+            echo "::error::SUPABASE_KEEPALIVE_URL or SUPABASE_KEEPALIVE_KEY secret is missing"
+            exit 1
+          fi
+
+          BASE="${SUPABASE_URL%/}"
+          response=$(curl -sS -w "\n%{http_code}" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            "${BASE}/auth/v1/health")
+
+          body=$(echo "${response}" | sed '$d')
+          status=$(echo "${response}" | tail -n1)
+
+          echo "HTTP ${status}"
+          echo "Body: ${body}"
+
+          if [ "${status}" != "200" ]; then
+            echo "::error::Unexpected status code ${status}"
+            exit 1
+          fi
+
+          echo "Supabase keep-alive ping succeeded."

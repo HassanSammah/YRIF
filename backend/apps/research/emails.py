@@ -25,7 +25,7 @@ def notify_research_submitted(research):
             ("Author", f"{research.author.get_full_name()} &lt;{research.author.email}&gt;"),
             ("Category", research.get_category_display()),
         )
-        + _cta("https://app.yriftz.org/admin/research", "Review Submission")
+        + _cta("https://yriftz.org/admin/research", "Review Submission")
     )
     for admin_email in _admin_list():
         send_email(
@@ -92,7 +92,7 @@ def notify_research_status_changed(research):
                 "Your research is now live on the YRIF platform and publicly visible. "
                 "Thank you for contributing to youth research and innovation in Tanzania!"
             ),
-            "extra": _cta("https://app.yriftz.org/research", "View in Repository"),
+            "extra": _cta("https://yriftz.org/research", "View in Repository"),
         },
     }
 

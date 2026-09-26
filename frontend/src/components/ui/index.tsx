@@ -3,6 +3,7 @@
  * Brand: Navy #093344 | Teal #0D9488 | Gold #df8d31 | Light #FDFBF7
  */
 import React from 'react'
+import { createPortal } from 'react-dom'
 import { Loader2 } from 'lucide-react'
 
 // ── Input class helper ─────────────────────────────────────────────────────
@@ -225,15 +226,15 @@ export function Modal({
   children: React.ReactNode
   wide?: boolean
 }) {
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div
         className={[
-          'bg-white rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-y-auto',
+          'bg-white rounded-2xl shadow-2xl w-full max-h-[90vh] flex flex-col',
           wide ? 'max-w-2xl' : 'max-w-lg',
         ].join(' ')}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
           <h2 className="text-lg font-semibold text-[#093344]">{title}</h2>
           <button
             onClick={onClose}
@@ -244,9 +245,10 @@ export function Modal({
             </svg>
           </button>
         </div>
-        <div className="px-6 py-5 space-y-5">{children}</div>
+        <div className="px-6 py-5 space-y-5 overflow-y-auto">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

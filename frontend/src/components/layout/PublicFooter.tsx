@@ -111,7 +111,9 @@ export default function PublicFooter() {
               </li>
               <li className="flex items-start gap-2.5 text-sm text-white/70">
                 <Phone size={15} className="mt-0.5 flex-shrink-0 text-brand-teal" />
-                <span>+255 XXX XXX XXX</span>
+                <a href="tel:+255716713332" className="hover:text-white transition-colors">
+                  +255 716 713 332
+                </a>
               </li>
               <li className="flex items-start gap-2.5 text-sm text-white/70">
                 <MapPin size={15} className="mt-0.5 flex-shrink-0 text-brand-teal" />

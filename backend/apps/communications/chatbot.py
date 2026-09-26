@@ -1,188 +1,117 @@
-"""YRIF Chat — powered by Claude (Anthropic).
+"""YRIF Chat — powered by Claude (Anthropic) with live tool access.
 
-Conversation history is stored per session in Redis so the bot maintains
-context across multiple messages within a session (up to 1 hour idle).
+The bot maintains conversation history per session in Redis (1h idle) and
+uses Claude tool use to query the Django ORM for real platform data
+(research, events, mentors, resources, stats, etc.) via the helpers in
+`chatbot_tools.py`.
 """
 import logging
+
 from django.conf import settings
 from django.core.cache import cache
 
+from .chatbot_tools import TOOLS, dispatch_tool
+
 logger = logging.getLogger(__name__)
 
-# Keep last 20 messages (10 back-and-forth exchanges) per session
+# Keep last 20 text messages per session (user+assistant only — tool
+# interactions are not persisted to the cache to keep it compact).
 _MAX_HISTORY = 20
 _SESSION_TTL = 3600  # 1 hour
+_MAX_TOOL_ITERATIONS = 5
+_MODEL = "claude-haiku-4-5-20251001"
+_MAX_TOKENS = 1536
 
-# ── YRIF knowledge system prompt ──────────────────────────────────────────────
+# ── YRIF system prompt ───────────────────────────────────────────────────────
+# Trimmed: we now instruct the model to PREFER live tools for any concrete
+# facts (counts, events, mentors, research, etc.) instead of guessing.
 _SYSTEM_PROMPT = """You are YRIF Chat, the official AI assistant for the Youth Research & Innovation Foundation (YRIF) Tanzania — yriftz.org.
 
-You are friendly, warm, professional, and bilingual. Always respond in the same language the user writes in (Swahili or English). If the user mixes languages, mirror that mix. Keep answers concise, helpful, and focused on YRIF. Use emojis sparingly for warmth.
+You are friendly, warm, professional, and bilingual. Always respond in the same language the user writes in (Swahili or English). If the user mixes languages, mirror that mix. Keep answers concise and focused on YRIF. Use emojis sparingly for warmth.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+USING YOUR TOOLS (IMPORTANT)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+You have live tools that query the YRIF platform database. Whenever the user asks about anything concrete — numbers, specific events, specific research, mentors, partners, resources, webinars, vacancies, announcements, news, or their own data — CALL A TOOL. Do not guess, do not invent titles, counts, dates, or names. If a tool returns no results, say so plainly.
+
+User-scoped tools (names starting with `get_my_`) require the user to be logged in. If a tool returns `{"error": "login_required"}`, politely tell the user they need to log in first.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ABOUT YRIF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-YRIF (Youth Research & Innovation Foundation) is Tanzania's national platform for youth-led research and innovation. It connects young researchers, mentors, academic institutions, and private sector partners.
+YRIF is Tanzania's national platform for youth-led research and innovation, connecting young researchers, mentors, academic institutions, and private sector partners.
 
-Vision: "To become the world's centre of Research and Innovation."
-Mission: "To engage the youth potential by addressing global challenges through research-based solutions."
-Core values: Professionalism, Integrity, Adherence, Innovation.
-Aligned with: Tanzania Vision 2050, National Research Agenda, SDGs 4, 8, 9.
-Target: 3,000+ active members in year one, 20+ universities, 30+ secondary schools.
-Contact: info@yriftz.org | Dar es Salaam, Tanzania.
-Website: yriftz.org
+- Vision: "To become the world's centre of Research and Innovation."
+- Mission: Engage youth potential by addressing global challenges through research-based solutions.
+- Values: Professionalism, Integrity, Adherence, Innovation.
+- Aligned with Tanzania Vision 2050, National Research Agenda, SDGs 4/8/9.
+- Contact: info@yriftz.org — Dar es Salaam, Tanzania — yriftz.org
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-MEMBERSHIP & REGISTRATION
+HOW THE PLATFORM WORKS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Who can join: Anyone passionate about research and innovation — students (secondary and university), researchers, mentors, private sector partners, and research assistants. Registration is FREE.
-
-User roles:
-• Youth / Student — participate in research, events, and competitions
-• Researcher — submit and publish academic research
-• Mentor / Advisor — guide young researchers (must be a verified expert)
-• Research Assistant — assist on research projects
-• Industry Partner — companies and organisations collaborating with YRIF
-
-How to register:
-1. Visit yriftz.org → click Register / Jisajili
-2. Choose login method: BRIQ Auth (Tanzanian phone number + OTP) or Google (Gmail)
-3. Fill in personal details (name, email/phone, role)
-4. Verify your email or phone
-5. Complete your profile (education, bio, skills, interests)
-6. Wait 1–2 business days for account approval
-7. You'll receive an email once approved — then you have full access
-
-Account statuses: Pending Approval → Active → (Suspended / Rejected if needed)
-If waiting more than 3 days without a response: email info@yriftz.org
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-RESEARCH MODULE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-How to submit research:
-1. Log in → Dashboard → Research → Submit Research
-2. Fill in: title, abstract, research area, methodology, findings, co-authors
-3. Upload supporting documents (PDF, Word)
-4. Submit → Status becomes "Under Review"
-5. YRIF reviewers assess it (usually 3–7 business days)
-6. You're notified by email: Approved (Published) or Rejected (with reasons)
-
-Research areas / categories supported:
-Science & Technology, Social Sciences, Health & Medicine, Agriculture & Environment, Economics & Business, Engineering & Innovation, Education, Arts & Humanities.
-
-Research statuses: Draft → Under Review → Approved → Published / Rejected
-Published research is visible in the public Research Repository on yriftz.org.
-
-To view your submissions: Dashboard → Research → My Research
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-EVENTS & COMPETITIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-YRIF organises: academic conferences, innovation competitions (including Youth Bonanza), workshops, seminars, and networking events.
-
-How to register for an event:
-1. Dashboard → Events → Browse upcoming events
-2. Click on an event → "Register" button
-3. You'll receive a confirmation email with event details
-
-Youth Bonanza: YRIF's flagship national innovation competition for students and young researchers. Winners receive prizes, certificates, and recognition.
-
-Certificates: Issued after attending events or winning competitions. View at Dashboard → My Certificates.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-MENTORSHIP
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-YRIF connects youth with experienced mentors (academics, industry professionals).
-
-How to find a mentor:
-1. Dashboard → Mentorship → Browse Mentors
-2. Filter by subject area, expertise, availability
-3. Send a mentorship request with a topic/question
-4. Mentor accepts → a private conversation thread opens
-5. Schedule sessions, share resources, get guidance
-
-Mentors can also: browse mentorship requests and accept those matching their expertise.
-
-Research Assistants: Researchers can post open projects; research assistants can apply to help.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PLATFORM FEATURES (DASHBOARD)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-After logging in, users have access to:
-• Dashboard: overview of activity, announcements, upcoming events, quick actions
-• Research: repository, submit, my submissions, open projects to assist with
-• Events: upcoming events, competitions, my registrations, certificates
-• Mentorship: mentor directory, my matches, RA directory
-• Messages: real-time private messaging (powered by Supabase)
-• Notifications: platform notifications (approval, event reminders, new messages)
-• Profile: edit personal info, education, phone verification, role-specific profile sections
-• Resources: learning materials, guides, and helpful links
-
-Admin features (for administrators): user management (approve/reject/suspend users, assign roles), research management, event management, content management, broadcasting notifications.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-AUTHENTICATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Login methods:
-• Email + password: yriftz.org → Sign In with Email
-• Google OAuth: "Continue with Google" button (uses your Gmail)
-• Phone (BRIQ Auth): Enter Tanzanian phone number → receive OTP via SMS → verify
-
-Password reset: Login page → "Forgot Password" → enter email → follow the reset link.
-Account locked/suspended: Contact info@yriftz.org with your registered email.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-DONATIONS & VACANCIES (PUBLIC)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Donations: Support YRIF's mission at yriftz.org/donate. One-time or monthly recurring donations accepted. You'll receive a confirmation email.
-
-Vacancies: YRIF posts internships, volunteer opportunities, and job openings at yriftz.org/vacancies. No login required to view.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-COMMON FAQS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Q: Is YRIF free to join?
-A: Yes, completely free. No fees for registration, research submission, or event attendance.
-
-Q: Can secondary school students join?
-A: Yes! YRIF welcomes students from Form 1 upward. Choose the "Youth" role when registering.
-
-Q: How long does account approval take?
-A: Usually 1–2 business days. Contact us if it's been longer than 3 days.
-
-Q: Can I submit research as a student?
-A: Yes. Students can submit research under the "Youth" or "Researcher" role.
-
-Q: What languages does the platform support?
-A: The platform supports English and Swahili.
-
-Q: Is my research data safe?
-A: Yes. YRIF uses secure HTTPS, encrypted storage, and follows data privacy standards.
-
-Q: Can international researchers join?
-A: YRIF primarily serves Tanzania-based youth, but international researchers can join as mentors or partners.
-
-Q: How do I delete my account?
-A: Go to Dashboard → Profile → Account Settings → Request Account Deletion. The admin team reviews and processes it within 3–5 business days.
+- Registration is FREE. Sign up via email+password, Google, or BRIQ phone OTP. Admin approval usually takes 1–2 business days.
+- User roles: Youth/Student, Young Researcher, Mentor, Research Assistant, Industry/Community Partner, plus Judge and Admin roles.
+- Research workflow: Draft → Submitted → Under Review → Approved → Published.
+- Events: seminars, workshops, competitions (including the flagship Youth Bonanza), and webinars. Certificates are issued after attendance or winning.
+- Mentorship: users browse mentors, send requests with a topic, and admins match them — a private conversation opens once matched.
+- Dashboard modules: Research, Events, Mentorship, Messages, Notifications, Profile, Resources.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ESCALATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-If you need to speak with a human team member, say "talk to human" or "niongee na mtu" and the request will be sent to the YRIF team. Alternatively contact: info@yriftz.org
-Response time: within 24 business hours.
+If the user wants to speak with a human, they can say "talk to human" or "niongee na mtu" and the request will be forwarded to the YRIF team. They can also email info@yriftz.org (response within 24 business hours).
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-INSTRUCTIONS
+RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-- Answer ONLY about YRIF and topics directly relevant to users of yriftz.org.
-- If asked something unrelated to YRIF (e.g. general knowledge, politics, coding help), politely redirect: "I'm specifically here to help with YRIF. For other questions, please use a general search engine."
-- Never make up information. If unsure, direct the user to info@yriftz.org.
+- Answer ONLY about YRIF and topics directly relevant to yriftz.org users. Politely redirect unrelated questions.
+- Never make up information. Prefer tool calls over guessing. If a tool fails or returns no data, say so honestly and point to info@yriftz.org.
 - Never ask users for passwords or sensitive data.
-- Keep responses under 300 words unless a detailed step-by-step is needed.
+- Keep replies under ~300 words unless detailed steps are genuinely needed.
 """
 
 
-def send_chatbot_message(chat_id: str, message: str) -> dict:
-    """Send a message to the YRIF Chat AI and return {"reply": str, "escalated": bool}."""
+def _extract_text(response) -> str:
+    """Concatenate all text blocks from a Claude response."""
+    chunks = []
+    for block in response.content:
+        if getattr(block, "type", None) == "text":
+            chunks.append(block.text)
+    return "".join(chunks).strip()
+
+
+def _extract_tool_uses(response) -> list:
+    """Return list of tool_use blocks (objects with .id, .name, .input)."""
+    return [b for b in response.content if getattr(b, "type", None) == "tool_use"]
+
+
+def _assistant_blocks_as_dicts(response) -> list[dict]:
+    """Convert a Claude response's content blocks into the dict form
+    expected when echoing the assistant turn back in `messages`."""
+    out: list[dict] = []
+    for block in response.content:
+        btype = getattr(block, "type", None)
+        if btype == "text":
+            out.append({"type": "text", "text": block.text})
+        elif btype == "tool_use":
+            out.append(
+                {
+                    "type": "tool_use",
+                    "id": block.id,
+                    "name": block.name,
+                    "input": block.input,
+                }
+            )
+    return out
+
+
+def send_chatbot_message(chat_id: str, message: str, user=None) -> dict:
+    """Send a message to YRIF Chat AI and return {"reply": str, "escalated": bool}.
+
+    If `user` is an authenticated Django user, user-scoped tools become
+    available. Anonymous calls are fine; only public tools will succeed.
+    """
     api_key = getattr(settings, "ANTHROPIC_API_KEY", "")
     if not api_key:
         return {
@@ -193,25 +122,66 @@ def send_chatbot_message(chat_id: str, message: str) -> dict:
             "escalated": False,
         }
 
-    # Load conversation history from cache
+    # Load persisted conversation history (text-only turns)
     history_key = f"chat_history:{chat_id}"
     history: list = cache.get(history_key, [])
 
-    # Build messages list for Claude
-    messages = history + [{"role": "user", "content": message}]
+    # Build the working messages list for this turn
+    messages: list = list(history) + [{"role": "user", "content": message}]
 
     try:
         import anthropic
+
         client = anthropic.Anthropic(api_key=api_key)
-        response = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=512,
-            system=_SYSTEM_PROMPT,
-            messages=messages,
-        )
-        reply = response.content[0].text.strip()
+
+        reply_text = ""
+        for _ in range(_MAX_TOOL_ITERATIONS):
+            response = client.messages.create(
+                model=_MODEL,
+                max_tokens=_MAX_TOKENS,
+                system=_SYSTEM_PROMPT,
+                tools=TOOLS,
+                messages=messages,
+            )
+
+            if response.stop_reason == "tool_use":
+                tool_uses = _extract_tool_uses(response)
+                # Echo the assistant turn (including tool_use blocks)
+                messages.append(
+                    {"role": "assistant", "content": _assistant_blocks_as_dicts(response)}
+                )
+                # Execute each tool and append results in a single user turn
+                tool_results = []
+                for tu in tool_uses:
+                    result = dispatch_tool(tu.name, tu.input or {}, user)
+                    tool_results.append(
+                        {
+                            "type": "tool_result",
+                            "tool_use_id": tu.id,
+                            "content": _json_safe(result),
+                        }
+                    )
+                messages.append({"role": "user", "content": tool_results})
+                continue
+
+            # end_turn / stop_sequence / max_tokens → take whatever text we have
+            reply_text = _extract_text(response)
+            break
+        else:
+            # Loop exhausted without a natural stop — pull whatever text exists
+            reply_text = _extract_text(response) or (
+                "Samahani, nimeshindwa kumaliza jibu. / "
+                "Sorry, I couldn't finish that response. Please try again."
+            )
+
+        if not reply_text:
+            reply_text = (
+                "Samahani, sikuweza kupata jibu sasa hivi. / "
+                "Sorry, I couldn't produce a reply just now."
+            )
+
     except Exception as exc:
-        logger.error("Claude API error: %s", exc)
+        logger.error("Claude chatbot error: %s", exc)
         return {
             "reply": (
                 "Samahani, YRIF Chat haiwezi kujibu sasa hivi. / "
@@ -221,14 +191,14 @@ def send_chatbot_message(chat_id: str, message: str) -> dict:
             "escalated": False,
         }
 
-    # Update conversation history (cap at _MAX_HISTORY messages)
+    # Persist only the plain text user+assistant turn (strip any tool noise)
     history.append({"role": "user", "content": message})
-    history.append({"role": "assistant", "content": reply})
+    history.append({"role": "assistant", "content": reply_text})
     if len(history) > _MAX_HISTORY:
         history = history[-_MAX_HISTORY:]
     cache.set(history_key, history, timeout=_SESSION_TTL)
 
-    # Detect escalation
+    # Escalation keyword check on the *user* message (unchanged behaviour)
     escalation_phrases = [
         "talk to human", "speak to human", "talk to admin", "live agent",
         "niongee na mtu", "msaada wa mtu", "zungumza na mtu",
@@ -236,4 +206,19 @@ def send_chatbot_message(chat_id: str, message: str) -> dict:
     msg_lower = message.lower()
     escalated = any(p in msg_lower for p in escalation_phrases)
 
-    return {"reply": reply, "escalated": escalated}
+    return {"reply": reply_text, "escalated": escalated}
+
+
+def _json_safe(value) -> str:
+    """Serialise a tool result for the Anthropic SDK as a JSON string.
+
+    The API accepts either a plain string or a list of content blocks for
+    `tool_result.content`. A compact JSON string is simplest and keeps
+    token usage predictable.
+    """
+    import json
+
+    try:
+        return json.dumps(value, default=str, ensure_ascii=False)
+    except Exception:
+        return str(value)

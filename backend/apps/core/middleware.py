@@ -43,7 +43,7 @@ class SecurityHeadersMiddleware:
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
                 "font-src 'self' https://fonts.gstatic.com; "
                 "img-src 'self' data: https:; "
-                "connect-src 'self' https://accounts.google.com; "
+                "connect-src 'self' https://accounts.google.com https://*.supabase.co wss://*.supabase.co https://developers.beta.sarufi.io; "
                 "frame-ancestors 'none';"
             )
         return response

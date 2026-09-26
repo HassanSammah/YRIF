@@ -4,7 +4,11 @@ import sentry_sdk
 DEBUG = False
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost").split(",")  # noqa: F405
 
-CORS_ALLOWED_ORIGINS = config("CORS_ALLOWED_ORIGINS", default="").split(",")  # noqa: F405
+CORS_ALLOWED_ORIGINS = [o.strip() for o in config("CORS_ALLOWED_ORIGINS", default="").split(",") if o.strip()]  # noqa: F405
+CSRF_TRUSTED_ORIGINS = list(CORS_ALLOWED_ORIGINS)
+
+# Reuse Postgres connections across gthread workers (250-user target).
+DATABASES["default"]["CONN_MAX_AGE"] = 60  # noqa: F405
 
 # HTTPS security settings — only apply when running as a web server,
 # not during management commands (migrate, collectstatic, etc.)

@@ -40,7 +40,7 @@ def _news_blast_html(user, news_post) -> str:
         + _h2(news_post.title)
         + _p(f"Hi {user.first_name},")
         + _p(excerpt)
-        + _cta("https://app.yriftz.org/", "Read on YRIF")
+        + _cta("https://yriftz.org/", "Read on YRIF")
         + _divider()
         + _small(
             "You are receiving this because you are an active member of the YRIF platform. "
@@ -86,7 +86,7 @@ def _announcement_blast_html(user, announcement) -> str:
         + _h2(announcement.title)
         + _p(f"Hi {user.first_name},")
         + _p(announcement.content)
-        + _cta("https://app.yriftz.org/dashboard", "Go to Platform")
+        + _cta("https://yriftz.org/dashboard", "Go to Platform")
         + _divider()
         + _small(
             "You are receiving this because you are an active member of the YRIF platform. "

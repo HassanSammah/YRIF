@@ -47,7 +47,7 @@ export default function Hero() {
           </Link>
         </div>
 
-        {/* Stats row — live platform counts */}
+        {/* Stats row — live platform counts; partners follow the published coalition */}
         <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto fade-in-up">
           {PUBLIC_STAT_LABELS.map(({ key, label }) => (
             <div key={key} className="glass rounded-2xl p-4">

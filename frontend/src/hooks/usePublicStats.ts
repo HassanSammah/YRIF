@@ -1,5 +1,6 @@
 import { useQuery } from 'react-query'
 import { publicApi, type PublicStats } from '@/api/public'
+import { ALL_NAMED_PARTNERS } from '@/data/partners'
 
 export type PublicStatKey = keyof PublicStats
 
@@ -16,6 +17,14 @@ export function formatPublicStat(value: number | undefined): string {
   return value.toLocaleString('en-US')
 }
 
+/**
+ * Coalition institutions published on the site, or the live registered count
+ * when that directory is larger.
+ */
+export function partnerOrganizationCount(registered: number | undefined): number {
+  return Math.max(ALL_NAMED_PARTNERS.length, registered ?? 0)
+}
+
 export function usePublicStats() {
   const query = useQuery(
     'landing:stats',
@@ -23,10 +32,18 @@ export function usePublicStats() {
     { staleTime: 10 * 60_000, retry: false }
   )
 
+  const settled = query.isSuccess || query.isError
+
   return {
     data: query.data,
     isLoading: query.isLoading,
     isError: query.isError,
-    format: (key: PublicStatKey) => formatPublicStat(query.data?.[key]),
+    format: (key: PublicStatKey) => {
+      if (key === 'partner_organizations') {
+        if (!settled) return formatPublicStat(undefined)
+        return formatPublicStat(partnerOrganizationCount(query.data?.partner_organizations))
+      }
+      return formatPublicStat(query.data?.[key])
+    },
   }
 }

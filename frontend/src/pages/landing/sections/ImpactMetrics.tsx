@@ -26,7 +26,7 @@ export default function ImpactMetrics() {
             Our Impact in Numbers
           </h2>
           <p className="text-white/70 text-base sm:text-lg max-w-2xl mx-auto">
-            Live platform totals — members, published research, events, and active partner organizations.
+            Members, research, and events are live platform totals. Partner organizations is the published coalition size, unless more partners are registered.
           </p>
         </div>
 

@@ -20,7 +20,7 @@ jobs:
   # ── Build & push images ────────────────────────────────────────────────────
   build:
     name: Build & push Docker images
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: ci
     environment: staging
 
@@ -91,9 +91,12 @@ jobs:
   # ── Deploy via SSH ─────────────────────────────────────────────────────────
   deploy:
     name: Deploy to Staging
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: build
     environment: staging
+    permissions:
+      contents: read
+      packages: read
 
     steps:
       - name: Check staging SSH config
@@ -129,18 +132,33 @@ jobs:
           STAGING_ALLOWED_HOSTS: ${{ secrets.STAGING_ALLOWED_HOSTS }}
           STAGING_CORS_ALLOWED_ORIGINS: ${{ secrets.STAGING_CORS_ALLOWED_ORIGINS }}
           STAGING_API_BASE_URL: ${{ secrets.STAGING_API_BASE_URL }}
+          GHCR_PULL_TOKEN: ${{ github.token }}
+          GHCR_USERNAME: ${{ github.repository_owner }}
         with:
           host: ${{ secrets.STAGING_SSH_HOST }}
           username: root
           key: ${{ secrets.STAGING_SSH_KEY }}
-          envs: STAGING_SECRET_KEY,STAGING_DB_NAME,STAGING_DB_USER,STAGING_DB_PASSWORD,STAGING_BRIQ_API_KEY,STAGING_BRIQ_APP_KEY,STAGING_BREVO_API_KEY,STAGING_ANTHROPIC_API_KEY,STAGING_GOOGLE_CLIENT_ID,STAGING_SUPABASE_URL,STAGING_SUPABASE_ANON_KEY,STAGING_ALLOWED_HOSTS,STAGING_CORS_ALLOWED_ORIGINS,STAGING_API_BASE_URL
+          command_timeout: 10m
+          envs: STAGING_SECRET_KEY,STAGING_DB_NAME,STAGING_DB_USER,STAGING_DB_PASSWORD,STAGING_BRIQ_API_KEY,STAGING_BRIQ_APP_KEY,STAGING_BREVO_API_KEY,STAGING_ANTHROPIC_API_KEY,STAGING_GOOGLE_CLIENT_ID,STAGING_SUPABASE_URL,STAGING_SUPABASE_ANON_KEY,STAGING_ALLOWED_HOSTS,STAGING_CORS_ALLOWED_ORIGINS,STAGING_API_BASE_URL,GHCR_PULL_TOKEN,GHCR_USERNAME
           script: |
-            set -e
-            cd /var/www/yrif
+            set -euo pipefail
+            # Separate tree from production (/var/www/yrif) so a staging deploy cannot
+            # check out this branch or retag images on the live site.
+            if [ ! -d /var/www/yrif-staging/.git ]; then
+              echo "Staging checkout missing at /var/www/yrif-staging."
+              echo "Clone the repo there before enabling STAGING_SSH_HOST. Production is left untouched."
+              exit 1
+            fi
+            cd /var/www/yrif-staging
 
-            echo "--- Syncing .env.production ---"
+            if [ -n "${GHCR_PULL_TOKEN:-}" ]; then
+              echo "--- Logging in to GHCR ---"
+              echo "$GHCR_PULL_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+            fi
+
+            echo "--- Syncing env files ---"
             _uenv() {
-              local k="$1" v="$2" f="backend/.env.production"
+              local k="$1" v="$2" f="$3"
               touch "$f"
               if grep -q "^${k}=" "$f" 2>/dev/null; then
                 sed -i "s|^${k}=.*|${k}=${v}|" "$f"
@@ -148,40 +166,63 @@ jobs:
                 echo "${k}=${v}" >> "$f"
               fi
             }
-            _uenv SECRET_KEY          "$STAGING_SECRET_KEY"
-            _uenv DB_NAME             "$STAGING_DB_NAME"
-            _uenv DB_USER             "$STAGING_DB_USER"
-            _uenv DB_PASSWORD         "$STAGING_DB_PASSWORD"
-            _uenv DB_HOST             "db"
-            _uenv DB_PORT             "5432"
-            _uenv REDIS_URL           "redis://redis:6379/0"
-            _uenv BRIQ_API_KEY        "$STAGING_BRIQ_API_KEY"
-            _uenv BRIQ_APP_KEY        "$STAGING_BRIQ_APP_KEY"
-            _uenv BREVO_API_KEY       "$STAGING_BREVO_API_KEY"
-            _uenv ANTHROPIC_API_KEY   "$STAGING_ANTHROPIC_API_KEY"
-            _uenv GOOGLE_CLIENT_ID    "$STAGING_GOOGLE_CLIENT_ID"
-            _uenv SUPABASE_URL        "$STAGING_SUPABASE_URL"
-            _uenv SUPABASE_KEY        "$STAGING_SUPABASE_ANON_KEY"
-            _uenv ALLOWED_HOSTS       "$STAGING_ALLOWED_HOSTS"
-            _uenv CORS_ALLOWED_ORIGINS "$STAGING_CORS_ALLOWED_ORIGINS"
-            _uenv DEFAULT_FROM_EMAIL  "noreply@yriftz.org"
-            _uenv CONTACT_EMAIL       "info@yriftz.org"
+
+            BE="backend/.env.production"
+            ROOT=".env"
+            _uenv SECRET_KEY           "$STAGING_SECRET_KEY" "$BE"
+            _uenv DB_NAME              "$STAGING_DB_NAME" "$BE"
+            _uenv DB_USER              "$STAGING_DB_USER" "$BE"
+            _uenv DB_PASSWORD          "$STAGING_DB_PASSWORD" "$BE"
+            _uenv DB_HOST              "db" "$BE"
+            _uenv DB_PORT              "5432" "$BE"
+            _uenv REDIS_URL            "redis://redis:6379/0" "$BE"
+            _uenv BRIQ_API_KEY         "$STAGING_BRIQ_API_KEY" "$BE"
+            _uenv BRIQ_APP_KEY         "$STAGING_BRIQ_APP_KEY" "$BE"
+            _uenv BREVO_API_KEY        "$STAGING_BREVO_API_KEY" "$BE"
+            _uenv ANTHROPIC_API_KEY    "$STAGING_ANTHROPIC_API_KEY" "$BE"
+            _uenv GOOGLE_CLIENT_ID     "$STAGING_GOOGLE_CLIENT_ID" "$BE"
+            _uenv SUPABASE_URL         "$STAGING_SUPABASE_URL" "$BE"
+            _uenv SUPABASE_KEY         "$STAGING_SUPABASE_ANON_KEY" "$BE"
+            _uenv ALLOWED_HOSTS        "$STAGING_ALLOWED_HOSTS" "$BE"
+            _uenv CORS_ALLOWED_ORIGINS "$STAGING_CORS_ALLOWED_ORIGINS" "$BE"
+            _uenv DEFAULT_FROM_EMAIL   "noreply@yriftz.org" "$BE"
+            _uenv CONTACT_EMAIL        "info@yriftz.org" "$BE"
+
+            _uenv DB_NAME              "$STAGING_DB_NAME" "$ROOT"
+            _uenv DB_USER              "$STAGING_DB_USER" "$ROOT"
+            _uenv DB_PASSWORD          "$STAGING_DB_PASSWORD" "$ROOT"
+            _uenv VITE_SUPABASE_URL      "$STAGING_SUPABASE_URL" "$ROOT"
+            _uenv VITE_SUPABASE_ANON_KEY "$STAGING_SUPABASE_ANON_KEY" "$ROOT"
+            _uenv VITE_GOOGLE_CLIENT_ID  "$STAGING_GOOGLE_CLIENT_ID" "$ROOT"
+            _uenv YRIF_IMAGE_TAG         "staging" "$ROOT"
+            _uenv YRIF_HTTP_PORT         "3001" "$ROOT"
 
             echo "--- Pulling latest code ---"
             git pull origin staging
-            echo "--- Pulling new Docker images ---"
-            docker compose -f docker-compose.prod.yml pull
+            echo "--- Pulling staging Docker images ---"
+            export YRIF_IMAGE_TAG=staging
+            export YRIF_HTTP_PORT=3001
+            docker compose -f docker-compose.prod.yml -p yrif-staging pull
             echo "--- Restarting containers ---"
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
-            echo "--- Running migrations ---"
-            for i in $(seq 1 12); do
-              if docker exec yrif-backend-1 python manage.py check 2>/dev/null; then
+            docker compose -f docker-compose.prod.yml -p yrif-staging up -d --remove-orphans
+            echo "--- Waiting for Gunicorn ---"
+            ready=0
+            for i in $(seq 1 24); do
+              if docker exec yrif-staging-backend-1 python -c "import socket; socket.create_connection(('127.0.0.1', 8000), 2).close()" 2>/dev/null; then
+                echo "Gunicorn is listening"
+                ready=1
                 break
               fi
-              echo "Waiting for backend ($i/12)..."
+              echo "Waiting for Gunicorn ($i/24)..."
               sleep 5
             done
-            docker exec yrif-backend-1 python manage.py migrate --no-input
+            if [ "$ready" != 1 ]; then
+              echo "Gunicorn did not start listening on port 8000"
+              docker logs --tail 80 yrif-staging-backend-1 || true
+              exit 1
+            fi
+            echo "--- Running migrations ---"
+            docker exec yrif-staging-backend-1 python manage.py migrate --no-input
             echo "--- Deploy complete ---"
 
       - name: Health check (staging)

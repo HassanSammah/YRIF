@@ -32,10 +32,10 @@ export default function FeaturedResearch() {
             </p>
           </div>
           <Link
-            to="/dashboard"
+            to="/our-research"
             className="flex-shrink-0 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-teal hover:underline"
           >
-            View all research <ArrowRight size={14} />
+            Learn more about research <ArrowRight size={14} />
           </Link>
         </div>
 

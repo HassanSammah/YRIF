@@ -14,12 +14,12 @@ interface ContactForm {
 
 const FAQS = [
   {
-    q: 'Is YRIF free to join?',
-    a: 'Yes, completely free. There are no fees for registration, research submission, or event attendance.',
+    q: 'Who can become a YRIF member?',
+    a: 'Membership is voluntary and open to any Tanzanian aged 18 years and above who supports the vision, mission, and objectives of YRIF. Secondary school students in Form V–VI take part through YRIF High School Research Clubs.',
   },
   {
-    q: 'Who can join YRIF?',
-    a: 'Anyone passionate about research and innovation — secondary school students, university students, researchers, mentors, and private sector partners. We welcome all ages.',
+    q: 'Are there membership fees?',
+    a: 'Yes. Members pay entry and annual fees as prescribed by the General Meeting. Proofreading, coaching, and research assistance are also offered as fee-based services. Email info@yriftz.org for current rates.',
   },
   {
     q: 'How long does account approval take?',
@@ -113,8 +113,8 @@ export default function Contact() {
               />
               <ContactInfo
                 icon={MapPin}
-                label="Location"
-                value="Dar es Salaam, Tanzania"
+                label="Head Office"
+                value="Kifaru St., Mikocheni, Dar es Salaam · P.O. Box 76690"
               />
             </div>
           </div>

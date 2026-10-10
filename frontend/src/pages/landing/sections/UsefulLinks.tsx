@@ -1,4 +1,8 @@
-import { ExternalLink, GraduationCap, Microscope, BookOpen, Building2 } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
+import moest from '@/assets/partners/moest.svg'
+import costech from '@/assets/partners/costech.png'
+import tcu from '@/assets/partners/tcu.png'
+import udsm from '@/assets/partners/udsm.png'
 
 const LINKS = [
   {
@@ -6,32 +10,28 @@ const LINKS = [
     name: 'Ministry of Education, Science and Technology',
     url: 'https://www.moe.go.tz',
     description: "Tanzania's formal body for educational policies and technological advancement.",
-    Icon: Building2,
-    color: 'text-brand-gold',
+    logo: moest,
   },
   {
     abbr: 'COSTECH',
     name: 'Commission for Science and Technology',
     url: 'https://www.costech.or.tz',
     description: 'The principal advisory organ to the Government on matters relating to scientific research and technology.',
-    Icon: Microscope,
-    color: 'text-brand-teal',
+    logo: costech,
   },
   {
     abbr: 'TCU',
     name: 'Tanzania Commission for Universities',
     url: 'https://www.tcu.go.tz',
     description: 'Regulating and ensuring the quality of university education in Tanzania.',
-    Icon: GraduationCap,
-    color: 'text-brand-blue',
+    logo: tcu,
   },
   {
     abbr: 'UDSM',
     name: 'University of Dar es Salaam',
     url: 'https://www.udsm.ac.tz',
     description: "The oldest and premier public university in Tanzania, fostering research and innovation.",
-    Icon: BookOpen,
-    color: 'text-content-secondary',
+    logo: udsm,
   },
 ]
 
@@ -52,7 +52,7 @@ export default function UsefulLinks() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {LINKS.map(({ abbr, name, url, description, Icon, color }) => (
+          {LINKS.map(({ abbr, name, url, description, logo }) => (
             <a
               key={abbr}
               href={url}
@@ -64,9 +64,8 @@ export default function UsefulLinks() {
               <div className="absolute inset-0 bg-gradient-to-br from-brand-teal/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
               <div className="relative z-10 flex flex-col h-full">
-                {/* Icon Container */}
-                <div className="w-14 h-14 rounded-xl bg-white shadow-sm flex items-center justify-center mb-5 border border-gray-100 group-hover:scale-110 transition-transform duration-300">
-                  <Icon className={`w-7 h-7 ${color}`} />
+                <div className="h-16 w-16 rounded-xl bg-white shadow-sm flex items-center justify-center mb-5 border border-gray-100 group-hover:scale-105 transition-transform duration-300 p-1.5">
+                  <img src={logo} alt="" className="max-h-full max-w-full object-contain" />
                 </div>
 
                 {/* Content */}

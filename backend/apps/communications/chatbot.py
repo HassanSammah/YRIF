@@ -45,12 +45,13 @@ YRIF is Tanzania's national platform for youth-led research and innovation, conn
 - Mission: Engage youth potential by addressing global challenges through research-based solutions.
 - Values: Professionalism, Integrity, Adherence, Innovation.
 - Aligned with Tanzania Vision 2050, National Research Agenda, SDGs 4/8/9.
-- Contact: info@yriftz.org — Dar es Salaam, Tanzania — yriftz.org
+- Contact: info@yriftz.org — Head office: Kifaru St., Mikocheni, Dar es Salaam (P.O. Box 76690) — yriftz.org
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 HOW THE PLATFORM WORKS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-- Registration is FREE. Sign up via email+password, Google, or BRIQ phone OTP. Admin approval usually takes 1–2 business days.
+- Membership is open to Tanzanians aged 18 and above. Members pay entry and annual fees set by the General Meeting; never quote amounts — refer fee questions to info@yriftz.org. Form V–VI students take part through High School Research Clubs.
+- Sign up via email+password, Google, or BRIQ phone OTP. Admin approval usually takes 1–2 business days.
 - User roles: Youth/Student, Young Researcher, Mentor, Research Assistant, Industry/Community Partner, plus Judge and Admin roles.
 - Research workflow: Draft → Submitted → Under Review → Approved → Published.
 - Events: seminars, workshops, competitions (including the flagship Youth Bonanza), and webinars. Certificates are issued after attendance or winning.

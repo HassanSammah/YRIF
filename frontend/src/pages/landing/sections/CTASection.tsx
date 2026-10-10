@@ -21,7 +21,7 @@ export default function CTASection() {
         </h2>
 
         <p className="text-white/70 text-lg leading-relaxed">
-          Join thousands of young Tanzanian innovators who are shaping the future through research,
+          Join young Tanzanian innovators who are shaping the future through research,
           collaboration, and innovation.
         </p>
 
@@ -41,7 +41,7 @@ export default function CTASection() {
         </div>
 
         <p className="text-xs text-white/40">
-          Free to join · Peer-reviewed platform · Open to all Tanzanian youth
+          Registered NGO · Reg. No. 00NGO/R/10110 · Membership open to Tanzanians aged 18+
         </p>
       </div>
     </section>

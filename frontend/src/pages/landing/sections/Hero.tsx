@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, TrendingUp } from 'lucide-react'
+import { ArrowRight, Sparkles } from 'lucide-react'
+import { PUBLIC_STAT_LABELS, usePublicStats } from '@/hooks/usePublicStats'
 
 export default function Hero() {
+  const { format } = usePublicStats()
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-cream pt-16">
       {/* Decorative blobs */}
@@ -12,8 +15,8 @@ export default function Hero() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
         {/* Badge */}
         <div className="inline-flex items-center gap-2 glass px-4 py-2 rounded-full mb-8 fade-in-up">
-          <TrendingUp size={14} className="text-brand-teal" />
-          <span className="text-sm font-medium text-brand-navy">85% Growth in Youth Research</span>
+          <Sparkles size={14} className="text-brand-teal" />
+          <span className="text-sm font-medium text-brand-navy">National youth research platform</span>
         </div>
 
         {/* Headline */}
@@ -37,23 +40,18 @@ export default function Hero() {
             Join YRIF <ArrowRight size={18} />
           </Link>
           <Link
-            to="/dashboard"
+            to="/our-research"
             className="inline-flex items-center gap-2 bg-white text-brand-navy px-8 py-3.5 rounded-xl font-semibold border border-brand-navy/20 hover:border-brand-teal hover:text-brand-teal transition-colors"
           >
             Explore Research
           </Link>
         </div>
 
-        {/* Stats row */}
+        {/* Stats row — live platform counts */}
         <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto fade-in-up">
-          {[
-            { value: '5,000+', label: 'Youth Members' },
-            { value: '120+', label: 'Research Papers' },
-            { value: '50+', label: 'Events Hosted' },
-            { value: '30+', label: 'Partner Orgs' },
-          ].map(({ value, label }) => (
-            <div key={label} className="glass rounded-2xl p-4">
-              <p className="font-display text-2xl font-bold text-brand-navy">{value}</p>
+          {PUBLIC_STAT_LABELS.map(({ key, label }) => (
+            <div key={key} className="glass rounded-2xl p-4">
+              <p className="font-display text-2xl font-bold text-brand-navy">{format(key)}</p>
               <p className="text-xs text-content-secondary mt-1">{label}</p>
             </div>
           ))}

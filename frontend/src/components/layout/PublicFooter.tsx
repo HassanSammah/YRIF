@@ -15,7 +15,7 @@ const ABOUT_LINKS = [
   { label: 'Our Partners', to: '/partners' },
   { label: 'News & Updates', href: '/#news' },
   { label: 'Contact Us', to: '/contact' },
-  { label: 'Staff Mail', href: 'https://r3.netpoa.com:2083/', external: true },
+  { label: 'Staff Mail', href: 'https://r4.netpoa.com:2096/', external: true },
 ]
 
 const SOCIAL = [

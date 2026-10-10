@@ -1,4 +1,5 @@
-import { CheckCircle2, Quote } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ArrowRight, CheckCircle2, Quote } from 'lucide-react'
 import researchMeetingImage from '@/assets/images/research_meeting.png'
 
 const OFFERINGS = [
@@ -50,6 +51,13 @@ export default function AboutSection() {
                 </li>
               ))}
             </ul>
+
+            <Link
+              to="/about"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-teal hover:underline"
+            >
+              Learn more about YRIF <ArrowRight size={14} />
+            </Link>
           </div>
         </div>
       </div>

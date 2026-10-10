@@ -10,8 +10,9 @@ const PLATFORM_LINKS = [
 ]
 
 const ABOUT_LINKS = [
-  { label: 'About YRIF', href: '/#about' },
-  { label: 'Our Partners', href: '/#partners' },
+  { label: 'About YRIF', to: '/about' },
+  { label: 'Our Research', to: '/our-research' },
+  { label: 'Our Partners', to: '/partners' },
   { label: 'News & Updates', href: '/#news' },
   { label: 'Contact Us', to: '/contact' },
   { label: 'Staff Mail', href: 'https://r3.netpoa.com:2083/', external: true },
@@ -117,7 +118,11 @@ export default function PublicFooter() {
               </li>
               <li className="flex items-start gap-2.5 text-sm text-white/70">
                 <MapPin size={15} className="mt-0.5 flex-shrink-0 text-brand-teal" />
-                <span>Dar es Salaam, Tanzania</span>
+                <span>
+                  Kifaru St., Mikocheni, Dar es Salaam
+                  <br />
+                  P.O. Box 76690, Dar es Salaam, Tanzania
+                </span>
               </li>
             </ul>
           </div>

@@ -1,52 +1,24 @@
-import { useQuery } from 'react-query'
-import { Building2 } from 'lucide-react'
-import { publicApi } from '@/api/public'
-import type { PartnerListing } from '@/types/mentorship'
+import { Link } from 'react-router-dom'
+import { ArrowRight, Building2 } from 'lucide-react'
+import { ALL_NAMED_PARTNERS, COALITION_INTRO, type CoalitionPartner } from '@/data/partners'
 
-// Fallback static partner names shown when API has no data
-const STATIC_PARTNERS = [
-  'University of Dar es Salaam',
-  'Ardhi University',
-  'Nelson Mandela African Institution',
-  'Tanzania Commission for Science & Technology',
-  'Sokoine University of Agriculture',
-  'COSTECH',
-  'IFM Tanzania',
-  'Open University of Tanzania',
-]
-
-function PartnerBadge({ name }: { name: string }) {
-  const initials = name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase()
-
+function PartnerBadge({ partner }: { partner: CoalitionPartner }) {
   return (
     <div className="flex-shrink-0 flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-5 py-3 shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-default min-w-max">
-      <div className="w-8 h-8 rounded-lg bg-brand-navy flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-        {initials}
-      </div>
-      <span className="text-sm font-medium text-brand-navy whitespace-nowrap">{name}</span>
+      {partner.logo ? (
+        <img src={partner.logo} alt="" className="h-10 w-12 object-contain flex-shrink-0" />
+      ) : (
+        <div className="w-8 h-8 rounded-lg bg-brand-navy/5 flex items-center justify-center flex-shrink-0">
+          <Building2 size={16} className="text-brand-navy" />
+        </div>
+      )}
+      <span className="text-sm font-medium text-brand-navy whitespace-nowrap">{partner.name}</span>
     </div>
   )
 }
 
 export default function Partners() {
-  const { data } = useQuery(
-    'landing:partners',
-    () => publicApi.getPartners().then((r) => r.data.results ?? r.data),
-    { staleTime: 10 * 60_000, retry: false }
-  )
-
-  const apiItems: string[] = Array.isArray(data)
-    ? (data as PartnerListing[]).map((p) => p.org_name ?? p.full_name)
-    : (data as unknown as { results?: PartnerListing[] })?.results?.map((p) => p.org_name ?? p.full_name) ?? []
-
-  const names = apiItems.length > 0 ? apiItems : STATIC_PARTNERS
-  const doubled = [...names, ...names] // duplicate for seamless loop
+  const doubled = [...ALL_NAMED_PARTNERS, ...ALL_NAMED_PARTNERS] // duplicate for seamless loop
 
   return (
     <section id="partners" className="py-20 bg-white">
@@ -56,11 +28,17 @@ export default function Partners() {
             <Building2 size={13} /> Partner Network
           </div>
           <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand-navy mb-3">
-            Trusted by Leading Institutions
+            Our Partners
           </h2>
-          <p className="text-content-secondary max-w-xl mx-auto">
-            We collaborate with universities, government bodies, and industry leaders across Tanzania.
+          <p className="text-content-secondary max-w-2xl mx-auto">
+            {COALITION_INTRO}
           </p>
+          <Link
+            to="/partners"
+            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-teal hover:underline"
+          >
+            View all partners <ArrowRight size={14} />
+          </Link>
         </div>
 
         {/* Scrolling carousel */}
@@ -70,8 +48,8 @@ export default function Partners() {
           <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
 
           <div className="flex gap-4 animate-scroll">
-            {doubled.map((name, i) => (
-              <PartnerBadge key={`${name}-${i}`} name={name} />
+            {doubled.map((partner, i) => (
+              <PartnerBadge key={`${partner.name}-${i}`} partner={partner} />
             ))}
           </div>
         </div>

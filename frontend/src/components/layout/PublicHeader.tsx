@@ -4,10 +4,10 @@ import { Menu, X } from 'lucide-react'
 import logoDark from '@/assets/logos/logo-dark-full-horizontal.svg'
 
 const NAV_LINKS = [
-  { label: 'About', href: '#about' },
-  { label: 'Research', href: '#research' },
+  { label: 'About', href: '/about' },
+  { label: 'Research', href: '/our-research' },
   { label: 'Events', href: '#events' },
-  { label: 'Partners', href: '#partners' },
+  { label: 'Partners', href: '/partners' },
   { label: 'Vacancies', href: '/vacancies' },
   { label: 'Donate', href: '/donate' },
   { label: 'Contact', href: '/contact' },

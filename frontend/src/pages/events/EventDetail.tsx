@@ -273,7 +273,7 @@ export default function EventDetail() {
               >
                 <div>
                   <span className="text-sm font-semibold text-amber-800">{w.rank}</span>
-                  <span className="text-sm text-gray-600 ml-2">— {w.participant_name}</span>
+                  <span className="text-sm text-gray-600 ml-2">· {w.participant_name}</span>
                   {w.research_title && (
                     <p className="text-xs text-gray-400 mt-0.5 italic">{w.research_title}</p>
                   )}

@@ -42,7 +42,7 @@ def notify_mentorship_matched(mentor, mentee, topic):
     mentee_content = (
         _h2("Mentorship Match Found!", color="#0D9488")
         + _p(
-            f"Hi {mentee.first_name}, great news — your mentorship request has been matched!"
+            f"Hi {mentee.first_name}, great news. Your mentorship request has been matched!"
         )
         + _info_card(
             ("Mentor", mentor.get_full_name()),
@@ -100,8 +100,8 @@ def notify_match_completed(mentor, mentee, topic):
             )
             + _info_card(("Topic", topic))
             + _p(
-                "Please take a moment to submit feedback via your dashboard — "
-                "your input helps us improve the programme.",
+                "Please take a moment to submit feedback via your dashboard. "
+                "Your input helps us improve the programme.",
                 color="#6B7280",
                 size="14px",
             )

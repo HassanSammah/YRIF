@@ -67,7 +67,7 @@ export default function UpcomingEvents() {
               Events & Competitions
             </h2>
             <p className="mt-2 text-content-secondary">
-              Seminars, workshops, hackathons, and more — all in one place.
+              Seminars, workshops, hackathons, and more, all in one place.
             </p>
           </div>
           <Link

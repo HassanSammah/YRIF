@@ -47,7 +47,7 @@ export default function FeaturedResearch() {
         ) : items.length === 0 ? (
           <div className="text-center py-16 text-content-secondary">
             <BookOpen size={40} className="mx-auto mb-3 text-gray-300" />
-            <p className="text-sm">No published research yet — be the first to contribute!</p>
+            <p className="text-sm">No published research yet. Be the first to contribute!</p>
             <Link
               to="/register"
               className="mt-4 inline-block text-sm font-semibold text-brand-teal hover:underline"

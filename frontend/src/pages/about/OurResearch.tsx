@@ -21,12 +21,12 @@ const CATEGORIES = [
   {
     icon: FlaskConical,
     title: 'Natural Sciences',
-    body: 'One of three official categories for the Annual National Research Competition and Awards — covering scientific inquiry that advances understanding of the natural world and applied science challenges relevant to Tanzania.',
+    body: 'One of three official categories for the Annual National Research Competition and Awards. It covers scientific inquiry that advances understanding of the natural world and applied science challenges relevant to Tanzania.',
   },
   {
     icon: Users,
     title: 'Social Sciences',
-    body: 'Research on society, education, livelihoods, governance, and community development — connecting youth inquiry to evidence-based solutions for social and economic challenges.',
+    body: 'Research on society, education, livelihoods, governance, and community development, connecting youth inquiry to evidence-based solutions for social and economic challenges.',
   },
   {
     icon: Palette,
@@ -86,7 +86,7 @@ const PUBLICATION = [
   {
     icon: BookOpen,
     title: 'Open-access youth research journal',
-    body: 'A credible publication pathway for young researchers — the longer-term launch of the YRIF Journal is part of the Year 2+ roadmap.',
+    body: 'A credible publication pathway for young researchers. The longer-term launch of the YRIF Journal is part of the Year 2+ roadmap.',
   },
   {
     icon: Search,
@@ -117,7 +117,7 @@ const PLATFORM_STEPS = [
     icon: BookOpen,
     step: '03',
     title: 'Publish',
-    body: 'Approved work appears in the research repository for members to read, cite, and build on — with pathways toward journal recognition.',
+    body: 'Approved work appears in the research repository for members to read, cite, and build on, with pathways toward journal recognition.',
   },
   {
     icon: RefreshCw,
@@ -144,7 +144,7 @@ export default function OurResearch() {
           </h1>
           <p className="text-white/70 text-lg max-w-3xl mx-auto">
             Engaging and nurturing youth potential by addressing national and global challenges
-            through research-based, innovative solutions — with a peer-reviewed pathway from
+            through research-based, innovative solutions, with a peer-reviewed pathway from
             insight to publication.
           </p>
         </div>

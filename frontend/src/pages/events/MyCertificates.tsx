@@ -76,7 +76,7 @@ export default function MyCertificates() {
                       {cert.certificate_type === 'winner' ? 'Winner' : 'Participant'}
                     </span>
                     {cert.position && (
-                      <span className="text-xs text-gray-500">— {cert.position}</span>
+                      <span className="text-xs text-gray-500">· {cert.position}</span>}
                     )}
                   </div>
                   <p className="text-xs text-gray-400 mt-0.5">

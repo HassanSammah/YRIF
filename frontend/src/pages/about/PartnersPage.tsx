@@ -32,7 +32,7 @@ const PARTNER_CONTRIBUTIONS = [
   {
     icon: Coins,
     title: 'Funding',
-    body: 'National and international organizations provide funding that enables youth research programs, competitions, awards, and platform growth — through grants, donations, sponsorships, and partnerships.',
+    body: 'National and international organizations provide funding that enables youth research programs, competitions, awards, and platform growth through grants, donations, sponsorships, and partnerships.',
   },
   {
     icon: Wrench,
@@ -47,7 +47,7 @@ const PARTNER_CONTRIBUTIONS = [
   {
     icon: Users,
     title: 'Experts as mentors & judges',
-    body: 'Academic and industry professionals serve as mentors, judges, and technical advisors across YRIF programs — a core part of the four-part ecosystem alongside students, institutions, and partners.',
+    body: 'Academic and industry professionals serve as mentors, judges, and technical advisors across YRIF programs. They are a core part of the four-part ecosystem alongside students, institutions, and partners.',
   },
 ]
 
@@ -55,7 +55,7 @@ const COLLABORATION_AREAS = [
   {
     icon: Award,
     title: 'Annual National Research Competition and Awards',
-    body: 'Sponsor or co-host the competition across Natural Sciences, Social Sciences, and Arts & Humanities — from submission and evaluation through the award ceremony and national recognition.',
+    body: 'Sponsor or co-host the competition across Natural Sciences, Social Sciences, and Arts & Humanities, from submission and evaluation through the award ceremony and national recognition.',
   },
   {
     icon: Coins,
@@ -65,7 +65,7 @@ const COLLABORATION_AREAS = [
   {
     icon: Factory,
     title: 'Research-to-industry and market linkage',
-    body: 'Connect research outputs to industrial and market needs — one of YRIF\'s constitutional objectives and a clear value exchange for private-sector partners.',
+    body: 'Connect research outputs to industrial and market needs. This is one of YRIF\'s constitutional objectives and a clear value exchange for private-sector partners.',
   },
   {
     icon: BookOpen,
@@ -80,7 +80,7 @@ const COLLABORATION_AREAS = [
   {
     icon: Cpu,
     title: 'Digital literacy and AI in research',
-    body: 'Promote digital literacy and the integration of artificial intelligence in research — aligned with YRIF\'s 4th Industrial Revolution impact focus.',
+    body: 'Promote digital literacy and the integration of artificial intelligence in research, aligned with YRIF\'s 4th Industrial Revolution impact focus.',
   },
   {
     icon: Handshake,
@@ -162,7 +162,7 @@ export default function PartnersPage() {
           </p>
           <p className="text-content-secondary leading-relaxed">
             Partners sit alongside students, institutions, and experts. A full partnership
-            engagement strategy — including proposed collaboration areas per stakeholder — is
+            engagement strategy, including proposed collaboration areas per stakeholder, is
             available in YRIF&apos;s Grant Proposal and Stakeholder Engagement Package.
           </p>
         </section>
@@ -197,7 +197,7 @@ export default function PartnersPage() {
               Areas of Collaboration
             </h2>
             <p className="text-content-secondary max-w-2xl mx-auto">
-              Concrete programs and objectives where partners can engage — drawn from YRIF&apos;s
+              Concrete programs and objectives where partners can engage, drawn from YRIF&apos;s
               programs and constitutional objectives.
             </p>
           </div>
@@ -253,7 +253,7 @@ export default function PartnersPage() {
             </h3>
             <p className="text-sm text-content-secondary mb-4 max-w-2xl">
               Government, academia, research institutions, regional administration, and private-sector
-              sponsors — including:
+              sponsors, including:
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {NATIONAL_PARTNERS.map((p) => (

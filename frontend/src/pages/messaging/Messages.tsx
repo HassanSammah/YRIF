@@ -313,7 +313,7 @@ function ChatThread({ conv, onBack }: { conv: Conversation; onBack: () => void }
                 {i < others.length - 1 ? ' ·' : ''}
               </span>
             ))}
-            {conv.subject && <span className="text-[11px] text-gray-400 italic truncate">— {conv.subject}</span>}
+            {conv.subject && <span className="text-[11px] text-gray-400 italic truncate">· {conv.subject}</span>}
           </div>
         </div>
         {/* Live indicator */}
@@ -330,7 +330,7 @@ function ChatThread({ conv, onBack }: { conv: Conversation; onBack: () => void }
           : messages.length === 0
             ? <div className="flex flex-col items-center justify-center py-12 text-center">
                 <MessageCircle className="w-10 h-10 text-gray-200 mb-2" />
-                <p className="text-xs text-gray-400">No messages yet — say hello! 👋</p>
+                <p className="text-xs text-gray-400">No messages yet. Say hello! 👋</p>
               </div>
             : messages.map((msg, i) => (
               <MessageBubble

@@ -28,7 +28,13 @@ jobs:
           fi
 
           BASE="${SUPABASE_URL%/}"
-          response=$(curl -sS -w "\n%{http_code}" \
+          HOST="${BASE#*://}"; HOST="${HOST%%/*}"
+          if ! getent hosts "${HOST}" > /dev/null; then
+            echo "::error::Supabase host does not resolve (DNS). The project was likely deleted or its ref changed. Update SUPABASE_KEEPALIVE_URL/KEY and PROD_SUPABASE_URL/ANON_KEY with the current project."
+            exit 1
+          fi
+
+          response=$(curl -sS --retry 3 --retry-delay 10 --max-time 30 -w "\n%{http_code}" \
             -H "apikey: ${SUPABASE_ANON_KEY}" \
             -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
             "${BASE}/auth/v1/health")

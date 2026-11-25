@@ -245,6 +245,24 @@ function ChatThread({ conv, onBack }: { conv: Conversation; onBack: () => void }
     return () => { channel.unsubscribe(); setConnected(false) }
   }, [conv.id, user?.id, qc])
 
+  // Polling fallback — when Realtime isn't connected (Supabase down or not
+  // configured), poll the thread so incoming messages still show up.
+  useEffect(() => {
+    if (connected) return
+    const id = window.setInterval(() => {
+      communicationsApi.listMessages(conv.id).then(r => {
+        const raw = r.data as { results?: Message[] } | Message[]
+        const server = Array.isArray(raw) ? raw : (raw.results ?? [])
+        setMessages(prev => {
+          // Keep optimistic messages that the server hasn't confirmed yet
+          const pending = prev.filter(m => String(m.id).startsWith('opt_'))
+          return [...server, ...pending]
+        })
+      }).catch(() => { /* transient — retry on next tick */ })
+    }, 5_000)
+    return () => window.clearInterval(id)
+  }, [connected, conv.id])
+
   // Scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -271,7 +289,10 @@ function ChatThread({ conv, onBack }: { conv: Conversation; onBack: () => void }
       onSuccess: (res, _, ctx) => {
         const saved = res.data
         // Replace optimistic with real message from server
-        setMessages(prev => prev.map(m => m.id === ctx?.optimisticId ? saved : m))
+        // (a poll may already have delivered the saved message — avoid a duplicate)
+        setMessages(prev => prev.some(m => m.id === saved.id)
+          ? prev.filter(m => m.id !== ctx?.optimisticId)
+          : prev.map(m => m.id === ctx?.optimisticId ? saved : m))
         // Broadcast to other participants via Supabase
         channelRef.current?.send({ type: 'broadcast', event: 'new_message', payload: saved })
         qc.invalidateQueries('conversations')
@@ -319,7 +340,7 @@ function ChatThread({ conv, onBack }: { conv: Conversation; onBack: () => void }
         {/* Live indicator */}
         <div
           className={`w-2 h-2 rounded-full flex-shrink-0 transition-colors ${connected ? 'bg-green-400' : 'bg-gray-300'}`}
-          title={connected ? 'Live' : 'Connecting…'}
+          title={connected ? 'Live' : 'Auto-refreshing every few seconds'}
         />
       </div>
 

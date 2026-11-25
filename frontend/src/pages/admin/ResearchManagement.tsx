@@ -74,7 +74,7 @@ function AssignReviewerModal({
             </option>
             {users?.results.map((u) => (
               <option key={u.id} value={u.id}>
-                {u.first_name} {u.last_name} — {u.email}
+                {u.first_name} {u.last_name} ({u.email})
               </option>
             ))}
           </select>

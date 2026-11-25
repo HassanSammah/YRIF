@@ -128,7 +128,7 @@ const ECOSYSTEM = [
   {
     icon: GraduationCap,
     title: 'Students / Youth',
-    body: 'The primary beneficiaries — university students and secondary-school learners engaged in research training, mentorship, and competitions.',
+    body: 'The primary beneficiaries: university students and secondary-school learners engaged in research training, mentorship, and competitions.',
   },
   {
     icon: Building2,
@@ -223,7 +223,7 @@ export default function About() {
             About YRIF
           </h1>
           <p className="text-white/70 text-lg max-w-3xl mx-auto">
-            Youth Research & Innovation Foundation — a registered non-governmental organization
+            Youth Research & Innovation Foundation, a registered non-governmental organization
             empowering young Tanzanians through research, innovation, and knowledge-driven solutions.
           </p>
           <p className="mt-4 text-sm text-white/50">
@@ -436,7 +436,7 @@ export default function About() {
               These are goals, not current achievements. They are pursued through a phased 12-month
               plan spanning institutional registration, digital platform development, university and
               secondary-school outreach, and the inaugural National Research Competition and Youth
-              Bonanza — followed by the longer-term launch of the YRIF Journal and a sustainable
+              Bonanza, followed by the longer-term launch of the YRIF Journal and a sustainable
               research-services network from Year 2 onward.
             </p>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
@@ -468,7 +468,7 @@ export default function About() {
           </div>
 
           <h3 className="text-sm font-bold uppercase tracking-wide text-brand-teal mb-4">
-            Board of Directors — Office Bearers
+            Board of Directors: Office Bearers
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
             {OFFICE_BEARERS.map(({ name, position, phone }) => (

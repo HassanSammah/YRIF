@@ -432,7 +432,7 @@ function DeletionRequestsTab() {
               </p>
               {req.status !== 'pending' && (
                 <span className={`mt-1.5 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${req.status === 'approved' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}>
-                  {req.status === 'approved' ? 'Approved — user deleted' : 'Rejected'}
+                  {req.status === 'approved' ? 'Approved. User deleted.' : 'Rejected'}
                 </span>
               )}
             </div>

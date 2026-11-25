@@ -245,7 +245,7 @@ def send_post_verification_welcome_email(user):
     send_email(
         to_email=user.email,
         to_name=user.get_full_name(),
-        subject="[YRIF] Welcome — your account is ready!",
+        subject="[YRIF] Welcome. Your account is ready!",
         html_content=_wrap(content),
     )
 
@@ -266,7 +266,7 @@ def send_deletion_approved_email(user):
             color="#6B7280",
             size="14px",
         )
-        + _small("Thank you for being part of YRIF. — The YRIF Team")
+        + _small("Thank you for being part of YRIF. The YRIF Team")
     )
     send_email(
         to_email=user.email,

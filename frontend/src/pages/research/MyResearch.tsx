@@ -17,10 +17,10 @@ const STATUS_STYLES: Record<ResearchStatus, string> = {
 }
 
 const STATUS_HINT: Record<ResearchStatus, string> = {
-  draft: 'Not submitted yet — submit when ready.',
+  draft: 'Not submitted yet. Submit when ready.',
   submitted: 'Awaiting reviewer assignment.',
   under_review: 'Being reviewed. You will be notified of the outcome.',
-  approved: 'Approved — awaiting publication by admin.',
+  approved: 'Approved. Awaiting publication by admin.',
   rejected: 'Not approved. See details below.',
   published: 'Publicly visible in the repository.',
 }

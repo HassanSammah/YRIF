@@ -65,7 +65,7 @@ def notify_contact_auto_reply(name: str, email: str, subject: str) -> None:
             f"<a href='mailto:{CONTACT_EMAIL}' style='color:#0D9488;'>{CONTACT_EMAIL}</a>."
         )
         + _small(
-            "Please do not reply to this email — it is sent from an unmonitored address. "
+            "Please do not reply to this email. It is sent from an unmonitored address. "
             f"Use <a href='mailto:{CONTACT_EMAIL}' style='color:#0D9488;'>{CONTACT_EMAIL}</a> "
             "for direct communication."
         )

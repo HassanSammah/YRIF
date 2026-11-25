@@ -83,7 +83,7 @@ def notify_competition_results(event, winners):
 
         if is_winner and winner_obj:
             content = (
-                _h2("Congratulations — Results Published!", color="#0D9488")
+                _h2("Congratulations. Results Published!", color="#0D9488")
                 + _p(
                     f"Hi {reg.participant.first_name}, the results for "
                     f"<strong>{event.title}</strong> have been published and "

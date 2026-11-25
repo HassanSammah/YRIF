@@ -130,7 +130,7 @@ export default function Register() {
                   <span className="w-1.5 h-1.5 rounded-full bg-[#0D9488] mt-1.5 flex-shrink-0" />
                   <span>
                     <span className="text-white font-medium">{r.label}</span>
-                    {' — '}
+                    {': '}
                     <span className="text-white/50 text-xs">{r.desc}</span>
                   </span>
                 </li>

@@ -223,7 +223,7 @@ export default function OpenProjects() {
         <div className="text-center py-20 text-gray-400">
           <GitBranch className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p className="font-medium">No open projects found</p>
-          <p className="text-sm mt-1">Check back later — researchers will mark projects as open when they need RA support</p>
+          <p className="text-sm mt-1">Check back later. Researchers will mark projects as open when they need RA support.</p>
         </div>
       ) : (
         <div className="space-y-4">

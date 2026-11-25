@@ -113,6 +113,6 @@ def notify_research_status_changed(research):
     send_email(
         to_email=research.author.email,
         to_name=research.author.get_full_name(),
-        subject=f"[YRIF] Research update: {research.title} — {cfg['subject_label']}",
+        subject=f"[YRIF] Research update: {research.title} ({cfg['subject_label']})",
         html_content=_wrap(content),
     )
